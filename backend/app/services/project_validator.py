@@ -7,8 +7,13 @@ from sqlalchemy.orm import Session
 
 from app.core.enums import SourceType
 from app.core.errors import ConflictError, ValidationAppError
-from app.db.models import Language, Project, Theme
-from app.models.api.projects import ProjectCreateRequest, ProjectSettingsIn, ProjectUpdateRequest
+from app.db.models import Language, Project, ProjectSettings, Theme
+from app.models.api.projects import (
+    ProjectCreateRequest,
+    ProjectSettingsIn,
+    ProjectSettingsPatch,
+    ProjectUpdateRequest,
+)
 
 
 class ProjectValidator:
@@ -69,12 +74,33 @@ class ProjectValidator:
         if payload.target_language_code is not None:
             self.ensure_language(payload.target_language_code)
         if payload.settings is not None:
-            self.validate_settings(payload.settings)
+            self.validate_settings_patch(payload.settings)
 
     def validate_settings(self, settings: ProjectSettingsIn) -> None:
-        if settings.export_width % 2 != 0 or settings.export_height % 2 != 0:
+        self._ensure_even_dimensions(settings.export_width, settings.export_height)
+
+    def validate_settings_patch(self, settings: ProjectSettingsPatch) -> None:
+        if settings.export_width is not None and settings.export_width % 2 != 0:
             raise ValidationAppError(
                 "export dimensions must be even numbers for video encoders.",
                 code="VALIDATION_ERROR",
-                details={"export_width": settings.export_width, "export_height": settings.export_height},
+                details={"export_width": settings.export_width},
+            )
+        if settings.export_height is not None and settings.export_height % 2 != 0:
+            raise ValidationAppError(
+                "export dimensions must be even numbers for video encoders.",
+                code="VALIDATION_ERROR",
+                details={"export_height": settings.export_height},
+            )
+
+    def validate_merged_dimensions(self, row: ProjectSettings) -> None:
+        self._ensure_even_dimensions(row.export_width, row.export_height)
+
+    @staticmethod
+    def _ensure_even_dimensions(width: int, height: int) -> None:
+        if width % 2 != 0 or height % 2 != 0:
+            raise ValidationAppError(
+                "export dimensions must be even numbers for video encoders.",
+                code="VALIDATION_ERROR",
+                details={"export_width": width, "export_height": height},
             )

@@ -37,6 +37,32 @@ class ProjectSettingsIn(BaseModel):
         return cleaned
 
 
+class ProjectSettingsPatch(BaseModel):
+    """Partial settings update — only explicitly set fields are applied."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    export_width: int | None = Field(default=None, ge=320, le=3840)
+    export_height: int | None = Field(default=None, ge=240, le=2160)
+    fps: float | None = Field(default=None, gt=0, le=60)
+    quality_profile: QualityProfile | None = None
+    burn_in_subtitles: bool | None = None
+    subtitle_formats: list[str] | None = None
+    speaking_rate: float | None = Field(default=None, ge=0.5, le=2.0)
+    max_scenes: int | None = Field(default=None, ge=1, le=100)
+
+    @field_validator("subtitle_formats")
+    @classmethod
+    def validate_formats(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        allowed = {"srt", "vtt"}
+        cleaned = [v.lower().strip() for v in value]
+        if not cleaned or any(v not in allowed for v in cleaned):
+            raise ValueError("subtitle_formats must be a non-empty subset of srt,vtt")
+        return cleaned
+
+
 class ProjectCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -70,7 +96,7 @@ class ProjectUpdateRequest(BaseModel):
     difficulty: Difficulty | None = None
     target_language_code: str | None = Field(default=None, min_length=2, max_length=16)
     source_topic: str | None = Field(default=None, max_length=500)
-    settings: ProjectSettingsIn | None = None
+    settings: ProjectSettingsPatch | None = None
 
     @field_validator("title")
     @classmethod

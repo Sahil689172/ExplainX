@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Query, Request, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile, status
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.api.deps import get_project_service, settings_dep
@@ -61,7 +61,7 @@ async def list_projects(
 async def import_project(
     request: Request,
     file: UploadFile = File(...),
-    title: str | None = None,
+    title: str | None = Form(default=None),
     service: ProjectService = Depends(get_project_service),
     settings: Settings = Depends(settings_dep),
 ) -> dict[str, Any]:
