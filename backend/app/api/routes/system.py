@@ -34,7 +34,8 @@ async def system_info(
         docs_enabled=bool(settings.debug or settings.is_testing),
         features={
             "projects": True,
-            "documents": False,
+            "documents": True,
+            "input_intelligence": True,
             "agents": False,
             "rendering": False,
             "settings_api": True,
@@ -62,9 +63,15 @@ async def system_modules(
         ),
         ModuleStatusItem(
             name="documents",
-            status="stub",
-            available=False,
-            detail="Placeholder — document intelligence later",
+            status="ready",
+            available=True,
+            detail="Phase 2.1/2.2 Input Intelligence (topic, PDF, script → RawContent)",
+        ),
+        ModuleStatusItem(
+            name="input_intelligence",
+            status="ready",
+            available=True,
+            detail="InputService + InputRouter + Topic/PDF/Script processors",
         ),
         ModuleStatusItem(
             name="agents",

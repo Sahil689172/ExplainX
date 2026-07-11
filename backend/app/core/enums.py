@@ -41,6 +41,7 @@ class SourceType(str, Enum):
     TXT = "txt"
     MD = "md"
     TOPIC = "topic"
+    SCRIPT = "script"
 
 
 class Difficulty(str, Enum):

@@ -14,6 +14,7 @@ from app.core.config import Settings, get_settings
 from app.core.di import AppContainer, get_container
 from app.db.session import get_db_session
 from app.services.project_service import ProjectService
+from app.services.input.input_service import InputService
 
 
 def settings_dep() -> Settings:
@@ -42,3 +43,11 @@ def get_project_service(
 ) -> ProjectService:
     """Inject ProjectService (Phase 1.2)."""
     return ProjectService(session, settings)
+
+
+def get_input_service(
+    session: Session = Depends(get_db_session),
+    settings: Settings = Depends(settings_dep),
+) -> InputService:
+    """Inject InputService (Phase 2.1 / 2.2)."""
+    return InputService(session, settings)

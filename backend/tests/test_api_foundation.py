@@ -27,6 +27,7 @@ def test_system_info_envelope(client: TestClient) -> None:
     assert data["api_version"] == "v1"
     assert "features" in data
     assert data["features"]["projects"] is True
+    assert data["features"]["input_intelligence"] is True
     assert data["features"]["agents"] is False
 
 
@@ -35,7 +36,8 @@ def test_system_modules_lists_stubs(client: TestClient) -> None:
     assert response.status_code == 200
     items = {item["name"]: item for item in response.json()["data"]["items"]}
     assert items["projects"]["available"] is True
-    assert items["documents"]["status"] == "stub"
+    assert items["documents"]["status"] == "ready"
+    assert items["input_intelligence"]["available"] is True
     assert items["rendering"]["available"] is False
 
 
@@ -56,16 +58,11 @@ def test_settings_patch_is_stub(client: TestClient) -> None:
     assert body["data"]["status"] == "not_implemented"
 
 
-def test_documents_stub_routes(client: TestClient) -> None:
+def test_documents_hint_route(client: TestClient) -> None:
     listed = client.get("/api/v1/documents")
     assert listed.status_code == 200
     assert listed.json()["data"]["module"] == "documents"
-
-    upload = client.post("/api/v1/documents")
-    assert upload.status_code == 501
-
-    detail = client.get("/api/v1/documents/doc-1")
-    assert detail.status_code == 501
+    assert listed.json()["data"]["status"] == "project_scoped"
 
 
 def test_agents_stub_routes(client: TestClient) -> None:
@@ -174,6 +171,10 @@ def test_openapi_docs_available_in_debug(client: TestClient) -> None:
     paths = schema["paths"]
     assert "/api/v1/system/info" in paths
     assert "/api/v1/documents" in paths
+    assert "/api/v1/projects/{project_id}/source/topic" in paths
+    assert "/api/v1/projects/{project_id}/source/script" in paths
+    assert "/api/v1/projects/{project_id}/documents" in paths
+    assert "/api/v1/projects/{project_id}/raw-content" in paths
     assert "/api/v1/agents" in paths
     assert "/api/v1/rendering/status" in paths
     assert "/api/v1/settings" in paths

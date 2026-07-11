@@ -8,6 +8,7 @@ from app.api.routes import (
     agents,
     documents,
     health,
+    inputs,
     projects,
     rendering,
     settings,
@@ -29,6 +30,7 @@ api_v1 = APIRouter(prefix="/api/v1")
 api_v1.include_router(health.router)
 api_v1.include_router(system.router)
 api_v1.include_router(projects.router)
+api_v1.include_router(inputs.router)
 api_v1.include_router(documents.router)
 api_v1.include_router(agents.router)
 api_v1.include_router(rendering.router)
