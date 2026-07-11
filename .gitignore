@@ -1,0 +1,71 @@
+# =============================================================================
+# ExplainX — Git ignore (runtime data, deps, secrets, build artifacts)
+# =============================================================================
+
+# --- Secrets & local env ---
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# --- Runtime data (never commit user projects / models / DB) ---
+/data/**
+!/data/.gitkeep
+!/data/projects/.gitkeep
+!/data/outputs/.gitkeep
+!/data/models/.gitkeep
+!/data/cache/.gitkeep
+!/data/logs/.gitkeep
+!/data/backups/.gitkeep
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+backend/.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+
+# --- Node / Next.js ---
+node_modules/
+apps/web/node_modules/
+apps/web/.next/
+apps/web/out/
+apps/web/build/
+.npm
+.pnpm-store/
+*.tsbuildinfo
+next-env.d.ts
+
+# --- Logs & OS ---
+*.log
+logs/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- IDE ---
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# --- Misc ---
+*.mp4
+*.wav
+*.zip
+.turbo/
+coverage/

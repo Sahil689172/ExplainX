@@ -1,0 +1,20 @@
+{
+  "name": "explainx",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ExplainX — offline-first AI Presentation-to-Video Engine",
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build:web": "npm run build --workspace=apps/web",
+    "lint:web": "npm run lint --workspace=apps/web",
+    "dev:api": "cd backend && uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
+    "doctor": "cd backend && uv run python -m app.scripts.doctor_stub"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

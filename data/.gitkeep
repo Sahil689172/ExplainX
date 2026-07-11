@@ -1,0 +1,1 @@
+# Runtime data root. Contents are gitignored; directories are recreated on API startup.
