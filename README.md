@@ -2,7 +2,7 @@
 
 Offline-first **AI Presentation-to-Video Engine**. Upload educational content, receive an MP4 — internally ExplainX builds a Presentation DSL and renders it. Not a Sora/Veo-style generative video model.
 
-> **Phase:** 1.1 — Project foundation only (no agents, AI, or rendering yet).
+> **Phase:** 1.2 — Project management (create/open/rename/delete/duplicate/save/load/archive/export/import). No agents or rendering yet.
 
 ## Documentation (source of truth)
 

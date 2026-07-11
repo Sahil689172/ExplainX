@@ -1,1 +1,5 @@
-"""Application services / use-cases — later phases."""
+"""Application services / use-cases."""
+
+from app.services.project_service import ProjectService
+
+__all__ = ["ProjectService"]

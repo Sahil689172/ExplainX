@@ -15,6 +15,7 @@ from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
 from app.core.paths import ensure_runtime_directories
+from app.db.bootstrap import init_database
 
 
 @asynccontextmanager
@@ -25,6 +26,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     logger = get_logger(__name__)
 
     ensure_runtime_directories(settings)
+    init_database()
     logger.info(
         "application_started",
         extra={

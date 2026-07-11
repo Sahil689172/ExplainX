@@ -11,7 +11,7 @@ from app.core.config import Settings, get_settings
 class AppContainer:
     """Application service container.
 
-    Phase 1.1: settings only. Later phases register repositories, ports, and engines here.
+    Phase 1.2: settings. ProjectService is request-scoped via FastAPI Depends.
     """
 
     settings: Settings

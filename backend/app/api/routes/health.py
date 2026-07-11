@@ -12,6 +12,7 @@ from app.api.deps import request_id_dep, settings_dep
 from app.api.middleware.request_id import get_request_id
 from app.core.config import Settings
 from app.core.enums import HealthStatus
+from app.db.session import get_engine
 from app.models.api.envelopes import success_payload
 from app.models.api.health import DoctorCheck, DoctorData, HealthData
 
@@ -73,15 +74,19 @@ async def doctor(
         DoctorCheck(
             id="sqlite",
             ok=True,
-            detail="schema not applied yet (Phase 1.2+)",
+            detail="schema ready (Phase 1.2)",
         )
     )
-    checks.append(DoctorCheck(id="ffmpeg", ok=False, detail="not required in Phase 1.1"))
-    checks.append(DoctorCheck(id="ollama", ok=False, detail="not required in Phase 1.1"))
-    checks.append(DoctorCheck(id="piper", ok=False, detail="not required in Phase 1.1"))
+    try:
+        get_engine().connect().close()
+    except Exception as exc:  # noqa: BLE001
+        checks[-1] = DoctorCheck(id="sqlite", ok=False, detail=str(exc))
+    sqlite_ok = checks[-1].ok
+    checks.append(DoctorCheck(id="ffmpeg", ok=False, detail="not required in Phase 1.2"))
+    checks.append(DoctorCheck(id="ollama", ok=False, detail="not required in Phase 1.2"))
+    checks.append(DoctorCheck(id="piper", ok=False, detail="not required in Phase 1.2"))
 
-    # Phase 1.1: API is usable if data directories exist (models not required yet)
-    foundation_ready = data_ok and logs_ok
+    foundation_ready = data_ok and logs_ok and sqlite_ok
     payload = DoctorData(ready=foundation_ready, checks=checks)
     return success_payload(
         payload.model_dump(),

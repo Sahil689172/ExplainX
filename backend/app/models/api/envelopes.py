@@ -2,16 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
+from app.core.timeutil import utc_now_iso
+
 T = TypeVar("T")
-
-
-def utc_now_iso() -> str:
-    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class ResponseMeta(BaseModel):
