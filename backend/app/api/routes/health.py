@@ -82,9 +82,9 @@ async def doctor(
     except Exception as exc:  # noqa: BLE001
         checks[-1] = DoctorCheck(id="sqlite", ok=False, detail=str(exc))
     sqlite_ok = checks[-1].ok
-    checks.append(DoctorCheck(id="ffmpeg", ok=False, detail="not required in Phase 1.2"))
-    checks.append(DoctorCheck(id="ollama", ok=False, detail="not required in Phase 1.2"))
-    checks.append(DoctorCheck(id="piper", ok=False, detail="not required in Phase 1.2"))
+    checks.append(DoctorCheck(id="ffmpeg", ok=False, detail="not required in Phase 1.3"))
+    checks.append(DoctorCheck(id="ollama", ok=False, detail="not required in Phase 1.3"))
+    checks.append(DoctorCheck(id="piper", ok=False, detail="not required in Phase 1.3"))
 
     foundation_ready = data_ok and logs_ok and sqlite_ok
     payload = DoctorData(ready=foundation_ready, checks=checks)

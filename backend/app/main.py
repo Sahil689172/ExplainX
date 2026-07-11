@@ -9,8 +9,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
+from app.api.docs import API_TAGS_METADATA, build_openapi_schema
 from app.api.middleware.error_handler import register_exception_handlers
 from app.api.middleware.request_id import RequestIdMiddleware
+from app.api.middleware.request_logging import RequestLoggingMiddleware
+from app.api.middleware.validation import RequestValidationMiddleware
 from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
@@ -43,27 +46,39 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     """Application factory (composition root for the HTTP layer)."""
     settings = get_settings()
+    docs_enabled = settings.debug or settings.is_testing
 
     app = FastAPI(
         title=settings.app_name,
         version=__version__,
         lifespan=lifespan,
-        docs_url="/docs" if settings.debug else None,
-        redoc_url="/redoc" if settings.debug else None,
-        openapi_url="/openapi.json" if settings.debug else None,
+        docs_url="/docs" if docs_enabled else None,
+        redoc_url="/redoc" if docs_enabled else None,
+        openapi_url="/openapi.json" if docs_enabled else None,
+        openapi_tags=API_TAGS_METADATA,
     )
 
+    # Middleware order: last added runs first on the request (outermost).
+    # Incoming: RequestId → Logging → Validation → CORS → route
+    # Field validation (Pydantic) runs in the route; 422s go to exception handlers.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["X-Request-Id", "X-ExplainX-Api-Version"],
     )
+    app.add_middleware(RequestValidationMiddleware)
+    app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(RequestIdMiddleware)
     register_exception_handlers(app)
     app.include_router(api_router)
 
+    def custom_openapi() -> dict:
+        return build_openapi_schema(app, settings)
+
+    app.openapi = custom_openapi  # type: ignore[method-assign]
     return app
 
 

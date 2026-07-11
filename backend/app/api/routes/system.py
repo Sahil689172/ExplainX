@@ -1,0 +1,92 @@
+"""System information endpoints."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from fastapi import APIRouter, Depends, Request
+
+from app import __version__
+from app.api.deps import settings_dep
+from app.api.middleware.request_id import get_request_id
+from app.core.config import Settings
+from app.models.api.common import ModuleStatusItem, SystemInfoData
+from app.models.api.envelopes import success_payload
+
+router = APIRouter(prefix="/system", tags=["system"])
+
+
+@router.get("/info")
+async def system_info(
+    request: Request,
+    settings: Settings = Depends(settings_dep),
+) -> dict[str, Any]:
+    """Return runtime/system information for the local control plane."""
+    data = SystemInfoData(
+        app_name=settings.app_name,
+        version=__version__,
+        api_version=settings.api_version,
+        env=settings.env.value,
+        debug=settings.debug,
+        host=settings.host,
+        port=settings.port,
+        data_root=str(settings.data_root_path),
+        docs_enabled=bool(settings.debug or settings.is_testing),
+        features={
+            "projects": True,
+            "documents": False,
+            "agents": False,
+            "rendering": False,
+            "settings_api": True,
+        },
+    )
+    return success_payload(
+        data.model_dump(mode="json"),
+        request_id=get_request_id(request),
+        api_version=settings.api_version,
+    )
+
+
+@router.get("/modules")
+async def system_modules(
+    request: Request,
+    settings: Settings = Depends(settings_dep),
+) -> dict[str, Any]:
+    """List module readiness for the API surface."""
+    modules = [
+        ModuleStatusItem(
+            name="projects",
+            status="ready",
+            available=True,
+            detail="Phase 1.2 project lifecycle",
+        ),
+        ModuleStatusItem(
+            name="documents",
+            status="stub",
+            available=False,
+            detail="Placeholder — document intelligence later",
+        ),
+        ModuleStatusItem(
+            name="agents",
+            status="stub",
+            available=False,
+            detail="Placeholder — multi-agent pipeline later",
+        ),
+        ModuleStatusItem(
+            name="rendering",
+            status="stub",
+            available=False,
+            detail="Placeholder — render engine later",
+        ),
+        ModuleStatusItem(
+            name="settings",
+            status="ready",
+            available=True,
+            detail="Read-only app settings exposure",
+        ),
+    ]
+    return success_payload(
+        {"items": [m.model_dump(mode="json") for m in modules]},
+        request_id=get_request_id(request),
+        api_version=settings.api_version,
+    )
