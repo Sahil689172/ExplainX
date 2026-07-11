@@ -12,6 +12,14 @@ API_TAGS_METADATA = [
     {"name": "system", "description": "System information and doctor checks"},
     {"name": "projects", "description": "Project lifecycle management"},
     {"name": "inputs", "description": "Input Intelligence — topic, PDF, script → RawContent"},
+    {
+        "name": "content-intelligence",
+        "description": "Content Intelligence — RawContent → PresentationPlan (placeholder)",
+    },
+    {
+        "name": "script-generation",
+        "description": "Script Generation — RawContent → EducationalScript (placeholder)",
+    },
     {"name": "documents", "description": "Document listing hints (uploads are project-scoped)"},
     {"name": "agents", "description": "Agent pipeline controls (stub)"},
     {"name": "rendering", "description": "Render job controls (stub)"},

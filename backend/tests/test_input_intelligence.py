@@ -11,12 +11,12 @@ from pypdf import PdfWriter
 
 from app.core.enums import SourceType
 from app.core.errors import ValidationAppError
-from app.models.api.inputs import ScriptSourceRequest, TopicSourceRequest
-from app.services.input.input_router import InputRouter
-from app.services.input.processors.base import ProcessorContext
-from app.services.input.processors.pdf_processor import PDFProcessor
-from app.services.input.processors.script_processor import ScriptProcessor
-from app.services.input.processors.topic_processor import TopicProcessor
+from app.features.input.dispatcher import InputRouter
+from app.features.input.providers.base import ProcessorContext
+from app.features.input.providers.pdf_processor import PDFProcessor
+from app.features.input.providers.script_processor import ScriptProcessor
+from app.features.input.providers.topic_processor import TopicProcessor
+from app.features.input.schemas import ScriptSourceRequest, TopicSourceRequest
 
 
 def _minimal_pdf_bytes(text: str) -> bytes:

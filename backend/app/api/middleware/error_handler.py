@@ -12,7 +12,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.api.middleware.request_id import get_request_id
 from app.core.config import get_settings
 from app.core.errors import ExplainXError
-from app.models.api.envelopes import error_payload
+from app.shared.envelopes import error_payload
 
 logger = logging.getLogger(__name__)
 

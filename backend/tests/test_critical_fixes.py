@@ -12,9 +12,9 @@ from sqlalchemy import inspect
 from app.core.config import get_settings
 from app.core.errors import ValidationAppError
 from app.db.session import get_engine
-from app.models.api.projects import ProjectCreateRequest
-from app.services.project_filesystem import ProjectFilesystem, validate_project_id
-from app.services.project_service import ProjectService
+from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
+from app.features.projects.schemas import ProjectCreateRequest
+from app.features.projects.service import ProjectService
 
 
 def _create_payload(**overrides: object) -> dict:
@@ -138,7 +138,7 @@ def test_oversized_zip_rejected(
 
     # Force any real zip to exceed the compressed-size gate.
     monkeypatch.setattr(
-        "app.services.project_filesystem.MAX_IMPORT_ZIP_BYTES",
+        "app.features.projects.filesystem.MAX_IMPORT_ZIP_BYTES",
         10,
     )
     dest = fs.project_root("11111111-1111-1111-1111-111111111111")

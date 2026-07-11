@@ -4,16 +4,15 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from app.api.routes import (
-    agents,
-    documents,
-    health,
-    inputs,
-    projects,
-    rendering,
-    settings,
-    system,
-)
+from app.api.routes import health, system
+from app.features.agents.router import router as agents_router
+from app.features.input.documents import router as documents_router
+from app.features.input.router import router as inputs_router
+from app.features.presentation.router import router as presentation_router
+from app.features.projects.router import router as projects_router
+from app.features.rendering.router import router as rendering_router
+from app.features.script.router import router as script_router
+from app.features.settings.router import router as settings_router
 
 api_router = APIRouter()
 
@@ -29,11 +28,13 @@ api_router.include_router(system.router)  # /system/info, /system/modules
 api_v1 = APIRouter(prefix="/api/v1")
 api_v1.include_router(health.router)
 api_v1.include_router(system.router)
-api_v1.include_router(projects.router)
-api_v1.include_router(inputs.router)
-api_v1.include_router(documents.router)
-api_v1.include_router(agents.router)
-api_v1.include_router(rendering.router)
-api_v1.include_router(settings.router)
+api_v1.include_router(projects_router)
+api_v1.include_router(inputs_router)
+api_v1.include_router(presentation_router)
+api_v1.include_router(script_router)
+api_v1.include_router(documents_router)
+api_v1.include_router(agents_router)
+api_v1.include_router(rendering_router)
+api_v1.include_router(settings_router)
 
 api_router.include_router(api_v1)

@@ -10,8 +10,8 @@ from app import __version__
 from app.api.deps import settings_dep
 from app.api.middleware.request_id import get_request_id
 from app.core.config import Settings
-from app.models.api.common import ModuleStatusItem, SystemInfoData
-from app.models.api.envelopes import success_payload
+from app.shared.envelopes import success_payload
+from app.shared.schemas import ModuleStatusItem, SystemInfoData
 
 router = APIRouter(prefix="/system", tags=["system"])
 
@@ -36,6 +36,8 @@ async def system_info(
             "projects": True,
             "documents": True,
             "input_intelligence": True,
+            "content_intelligence": True,
+            "script_generation": True,
             "agents": False,
             "rendering": False,
             "settings_api": True,
@@ -72,6 +74,18 @@ async def system_modules(
             status="ready",
             available=True,
             detail="InputService + InputRouter + Topic/PDF/Script processors",
+        ),
+        ModuleStatusItem(
+            name="content_intelligence",
+            status="placeholder",
+            available=True,
+            detail="Phase 2.3 PresentationPlan schema + placeholder planner (no LLM)",
+        ),
+        ModuleStatusItem(
+            name="script_generation",
+            status="placeholder",
+            available=True,
+            detail="EducationalScript schema + PlaceholderScriptGenerator (no LLM)",
         ),
         ModuleStatusItem(
             name="agents",

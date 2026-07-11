@@ -13,8 +13,8 @@ from app.api.middleware.request_id import get_request_id
 from app.core.config import Settings
 from app.core.enums import HealthStatus
 from app.db.session import get_engine
-from app.models.api.envelopes import success_payload
-from app.models.api.health import DoctorCheck, DoctorData, HealthData
+from app.shared.envelopes import success_payload
+from app.shared.health import DoctorCheck, DoctorData, HealthData
 
 _STARTED_AT = time.monotonic()
 

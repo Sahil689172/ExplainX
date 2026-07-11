@@ -28,6 +28,8 @@ def test_system_info_envelope(client: TestClient) -> None:
     assert "features" in data
     assert data["features"]["projects"] is True
     assert data["features"]["input_intelligence"] is True
+    assert data["features"]["content_intelligence"] is True
+    assert data["features"]["script_generation"] is True
     assert data["features"]["agents"] is False
 
 
@@ -38,6 +40,8 @@ def test_system_modules_lists_stubs(client: TestClient) -> None:
     assert items["projects"]["available"] is True
     assert items["documents"]["status"] == "ready"
     assert items["input_intelligence"]["available"] is True
+    assert items["content_intelligence"]["status"] == "placeholder"
+    assert items["script_generation"]["status"] == "placeholder"
     assert items["rendering"]["available"] is False
 
 
@@ -175,6 +179,8 @@ def test_openapi_docs_available_in_debug(client: TestClient) -> None:
     assert "/api/v1/projects/{project_id}/source/script" in paths
     assert "/api/v1/projects/{project_id}/documents" in paths
     assert "/api/v1/projects/{project_id}/raw-content" in paths
+    assert "/api/v1/projects/{project_id}/presentation-plan" in paths
+    assert "/api/v1/projects/{project_id}/script" in paths
     assert "/api/v1/agents" in paths
     assert "/api/v1/rendering/status" in paths
     assert "/api/v1/settings" in paths

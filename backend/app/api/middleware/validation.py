@@ -13,7 +13,7 @@ from starlette.responses import JSONResponse, Response
 
 from app.api.middleware.request_id import get_request_id
 from app.core.config import get_settings
-from app.models.api.envelopes import error_payload
+from app.shared.envelopes import error_payload
 
 # 32 MiB default — large enough for future document uploads; tune later.
 DEFAULT_MAX_BODY_BYTES = 32 * 1024 * 1024
