@@ -5,12 +5,15 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
-from app.core.errors import NotFoundError
+from app.core.errors import NotFoundError, ValidationAppError
 from app.core.logging import get_logger
-from app.features.outline.schemas import TeachingOutline
+from app.features.outline.schemas import TeachingOutline, TeachingSection
 from app.features.outline.store import OutlineArtifactStore
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
+from app.features.quality.repair import ScriptRepairService
+from app.features.quality.schemas import MAX_REPAIR_ATTEMPTS
+from app.features.script.metrics import count_words
 from app.features.script.schemas import EducationalScript
 from app.features.section_generation.factory import create_section_generator
 from app.features.section_generation.merger import SectionMerger
@@ -25,7 +28,8 @@ logger = get_logger(__name__)
 class SectionGenerationService:
     """Generate EducationalScript by narrating each outline section independently.
 
-    Pipeline: TeachingOutline → (per-section generation) → SectionMerger → EducationalScript.
+    Pipeline: TeachingOutline → (per-section generate → validate → repair loop)
+    → SectionMerger → EducationalScript.
     Never asks the LLM for the full script in one call.
     """
 
@@ -37,6 +41,7 @@ class SectionGenerationService:
         generator: SectionGenerator | None = None,
         validator: SectionValidator | None = None,
         merger: SectionMerger | None = None,
+        repair_service: ScriptRepairService | None = None,
     ) -> None:
         self._session = session
         self._settings = settings
@@ -47,6 +52,7 @@ class SectionGenerationService:
         self._generator = generator or create_section_generator(settings)
         self._validator = validator or SectionValidator()
         self._merger = merger or SectionMerger()
+        self._repair = repair_service or ScriptRepairService(settings)
 
     def generate_from_outline(
         self,
@@ -76,14 +82,13 @@ class SectionGenerationService:
             next_title = (
                 plan.sections[index].title if index < len(plan.sections) else None
             )
-            output = self._generator.generate_section(
+            output = self._generate_with_repair_loop(
                 outline=plan,
                 section=section,
                 index=index,
                 previous_section_summary=previous_summary,
                 next_section_title=next_title,
             )
-            self._validator.validate(output, expected=section, index=index)
             self._section_store.write(project_id, output)
             outputs.append(output)
             previous_summary = output.summary
@@ -96,6 +101,8 @@ class SectionGenerationService:
                     "index": index,
                     "outline_section_id": section.id,
                     "target_words": section.target_words,
+                    "actual_words": count_words(output.narration),
+                    "repair_attempt": output.metadata.get("repair_attempt", 0),
                 },
             )
 
@@ -118,6 +125,69 @@ class SectionGenerationService:
         validate_project_id(project_id)
         self._require_project(project_id)
         return self._section_store.list_outputs(project_id)
+
+    def _generate_with_repair_loop(
+        self,
+        *,
+        outline: TeachingOutline,
+        section: TeachingSection,
+        index: int,
+        previous_section_summary: str,
+        next_section_title: str | None,
+    ) -> SectionOutput:
+        """Generate → validate → repair (max 2) → revalidate for one section."""
+        output = self._generator.generate_section(
+            outline=outline,
+            section=section,
+            index=index,
+            previous_section_summary=previous_section_summary,
+            next_section_title=next_section_title,
+        )
+        errors = self._validator.collect_errors(
+            output, expected=section, index=index
+        )
+        if not errors:
+            return output
+
+        for attempt in range(1, MAX_REPAIR_ATTEMPTS + 1):
+            logger.info(
+                "Section validation failed; repairing",
+                extra={
+                    "event": "section_validation_repair",
+                    "outline_section_id": section.id,
+                    "index": index,
+                    "attempt": attempt,
+                    "errors": errors,
+                    "actual_words": count_words(output.narration),
+                    "target_words": section.target_words,
+                },
+            )
+            output = self._repair.repair_section_output(
+                output,
+                expected=section,
+                validation_errors=errors,
+                previous_section_summary=previous_section_summary,
+                next_section_title=next_section_title,
+                attempt=attempt,
+            )
+            errors = self._validator.collect_errors(
+                output, expected=section, index=index
+            )
+            if not errors:
+                return output
+
+        raise ValidationAppError(
+            errors[0],
+            code="SECTION_VALIDATION_ERROR",
+            details={
+                "section_id": section.id,
+                "index": index,
+                "actual_words": count_words(output.narration),
+                "target_words": section.target_words,
+                "errors": errors,
+                "repair_attempts": MAX_REPAIR_ATTEMPTS,
+            },
+        )
 
     def _require_project(self, project_id: str) -> None:
         project = self._repo.get(project_id)

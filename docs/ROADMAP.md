@@ -379,6 +379,40 @@ TeachingOutline → SectionGenerationService → EducationalScript
 
 ---
 
+## Phase 3.9 — Quality Assurance Engine
+
+### Objective
+
+Approve EducationalScript before downstream use: metrics → validate → targeted repair.
+
+### Pipeline
+
+```
+EducationalScript → ScriptMetricsCalculator → QualityAssuranceService → Approved EducationalScript
+```
+
+### Deliverables
+
+- `QualityAssuranceService`, `ScriptRepairService`, `RepairGenerator`
+- Placeholder + Ollama repair generators
+- `QualityReport` + artifacts: `quality_report.json`, `approved_script.json`, `repair_log.json`
+- ADR-0011
+
+### Rules
+
+- Never fake metrics; recalculate after every repair
+- Never regenerate the entire script — repair affected sections only
+- Max 2 repair attempts; then structured `SCRIPT_QUALITY_FAILED`
+- No API / Scene Planning changes
+
+### Success Criteria
+
+- [x] PASS returns `status=ready` approved script  
+- [x] Short scripts are expanded via section repair  
+- [x] QA artifacts persisted under `artifacts/`  
+
+---
+
 
 
 ## Phase 4 — Content Intelligence

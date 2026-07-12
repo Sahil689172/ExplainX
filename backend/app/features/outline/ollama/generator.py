@@ -47,6 +47,7 @@ class OllamaOutlineGenerator:
         sections_text = self._format_sections(raw)
 
         system = templates.SYSTEM
+        schema = templates.JSON_SCHEMA_INSTRUCTIONS.format()
         user = templates.USER.format(
             title=title,
             language=language,
@@ -54,7 +55,7 @@ class OllamaOutlineGenerator:
             total_target_words=total_target_words,
             section_count=self._section_count,
             sections_text=sections_text,
-            json_schema_instructions=templates.JSON_SCHEMA_INSTRUCTIONS,
+            json_schema_instructions=schema,
         )
 
         first = self._client.generate(system=system, prompt=user)
@@ -62,7 +63,7 @@ class OllamaOutlineGenerator:
         def _retry(previous: str) -> str:
             repair_user = templates.REPAIR_USER.format(
                 previous_response=previous[:12_000],
-                json_schema_instructions=templates.JSON_SCHEMA_INSTRUCTIONS,
+                json_schema_instructions=schema,
             )
             return self._client.generate(
                 system="You repair invalid TeachingOutline JSON. Return STRICT JSON only.",

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 PROMPT_TEMPLATE_VERSION = "1.0"
 
+# JSON example braces are doubled ({{ }}) so .format() only substitutes real fields.
 JSON_SCHEMA_INSTRUCTIONS = """
 Return STRICT JSON only.
 No markdown.
@@ -11,10 +12,10 @@ No explanations.
 No code fences.
 
 The JSON MUST match this shape exactly:
-{
+{{
   "narration": string,
   "summary": string
-}
+}}
 
 Rules:
 - Write spoken narration ONLY for this one teaching section.

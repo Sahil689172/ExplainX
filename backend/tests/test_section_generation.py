@@ -213,3 +213,184 @@ def test_script_api_uses_section_generation(
     section_files = sorted((artifacts / "section_outputs").glob("section_*.json"))
     assert len(section_files) >= 8
     assert section_files[0].name == "section_01.json"
+
+
+def test_section_repair_loop_fixes_failing_section_only(
+    client: TestClient, _test_env: Path
+) -> None:
+    """Validate → repair → revalidate; only the failing section is repaired."""
+    from app.core.config import get_settings
+    from app.features.quality.generator import PlaceholderRepairGenerator
+    from app.features.quality.repair import ScriptRepairService
+    from app.features.quality.schemas import SectionRepairRequest
+    from app.features.section_generation.schemas import SectionOutput
+
+    project_id = _create_project(client, "Section Repair Loop")
+    ingest = client.put(
+        f"/api/v1/projects/{project_id}/source/topic",
+        json={"topic": "Stacks and queues for beginners", "replace": True},
+    )
+    assert ingest.status_code == 200, ingest.text
+
+    outline = _outline()
+    thin = [s.model_copy(update={"target_words": 40}) for s in outline.sections]
+    outline = outline.model_copy(
+        update={
+            "project_id": project_id,
+            "sections": thin,
+            "total_target_words": 40 * len(thin),
+        }
+    )
+    failing_id = thin[0].id
+
+    generate_calls: list[str] = []
+    repair_calls: list[str] = []
+
+    class ShortThenOkGenerator:
+        def generate_section(
+            self,
+            *,
+            outline: TeachingOutline,
+            section,
+            index: int,
+            previous_section_summary: str,
+            next_section_title: str | None,
+        ) -> SectionOutput:
+            generate_calls.append(section.id)
+            if section.id == failing_id:
+                narration = "Too short."
+            else:
+                narration = " ".join(f"word{i}" for i in range(section.target_words)) + "."
+            return SectionOutput(
+                outline_section_id=section.id,
+                index=index,
+                title=section.title,
+                narration=narration,
+                learning_objective=section.learning_objective,
+                key_concepts=list(section.key_concepts),
+                target_words=section.target_words,
+                summary="Summary of this section for context.",
+                warnings=[],
+                metadata={"generator": "test_short"},
+                created_at=utc_now_iso(),
+            )
+
+    class TrackingRepair(PlaceholderRepairGenerator):
+        def repair_section(self, request: SectionRepairRequest) -> str:
+            repair_calls.append(request.section_id)
+            assert request.original_narration
+            assert request.target_words == 40
+            assert request.actual_words == 2
+            assert request.validation_failures
+            assert request.learning_objective
+            # First section has a following title; previous summary is empty.
+            assert request.next_section_title is not None
+            return super().repair_section(request)
+
+    db_session.get_engine()
+    assert db_session.SessionLocal is not None
+    with db_session.SessionLocal() as session:
+        settings = get_settings()
+        service = SectionGenerationService(
+            session,
+            settings,
+            generator=ShortThenOkGenerator(),
+            repair_service=ScriptRepairService(
+                settings, generator=TrackingRepair()
+            ),
+        )
+        script = service.generate_from_outline(project_id, outline=outline)
+
+    assert generate_calls == [s.id for s in thin]
+    assert repair_calls == [failing_id]
+    assert count_words(script.teaching_sections[0].narration) == 40
+    assert count_words(script.teaching_sections[1].narration) == thin[1].target_words
+
+
+def test_section_repair_loop_exhausts_then_raises(
+    client: TestClient, _test_env: Path
+) -> None:
+    """After 2 failed repairs, raise SECTION_VALIDATION_ERROR."""
+    from app.core.config import get_settings
+    from app.core.errors import ValidationAppError
+    from app.features.quality.repair import ScriptRepairService
+    from app.features.quality.schemas import SectionRepairRequest
+    from app.features.section_generation.schemas import SectionOutput
+
+    project_id = _create_project(client, "Section Repair Exhaust")
+    ingest = client.put(
+        f"/api/v1/projects/{project_id}/source/topic",
+        json={"topic": "Linked lists for beginners", "replace": True},
+    )
+    assert ingest.status_code == 200, ingest.text
+
+    outline = _outline()
+    thin = [s.model_copy(update={"target_words": 40}) for s in outline.sections]
+    outline = outline.model_copy(
+        update={
+            "project_id": project_id,
+            "sections": thin,
+            "total_target_words": 40 * len(thin),
+        }
+    )
+    failing_id = thin[0].id
+    repair_attempts: list[int] = []
+
+    class AlwaysShortFirstGenerator:
+        def generate_section(
+            self,
+            *,
+            outline: TeachingOutline,
+            section,
+            index: int,
+            previous_section_summary: str,
+            next_section_title: str | None,
+        ) -> SectionOutput:
+            if section.id == failing_id:
+                narration = "Still short."
+            else:
+                narration = " ".join(f"word{i}" for i in range(section.target_words)) + "."
+            return SectionOutput(
+                outline_section_id=section.id,
+                index=index,
+                title=section.title,
+                narration=narration,
+                learning_objective=section.learning_objective,
+                key_concepts=list(section.key_concepts),
+                target_words=section.target_words,
+                summary="Summary of this section for context.",
+                warnings=[],
+                metadata={},
+                created_at=utc_now_iso(),
+            )
+
+    class StubbornRepair:
+        def repair_section(self, request: SectionRepairRequest) -> str:
+            repair_attempts.append(request.actual_words)
+            assert request.section_id == failing_id
+            assert request.actual_words >= 1
+            assert request.target_words == 40
+            assert request.validation_failures
+            assert request.learning_objective
+            return "Still short after repair."
+
+    db_session.get_engine()
+    assert db_session.SessionLocal is not None
+    with db_session.SessionLocal() as session:
+        settings = get_settings()
+        service = SectionGenerationService(
+            session,
+            settings,
+            generator=AlwaysShortFirstGenerator(),
+            repair_service=ScriptRepairService(
+                settings, generator=StubbornRepair()
+            ),
+        )
+        try:
+            service.generate_from_outline(project_id, outline=outline)
+            raise AssertionError("expected SECTION_VALIDATION_ERROR")
+        except ValidationAppError as exc:
+            assert exc.code == "SECTION_VALIDATION_ERROR"
+            assert exc.details.get("repair_attempts") == 2
+
+    assert len(repair_attempts) == 2

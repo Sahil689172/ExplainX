@@ -4,6 +4,7 @@ from __future__ import annotations
 
 PROMPT_TEMPLATE_VERSION = "1.3"
 
+# JSON example braces are doubled ({{ }}) so embedding via .format() is safe.
 JSON_SCHEMA_INSTRUCTIONS = """
 Return STRICT JSON only.
 No markdown.
@@ -12,22 +13,22 @@ No code fences.
 No trailing commentary.
 
 The JSON MUST match this shape exactly:
-{
+{{
   "title": string,
   "language": string,
   "summary": string,
-  "key_concepts": [ { "id": string, "label": string } ],
+  "key_concepts": [ {{ "id": string, "label": string }} ],
   "learning_objectives": [ string ],
   "teaching_sections": [
-    {
+    {{
       "id": string,
       "title": string,
       "narration": string,
       "concept_tags": [ string ]
-    }
+    }}
   ],
   "warnings": [ string ]
-}
+}}
 
 CRITICAL — do NOT include any numerical metadata.
 Do NOT output estimated_words, estimated_duration_sec, estimated_word_count,

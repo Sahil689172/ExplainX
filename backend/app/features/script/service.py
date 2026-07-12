@@ -24,21 +24,22 @@ from app.features.input.store import InputArtifactStore
 from app.features.outline.service import TeachingOutlineService
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
+from app.features.quality.service import QualityAssuranceService
 from app.features.script.durations import V1_TARGET_DURATION_SEC, resolve_target_duration_sec
 from app.features.script.metrics import ScriptMetricsCalculator, enrich_script_with_metrics
 from app.features.script.schemas import EducationalScript
 from app.features.script.store import ScriptArtifactStore
-from app.features.script.validator import ScriptValidator
 from app.features.section_generation.service import SectionGenerationService
 
 logger = get_logger(__name__)
 
 
 class ContentIntelligenceService:
-    """Generate TeachingOutline then EducationalScript via per-section narration.
+    """Generate, assemble, and quality-assure EducationalScript.
 
-    Phase 3.8 pipeline:
-    RawContent → TeachingOutline → SectionGenerationService → EducationalScript.
+    Phase 3.9 pipeline:
+    RawContent → TeachingOutline → SectionGeneration → EducationalScript
+      → ScriptMetricsCalculator → QualityAssuranceService → Approved EducationalScript.
 
     Public HTTP APIs are unchanged.
     """
@@ -48,9 +49,9 @@ class ContentIntelligenceService:
         session: Session,
         settings: Settings,
         *,
-        validator: ScriptValidator | None = None,
         outline_service: TeachingOutlineService | None = None,
         section_service: SectionGenerationService | None = None,
+        quality_service: QualityAssuranceService | None = None,
     ) -> None:
         self._session = session
         self._settings = settings
@@ -59,9 +60,9 @@ class ContentIntelligenceService:
         self._raw_store = InputArtifactStore(self._fs)
         self._script_store = ScriptArtifactStore(self._fs)
         self._metrics = ScriptMetricsCalculator()
-        self._validator = validator or ScriptValidator()
         self._outline_service = outline_service or TeachingOutlineService(session, settings)
         self._section_service = section_service or SectionGenerationService(session, settings)
+        self._quality_service = quality_service or QualityAssuranceService(session, settings)
 
     def generate_script(
         self,
@@ -75,20 +76,17 @@ class ContentIntelligenceService:
         raw = self._raw_store.read_raw_content(project_id)
         self._validate_raw_input(raw)
 
-        # V1: always the canonical 2–3 minute target (request fields ignored).
         _ = resolve_target_duration_sec(
             label=target_duration,
             seconds=target_duration_sec,
         )
 
-        # Phase 3.7: lesson plan (no narration).
         outline = self._outline_service.generate_outline(
             project_id,
             target_duration=target_duration,
             target_duration_sec=target_duration_sec,
         )
 
-        # Phase 3.8: one LLM/placeholder call per outline section, then merge.
         script = self._section_service.generate_from_outline(
             project_id,
             outline=outline,
@@ -107,9 +105,16 @@ class ContentIntelligenceService:
                 }
             )
         )
-        metrics = self._metrics.compute(script)
-        self._validator.validate(script, raw=raw)
-        self._script_store.write(project_id, script, metrics=metrics)
+
+        # Phase 3.9: metrics + validate + optional targeted repair → approved script.
+        approved = self._quality_service.assure(
+            project_id,
+            script,
+            raw=raw,
+            outline=outline,
+        )
+        metrics = self._metrics.compute(approved)
+        self._script_store.write(project_id, approved, metrics=metrics)
 
         try:
             project.current_phase = ProjectPhase.CONTENT.value
@@ -125,16 +130,17 @@ class ContentIntelligenceService:
                 "event": "educational_script_generated",
                 "project_id": project_id,
                 "component": "content_intelligence",
-                "script_id": script.script_id,
-                "source_type": script.source_type.value,
-                "status": script.status,
+                "script_id": approved.script_id,
+                "source_type": approved.source_type.value,
+                "status": approved.status,
                 "target_duration_sec": V1_TARGET_DURATION_SEC,
-                "estimated_duration_sec": script.estimated_duration_sec,
-                "estimated_word_count": script.estimated_word_count,
+                "estimated_duration_sec": approved.estimated_duration_sec,
+                "estimated_word_count": approved.estimated_word_count,
                 "section_generation": True,
+                "quality_assured": True,
             },
         )
-        return script
+        return approved
 
     def get_script(self, project_id: str) -> EducationalScript:
         validate_project_id(project_id)
@@ -200,5 +206,4 @@ class ContentIntelligenceService:
         return project
 
 
-# Backward-compatible alias for older imports / deps.
 ScriptGenerationService = ContentIntelligenceService

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 PROMPT_TEMPLATE_VERSION = "1.0"
 
+# Braces doubled so this block is safe if ever passed through str.format().
 JSON_SCHEMA_INSTRUCTIONS = """
 Return STRICT JSON only.
 No markdown.
@@ -11,18 +12,18 @@ No explanations.
 No code fences.
 
 The JSON MUST match this shape exactly:
-{
+{{
   "title": string,
   "language": string,
   "sections": [
-    {
+    {{
       "id": string,
       "title": string,
       "learning_objective": string,
       "key_concepts": [ string ]
-    }
+    }}
   ]
-}
+}}
 
 Rules:
 - Produce a lesson PLAN only — never write narration or spoken script text.

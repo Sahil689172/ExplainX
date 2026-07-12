@@ -28,6 +28,10 @@ Phase 3.8 generates narration **one outline section at a time**, persists
 ``artifacts/section_outputs/section_XX.json``, then merges into
 ``educational_script.json``.
 
+Phase 3.9 runs Quality Assurance (metrics + validators + up to 2 targeted
+section repairs) and writes ``quality_report.json``, ``approved_script.json``,
+and ``repair_log.json``.
+
 ### Prerequisites
 
 1. Install Ollama

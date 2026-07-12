@@ -37,7 +37,8 @@ class PromptBuilder:
             "word_budget": word_budget(target_duration_sec),
             "sections_text": sections_text,
             "concepts_text": concepts_text,
-            "json_schema_instructions": templates.JSON_SCHEMA_INSTRUCTIONS,
+            # .format() unescapes {{ }} in the JSON example block.
+            "json_schema_instructions": templates.JSON_SCHEMA_INSTRUCTIONS.format(),
         }
 
         if source_type == SourceType.TOPIC:
@@ -57,7 +58,7 @@ class PromptBuilder:
         )
         user = templates.REPAIR_USER.format(
             previous_response=previous_response[:12_000],
-            json_schema_instructions=templates.JSON_SCHEMA_INSTRUCTIONS,
+            json_schema_instructions=templates.JSON_SCHEMA_INSTRUCTIONS.format(),
         )
         return system, user
 
@@ -93,7 +94,7 @@ class PromptBuilder:
             target_duration_sec=target_duration_sec,
             word_budget=word_budget(target_duration_sec),
             script_json=json.dumps(payload, ensure_ascii=False, indent=2)[:14_000],
-            json_schema_instructions=templates.JSON_SCHEMA_INSTRUCTIONS,
+            json_schema_instructions=templates.JSON_SCHEMA_INSTRUCTIONS.format(),
         )
         return templates.EXPAND_SYSTEM, user
 
