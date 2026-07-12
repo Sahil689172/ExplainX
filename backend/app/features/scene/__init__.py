@@ -1,1 +1,0 @@
-"""Scene feature (stub)."""
