@@ -29,7 +29,8 @@ from app.features.script.durations import V1_TARGET_DURATION_SEC, resolve_target
 from app.features.script.metrics import ScriptMetricsCalculator, enrich_script_with_metrics
 from app.features.script.schemas import EducationalScript
 from app.features.script.store import ScriptArtifactStore
-from app.features.section_generation.service import SectionGenerationService
+from app.features.single_script.service import SingleScriptGenerationService
+from app.shared.pipeline_timing import pipeline_timing_scope, timed_step
 
 logger = get_logger(__name__)
 
@@ -37,8 +38,8 @@ logger = get_logger(__name__)
 class ContentIntelligenceService:
     """Generate, assemble, and quality-assure EducationalScript.
 
-    Phase 3.9 pipeline:
-    RawContent → TeachingOutline → SectionGeneration → EducationalScript
+    Pipeline:
+    RawContent → TeachingOutline → SingleScriptGeneration → EducationalScript
       → ScriptMetricsCalculator → QualityAssuranceService → Approved EducationalScript.
 
     Public HTTP APIs are unchanged.
@@ -50,7 +51,7 @@ class ContentIntelligenceService:
         settings: Settings,
         *,
         outline_service: TeachingOutlineService | None = None,
-        section_service: SectionGenerationService | None = None,
+        single_script_service: SingleScriptGenerationService | None = None,
         quality_service: QualityAssuranceService | None = None,
     ) -> None:
         self._session = session
@@ -61,10 +62,26 @@ class ContentIntelligenceService:
         self._script_store = ScriptArtifactStore(self._fs)
         self._metrics = ScriptMetricsCalculator()
         self._outline_service = outline_service or TeachingOutlineService(session, settings)
-        self._section_service = section_service or SectionGenerationService(session, settings)
         self._quality_service = quality_service or QualityAssuranceService(session, settings)
+        self._single_script_service = single_script_service or SingleScriptGenerationService(
+            session, settings
+        )
 
     def generate_script(
+        self,
+        project_id: str,
+        *,
+        target_duration: str | None = None,
+        target_duration_sec: int | None = None,
+    ) -> EducationalScript:
+        with pipeline_timing_scope(project_id=project_id):
+            return self._generate_script(
+                project_id,
+                target_duration=target_duration,
+                target_duration_sec=target_duration_sec,
+            )
+
+    def _generate_script(
         self,
         project_id: str,
         *,
@@ -87,7 +104,7 @@ class ContentIntelligenceService:
             target_duration_sec=target_duration_sec,
         )
 
-        script = self._section_service.generate_from_outline(
+        script = self._single_script_service.generate_from_outline(
             project_id,
             outline=outline,
         )
@@ -100,19 +117,20 @@ class ContentIntelligenceService:
                         "teaching_outline_id": outline.outline_id,
                         "outline_section_count": len(outline.sections),
                         "outline_total_target_words": outline.total_target_words,
-                        "section_generation": True,
+                        "single_script_generation": True,
+                        "section_generation": False,
                     },
                 }
             )
         )
 
-        # Phase 3.9: metrics + validate + optional targeted repair → approved script.
-        approved = self._quality_service.assure(
-            project_id,
-            script,
-            raw=raw,
-            outline=outline,
-        )
+        with timed_step("QualityAssurance"):
+            approved = self._quality_service.assure(
+                project_id,
+                script,
+                raw=raw,
+                outline=outline,
+            )
         metrics = self._metrics.compute(approved)
         self._script_store.write(project_id, approved, metrics=metrics)
 
@@ -136,7 +154,8 @@ class ContentIntelligenceService:
                 "target_duration_sec": V1_TARGET_DURATION_SEC,
                 "estimated_duration_sec": approved.estimated_duration_sec,
                 "estimated_word_count": approved.estimated_word_count,
-                "section_generation": True,
+                "single_script_generation": True,
+                "section_generation": False,
                 "quality_assured": True,
             },
         )

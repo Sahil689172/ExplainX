@@ -13,10 +13,8 @@ from app.core.errors import ValidationAppError
 from app.core.timeutil import utc_now_iso
 from app.features.input.schemas import ExtractionStats, RawContent, RawContentSection
 from app.features.script.durations import (
-    V1_MAX_DURATION_SEC,
-    V1_MAX_WORDS,
-    V1_MIN_DURATION_SEC,
-    V1_MIN_WORDS,
+    SCRIPT_MAX_DURATION_SEC,
+    SCRIPT_MIN_DURATION_SEC,
     V1_TARGET_DURATION_SEC,
     resolve_target_duration_sec,
 )
@@ -100,8 +98,10 @@ def test_placeholder_meets_v1_band() -> None:
         target_duration_sec=60,  # ignored
     )
     assert script.target_duration_sec == V1_TARGET_DURATION_SEC
-    assert V1_MIN_WORDS <= script.estimated_word_count <= V1_MAX_WORDS
-    assert V1_MIN_DURATION_SEC <= script.estimated_duration_sec <= V1_MAX_DURATION_SEC
+    assert script.estimated_word_count > 0
+    assert SCRIPT_MIN_DURATION_SEC <= script.estimated_duration_sec <= SCRIPT_MAX_DURATION_SEC
+    # Word totals are reporting metrics — not a hard MVP acceptance gate.
+    assert script.estimated_word_count == count_words(script.full_text)
     assert 18 <= script.estimated_scene_count <= 25
     assert script.summary
     assert script.learning_objectives
@@ -156,6 +156,41 @@ def test_validator_rejects_too_short() -> None:
     with pytest.raises(ValidationAppError) as exc:
         ScriptValidator().validate(short)
     assert exc.value.code == "SCRIPT_VALIDATION_ERROR"
+    assert "duration" in exc.value.message.lower()
+
+
+def test_validator_allows_word_count_outside_legacy_band() -> None:
+    """Word totals are reporting metrics — duration band is the MVP gate."""
+    # ~90 words ≈ 38.6s at 140 WPM → still below 60s, so pad to clear the floor.
+    narration = " ".join(f"word{i}" for i in range(160)) + "."
+    script = EducationalScript(
+        script_id="s1",
+        project_id="11111111-1111-1111-1111-111111111111",
+        content_id="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        source_type=SourceType.TOPIC,
+        title="T",
+        language="en",
+        target_duration_sec=150,
+        estimated_duration_sec=0.0,
+        estimated_word_count=0,
+        estimated_scene_count=0,
+        summary="Summary text for the lesson.",
+        teaching_sections=[
+            TeachingSection(
+                id="t1",
+                title="Section",
+                narration=narration,
+                estimated_duration_sec=0.0,
+                estimated_words=0,
+                concept_tags=[],
+            )
+        ],
+        created_at=utc_now_iso(),
+    )
+    script = enrich_script_with_metrics(script)
+    assert script.estimated_word_count == 160
+    assert script.estimated_duration_sec >= SCRIPT_MIN_DURATION_SEC
+    ScriptValidator().validate(script)
 
 
 def test_script_metrics_calculator() -> None:
@@ -260,8 +295,8 @@ def test_api_persists_v1_artifacts(client: TestClient, _test_env: Path) -> None:
     assert created.status_code == 201, created.text
     data = created.json()["data"]
     assert data["target_duration_sec"] == V1_TARGET_DURATION_SEC
-    assert V1_MIN_WORDS <= data["estimated_word_count"] <= V1_MAX_WORDS
-    assert V1_MIN_DURATION_SEC <= data["estimated_duration_sec"] <= V1_MAX_DURATION_SEC
+    assert data["estimated_word_count"] > 0
+    assert SCRIPT_MIN_DURATION_SEC <= data["estimated_duration_sec"] <= SCRIPT_MAX_DURATION_SEC
     assert data["summary"]
     assert data["learning_objectives"]
     assert len(data["teaching_sections"]) >= 1

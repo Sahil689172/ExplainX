@@ -1,10 +1,5 @@
 """Phase 3.5 Ollama integration for EducationalScript generation."""
 
-from app.features.script.ollama.client import OllamaClient, OllamaClientProtocol
-from app.features.script.ollama.generator import OllamaContentGenerator
-from app.features.script.ollama.prompt_builder import PromptBuilder
-from app.features.script.ollama.response_parser import ResponseParser
-
 __all__ = [
     "OllamaClient",
     "OllamaClientProtocol",
@@ -12,3 +7,27 @@ __all__ = [
     "PromptBuilder",
     "ResponseParser",
 ]
+
+
+def __getattr__(name: str):
+    if name == "OllamaClient":
+        from app.features.script.ollama.client import OllamaClient
+
+        return OllamaClient
+    if name == "OllamaClientProtocol":
+        from app.features.script.ollama.client import OllamaClientProtocol
+
+        return OllamaClientProtocol
+    if name == "OllamaContentGenerator":
+        from app.features.script.ollama.generator import OllamaContentGenerator
+
+        return OllamaContentGenerator
+    if name == "PromptBuilder":
+        from app.features.script.ollama.prompt_builder import PromptBuilder
+
+        return PromptBuilder
+    if name == "ResponseParser":
+        from app.features.script.ollama.response_parser import ResponseParser
+
+        return ResponseParser
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

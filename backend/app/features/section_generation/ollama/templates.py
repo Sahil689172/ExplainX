@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+from app.shared.prompt_format import dumps_schema, format_prompt
+
 PROMPT_TEMPLATE_VERSION = "1.0"
 
-# JSON example braces are doubled ({{ }}) so .format() only substitutes real fields.
+SECTION_JSON_SCHEMA: dict = {
+    "narration": "<string>",
+    "summary": "<string>",
+}
+
 JSON_SCHEMA_INSTRUCTIONS = """
 Return STRICT JSON only.
 No markdown.
@@ -12,10 +18,7 @@ No explanations.
 No code fences.
 
 The JSON MUST match this shape exactly:
-{{
-  "narration": string,
-  "summary": string
-}}
+{schema_json}
 
 Rules:
 - Write spoken narration ONLY for this one teaching section.
@@ -64,3 +67,11 @@ Previous response:
 
 {json_schema_instructions}
 """.strip()
+
+
+def render_json_schema_instructions(*, target_words: int) -> str:
+    return format_prompt(
+        JSON_SCHEMA_INSTRUCTIONS,
+        schema_json=dumps_schema(SECTION_JSON_SCHEMA),
+        target_words=target_words,
+    )

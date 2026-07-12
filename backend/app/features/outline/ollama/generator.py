@@ -10,6 +10,7 @@ from app.features.outline.ollama.response_parser import OutlineResponseParser
 from app.features.outline.schemas import OUTLINE_SECTION_MIN, TeachingOutline
 from app.features.script.ollama.client import OllamaClient, OllamaClientProtocol
 from app.features.script.processors.common import resolve_language, resolve_title
+from app.shared.prompt_format import format_prompt
 
 logger = get_logger(__name__)
 
@@ -47,8 +48,9 @@ class OllamaOutlineGenerator:
         sections_text = self._format_sections(raw)
 
         system = templates.SYSTEM
-        schema = templates.JSON_SCHEMA_INSTRUCTIONS.format()
-        user = templates.USER.format(
+        schema = templates.render_json_schema_instructions()
+        user = format_prompt(
+            templates.USER,
             title=title,
             language=language,
             target_duration_sec=target_duration_sec,
@@ -61,7 +63,8 @@ class OllamaOutlineGenerator:
         first = self._client.generate(system=system, prompt=user)
 
         def _retry(previous: str) -> str:
-            repair_user = templates.REPAIR_USER.format(
+            repair_user = format_prompt(
+                templates.REPAIR_USER,
                 previous_response=previous[:12_000],
                 json_schema_instructions=schema,
             )

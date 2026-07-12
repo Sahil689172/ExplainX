@@ -8,7 +8,8 @@ from app.features.outline.schemas import TeachingOutline, TeachingSection
 from app.features.script.ollama.client import OllamaClient, OllamaClientProtocol
 from app.features.section_generation.ollama import templates
 from app.features.section_generation.ollama.response_parser import SectionResponseParser
-from app.features.section_generation.schemas import SectionOutput
+from app.shared.prompt_format import format_prompt
+from app.shared.section_output import SectionOutput
 
 logger = get_logger(__name__)
 
@@ -41,10 +42,11 @@ class OllamaSectionGenerator:
         previous_section_summary: str,
         next_section_title: str | None,
     ) -> SectionOutput:
-        schema_instructions = templates.JSON_SCHEMA_INSTRUCTIONS.format(
+        schema_instructions = templates.render_json_schema_instructions(
             target_words=section.target_words
         )
-        user = templates.USER.format(
+        user = format_prompt(
+            templates.USER,
             lesson_title=outline.title,
             language=outline.language,
             index=index,
@@ -61,7 +63,8 @@ class OllamaSectionGenerator:
         first = self._client.generate(system=templates.SYSTEM, prompt=user)
 
         def _retry(previous: str) -> str:
-            repair = templates.REPAIR_USER.format(
+            repair = format_prompt(
+                templates.REPAIR_USER,
                 target_words=section.target_words,
                 previous_response=previous[:8_000],
                 json_schema_instructions=schema_instructions,

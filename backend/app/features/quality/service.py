@@ -10,6 +10,7 @@ from app.core.logging import get_logger
 from app.core.timeutil import utc_now_iso
 from app.features.input.schemas import RawContent
 from app.features.outline.schemas import TeachingOutline
+from app.features.outline.schemas import TeachingSection as OutlineTeachingSection
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.quality.inspector import QualityInspector, readability_score_from_level
 from app.features.quality.repair import ScriptRepairService
@@ -22,9 +23,16 @@ from app.features.quality.schemas import (
     ValidationStatus,
 )
 from app.features.quality.store import QualityArtifactStore
-from app.features.script.metrics import ScriptMetricsCalculator, enrich_script_with_metrics
+from app.features.script.metrics import (
+    ScriptMetricsCalculator,
+    count_words,
+    enrich_script_with_metrics,
+)
 from app.features.script.schemas import EducationalScript
 from app.features.script.validator import ScriptValidator
+from app.shared.pipeline_timing import timed_step
+from app.shared.section_output import SectionOutput
+from app.shared.section_validator import SectionValidator
 
 logger = get_logger(__name__)
 
@@ -32,16 +40,23 @@ _HARD_CODES = {
     "TOO_SHORT",
     "TOO_LONG",
     "EMPTY_SECTION",
-    "UNSPEAKABLE",
-    "MISSING_SUMMARY",
     "DUPLICATE_SECTION_IDS",
     "MISSING_SECTIONS",
     "MISSING_OUTLINE_SECTIONS",
 }
 
+# Only these findings drive ScriptRepairService in MVP.
+_REPAIRABLE_CODES = {
+    "TOO_SHORT",
+    "EMPTY_SECTION",
+}
+
 
 class QualityAssuranceService:
     """Gate EducationalScript quality before downstream consumers.
+
+    Orchestrates per-section validation/repair (``assure_section``) and
+    script-level QA (``assure``).
 
     Pipeline position:
     EducationalScript → ScriptMetricsCalculator → QA → Approved EducationalScript
@@ -55,16 +70,87 @@ class QualityAssuranceService:
         inspector: QualityInspector | None = None,
         repair_service: ScriptRepairService | None = None,
         script_validator: ScriptValidator | None = None,
+        section_validator: SectionValidator | None = None,
         calculator: ScriptMetricsCalculator | None = None,
     ) -> None:
         self._session = session
         self._settings = settings
         self._fs = ProjectFilesystem(settings)
         self._store = QualityArtifactStore(self._fs)
-        self._inspector = inspector or QualityInspector()
+        self._inspector = inspector or QualityInspector(
+            min_duration_sec=settings.script_min_duration_sec,
+            max_duration_sec=settings.script_max_duration_sec,
+        )
         self._repair = repair_service or ScriptRepairService(settings)
-        self._validator = script_validator or ScriptValidator()
+        self._validator = script_validator or ScriptValidator(
+            min_duration_sec=settings.script_min_duration_sec,
+            max_duration_sec=settings.script_max_duration_sec,
+        )
+        self._section_validator = section_validator or SectionValidator()
         self._calculator = calculator or ScriptMetricsCalculator()
+
+    def assure_section(
+        self,
+        output: SectionOutput,
+        *,
+        expected: OutlineTeachingSection,
+        index: int,
+        previous_section_summary: str,
+        next_section_title: str | None,
+    ) -> SectionOutput:
+        """Validate one section; repair up to 2 times; revalidate.
+
+        Implements ``SectionAssurer`` so SectionGenerationService can inject
+        this without importing quality modules.
+        """
+        with timed_step("Validator"):
+            errors = self._section_validator.collect_errors(
+                output, expected=expected, index=index
+            )
+        if not errors:
+            return output
+
+        for attempt in range(1, MAX_REPAIR_ATTEMPTS + 1):
+            logger.info(
+                "Section validation failed; repairing",
+                extra={
+                    "event": "section_validation_repair",
+                    "outline_section_id": expected.id,
+                    "index": index,
+                    "attempt": attempt,
+                    "errors": errors,
+                    "actual_words": count_words(output.narration),
+                    "target_words": expected.target_words,
+                },
+            )
+            with timed_step(f"Repair {attempt}"):
+                output = self._repair.repair_section_output(
+                    output,
+                    expected=expected,
+                    validation_errors=errors,
+                    previous_section_summary=previous_section_summary,
+                    next_section_title=next_section_title,
+                    attempt=attempt,
+                )
+            with timed_step("Validator"):
+                errors = self._section_validator.collect_errors(
+                    output, expected=expected, index=index
+                )
+            if not errors:
+                return output
+
+        raise ValidationAppError(
+            errors[0],
+            code="SECTION_VALIDATION_ERROR",
+            details={
+                "section_id": expected.id,
+                "index": index,
+                "actual_words": count_words(output.narration),
+                "target_words": expected.target_words,
+                "errors": errors,
+                "repair_attempts": MAX_REPAIR_ATTEMPTS,
+            },
+        )
 
     def assure(
         self,
@@ -85,14 +171,19 @@ class QualityAssuranceService:
                 current, outline=outline
             )
             actionable = [
-                f for f in findings if f.repair_action is not None and f.section_id
+                f
+                for f in findings
+                if f.repair_action is not None
+                and f.section_id
+                and f.code in _REPAIRABLE_CODES
             ]
             unrecoverable = any(f.code == "MISSING_OUTLINE_SECTIONS" for f in findings)
             has_hard_issue = any(f.code in _HARD_CODES for f in findings)
 
             if not has_hard_issue and not unrecoverable:
                 try:
-                    self._validator.validate(current, raw=raw)
+                    with timed_step("Validator"):
+                        self._validator.validate(current, raw=raw)
                 except ValidationAppError as exc:
                     errors = list(errors) + [exc.message]
                     findings, errors2, warnings2, empty, missing = self._inspector.inspect(
@@ -101,7 +192,11 @@ class QualityAssuranceService:
                     errors = list(dict.fromkeys(errors + errors2 + [exc.message]))
                     warnings = list(dict.fromkeys(warnings + warnings2))
                     actionable = [
-                        f for f in findings if f.repair_action is not None and f.section_id
+                        f
+                        for f in findings
+                        if f.repair_action is not None
+                        and f.section_id
+                        and f.code in _REPAIRABLE_CODES
                     ]
                     has_hard_issue = True
                 else:
@@ -233,9 +328,10 @@ class QualityAssuranceService:
                     "section_count": len(requests),
                 },
             )
-            current, new_entries = self._repair.repair(
-                current, requests, attempt=attempts
-            )
+            with timed_step(f"Repair {attempts}"):
+                current, new_entries = self._repair.repair(
+                    current, requests, attempt=attempts
+                )
             repair_entries.extend(new_entries)
             # Always recalculate after every repair.
             current = enrich_script_with_metrics(current)

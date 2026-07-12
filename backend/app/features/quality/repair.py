@@ -17,7 +17,7 @@ from app.features.quality.schemas import (
 )
 from app.features.script.metrics import count_words, enrich_script_with_metrics
 from app.features.script.schemas import EducationalScript, TeachingSection
-from app.features.section_generation.schemas import SectionOutput
+from app.shared.section_output import SectionOutput
 
 logger = get_logger(__name__)
 

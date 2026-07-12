@@ -6,21 +6,16 @@ import re
 from collections import Counter
 
 from app.features.outline.schemas import TeachingOutline
+from app.features.quality.schemas import QualityFinding, RepairAction
 from app.features.script.durations import (
-    V1_MAX_DURATION_SEC,
-    V1_MAX_WORDS,
-    V1_MIN_DURATION_SEC,
-    V1_MIN_WORDS,
+    SCRIPT_MAX_DURATION_SEC,
+    SCRIPT_MIN_DURATION_SEC,
 )
 from app.features.script.metrics import ScriptMetricsCalculator, count_words
 from app.features.script.schemas import EducationalScript
-from app.features.quality.schemas import QualityFinding, RepairAction
 
 _UNSPEAKABLE = re.compile(r"(```|<html|<table\b)", re.IGNORECASE)
 _WORD_RE = re.compile(r"[A-Za-z][A-Za-z0-9'-]{2,}")
-
-# Sections shorter than this are treated as empty / needing expansion.
-EMPTY_SECTION_WORD_THRESHOLD = 8
 
 
 def readability_score_from_level(level: str) -> float:
@@ -33,10 +28,27 @@ def readability_score_from_level(level: str) -> float:
 
 
 class QualityInspector:
-    """Collect findings for QA pass/repair decisions (never invents metrics)."""
+    """Collect findings for QA pass/repair decisions (never invents metrics).
 
-    def __init__(self, *, calculator: ScriptMetricsCalculator | None = None) -> None:
+    MVP repair triggers only:
+    - total duration < min (default 60s)
+    - empty sections
+    - missing sections
+
+    Per-section ``target_words`` drift never triggers repair.
+    Word totals are reported, not hard-gated.
+    """
+
+    def __init__(
+        self,
+        *,
+        calculator: ScriptMetricsCalculator | None = None,
+        min_duration_sec: int = SCRIPT_MIN_DURATION_SEC,
+        max_duration_sec: int = SCRIPT_MAX_DURATION_SEC,
+    ) -> None:
         self._calculator = calculator or ScriptMetricsCalculator()
+        self._min_duration_sec = min_duration_sec
+        self._max_duration_sec = max_duration_sec
 
     def inspect(
         self,
@@ -63,11 +75,6 @@ class QualityInspector:
             )
             return findings, errors, warnings, empty_sections, missing_sections
 
-        if not script.summary.strip():
-            msg = "EducationalScript.summary is required."
-            errors.append(msg)
-            findings.append(QualityFinding(code="MISSING_SUMMARY", message=msg))
-
         section_ids = [s.id for s in script.teaching_sections]
         if len(set(section_ids)) != len(section_ids):
             msg = "teaching_sections.id values must be unique."
@@ -76,9 +83,9 @@ class QualityInspector:
 
         for index, section in enumerate(script.teaching_sections):
             words = count_words(section.narration)
-            if words <= 0 or words < EMPTY_SECTION_WORD_THRESHOLD:
+            if not section.narration.strip() or words <= 0:
                 empty_sections.append(section.id)
-                msg = f"Section '{section.id}' narration is empty or too short."
+                msg = f"Section '{section.id}' narration is empty."
                 errors.append(msg)
                 action = (
                     RepairAction.STRENGTHEN_INTRODUCTION
@@ -96,15 +103,16 @@ class QualityInspector:
                         details={"words": words},
                     )
                 )
-            if _UNSPEAKABLE.search(section.narration or ""):
+            elif _UNSPEAKABLE.search(section.narration or ""):
                 msg = f"Section '{section.id}' contains unspeakable formatting."
-                errors.append(msg)
+                # Report only — do not repair solely for formatting in MVP.
+                warnings.append(msg)
                 findings.append(
                     QualityFinding(
                         code="UNSPEAKABLE",
                         message=msg,
                         section_id=section.id,
-                        repair_action=RepairAction.SIMPLIFY,
+                        repair_action=None,
                     )
                 )
 
@@ -125,14 +133,12 @@ class QualityInspector:
                 )
 
         metrics = self._calculator.compute(script)
-        if metrics.total_words < V1_MIN_WORDS or metrics.total_duration_sec < V1_MIN_DURATION_SEC:
+        if metrics.total_duration_sec < self._min_duration_sec:
             msg = (
-                f"Script too short ({metrics.total_words} words / "
-                f"{metrics.total_duration_sec}s); need ≥{V1_MIN_WORDS} words / "
-                f"≥{V1_MIN_DURATION_SEC}s."
+                f"Script too short ({metrics.total_duration_sec}s); "
+                f"need ≥{self._min_duration_sec}s."
             )
             errors.append(msg)
-            # Expand the shortest sections first.
             ordered = sorted(
                 script.teaching_sections,
                 key=lambda s: count_words(s.narration),
@@ -151,48 +157,29 @@ class QualityInspector:
                     )
                 )
 
-        if metrics.total_words > V1_MAX_WORDS or metrics.total_duration_sec > V1_MAX_DURATION_SEC:
+        if metrics.total_duration_sec > self._max_duration_sec:
             msg = (
-                f"Script too long ({metrics.total_words} words / "
-                f"{metrics.total_duration_sec}s); max {V1_MAX_WORDS} words / "
-                f"{V1_MAX_DURATION_SEC}s."
+                f"Script too long ({metrics.total_duration_sec}s); "
+                f"max {self._max_duration_sec}s."
             )
+            # Hard validation error — MVP does not repair solely for being long.
             errors.append(msg)
-            ordered = sorted(
-                script.teaching_sections,
-                key=lambda s: count_words(s.narration),
-                reverse=True,
-            )
-            for section in ordered[: max(1, min(3, len(ordered)))]:
-                findings.append(
-                    QualityFinding(
-                        code="TOO_LONG",
-                        message=msg,
-                        section_id=section.id,
-                        repair_action=RepairAction.SHORTEN,
-                        details={
-                            "total_words": metrics.total_words,
-                            "estimated_duration_sec": metrics.total_duration_sec,
-                        },
-                    )
+            findings.append(
+                QualityFinding(
+                    code="TOO_LONG",
+                    message=msg,
+                    repair_action=None,
+                    details={
+                        "total_words": metrics.total_words,
+                        "estimated_duration_sec": metrics.total_duration_sec,
+                    },
                 )
+            )
 
         repeated = self._repeated_concepts(script)
         if repeated:
             warnings.append(f"Repeated concepts across sections: {repeated}.")
-            for section in script.teaching_sections:
-                if any(tag.strip().lower() in repeated for tag in section.concept_tags):
-                    findings.append(
-                        QualityFinding(
-                            code="REPEATED_CONCEPTS",
-                            message="Section may repeat concepts already covered.",
-                            section_id=section.id,
-                            repair_action=RepairAction.REMOVE_REPETITION,
-                            details={"repeated_concepts": repeated},
-                        )
-                    )
 
-        # Soft transition heuristic: consecutive sections sharing many content words.
         for index in range(1, len(script.teaching_sections)):
             prev = script.teaching_sections[index - 1]
             curr = script.teaching_sections[index]
@@ -200,15 +187,6 @@ class QualityInspector:
             if overlap >= 0.35:
                 warnings.append(
                     f"High lexical overlap between '{prev.id}' and '{curr.id}'."
-                )
-                findings.append(
-                    QualityFinding(
-                        code="WEAK_TRANSITION",
-                        message="Improve transition / reduce overlap with previous section.",
-                        section_id=curr.id,
-                        repair_action=RepairAction.IMPROVE_TRANSITIONS,
-                        details={"overlap": overlap, "previous_section_id": prev.id},
-                    )
                 )
 
         return findings, errors, warnings, empty_sections, missing_sections

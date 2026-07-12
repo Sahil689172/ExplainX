@@ -9,6 +9,7 @@ from app.features.input.schemas import RawContentSection
 from app.features.script.durations import word_budget
 from app.features.script.ollama import templates
 from app.features.script.schemas import EducationalScript, ScriptConcept
+from app.shared.prompt_format import format_prompt
 
 
 class PromptBuilder:
@@ -37,28 +38,28 @@ class PromptBuilder:
             "word_budget": word_budget(target_duration_sec),
             "sections_text": sections_text,
             "concepts_text": concepts_text,
-            # .format() unescapes {{ }} in the JSON example block.
-            "json_schema_instructions": templates.JSON_SCHEMA_INSTRUCTIONS.format(),
+            "json_schema_instructions": templates.render_json_schema_instructions(),
         }
 
         if source_type == SourceType.TOPIC:
-            return templates.TOPIC_SYSTEM, templates.TOPIC_USER.format(**common)
+            return templates.TOPIC_SYSTEM, format_prompt(templates.TOPIC_USER, **common)
         if source_type == SourceType.SCRIPT:
-            return templates.SCRIPT_SYSTEM, templates.SCRIPT_USER.format(**common)
+            return templates.SCRIPT_SYSTEM, format_prompt(templates.SCRIPT_USER, **common)
         if source_type == SourceType.PDF:
-            return templates.PDF_SYSTEM, templates.PDF_USER.format(**common)
+            return templates.PDF_SYSTEM, format_prompt(templates.PDF_USER, **common)
 
         # Fallback: treat unknown types like PDF extracted text.
-        return templates.PDF_SYSTEM, templates.PDF_USER.format(**common)
+        return templates.PDF_SYSTEM, format_prompt(templates.PDF_USER, **common)
 
     def build_repair(self, *, previous_response: str) -> tuple[str, str]:
         system = (
             "You repair invalid JSON for ExplainX EducationalScript. "
             "Return STRICT JSON only."
         )
-        user = templates.REPAIR_USER.format(
+        user = format_prompt(
+            templates.REPAIR_USER,
             previous_response=previous_response[:12_000],
-            json_schema_instructions=templates.JSON_SCHEMA_INSTRUCTIONS.format(),
+            json_schema_instructions=templates.render_json_schema_instructions(),
         )
         return system, user
 
@@ -88,13 +89,14 @@ class PromptBuilder:
             ],
             "warnings": list(script.warnings),
         }
-        user = templates.EXPAND_USER.format(
+        user = format_prompt(
+            templates.EXPAND_USER,
             current_duration_sec=current_duration_sec,
             current_words=current_words,
             target_duration_sec=target_duration_sec,
             word_budget=word_budget(target_duration_sec),
             script_json=json.dumps(payload, ensure_ascii=False, indent=2)[:14_000],
-            json_schema_instructions=templates.JSON_SCHEMA_INSTRUCTIONS.format(),
+            json_schema_instructions=templates.render_json_schema_instructions(),
         )
         return templates.EXPAND_SYSTEM, user
 

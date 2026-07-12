@@ -19,7 +19,10 @@ from app.features.quality.inspector import QualityInspector
 from app.features.quality.repair import ScriptRepairService
 from app.features.quality.schemas import RepairAction, SectionRepairRequest
 from app.features.quality.service import QualityAssuranceService
-from app.features.script.durations import V1_MIN_WORDS, V1_TARGET_DURATION_SEC
+from app.features.script.durations import (
+    SCRIPT_MIN_DURATION_SEC,
+    V1_TARGET_DURATION_SEC,
+)
 from app.features.script.metrics import count_words, enrich_script_with_metrics
 from app.features.script.schemas import EducationalScript, ScriptConcept, TeachingSection
 from app.features.section_generation.generator import PlaceholderSectionGenerator
@@ -141,6 +144,21 @@ def test_inspector_flags_short_script() -> None:
     assert any(f.repair_action == RepairAction.EXPAND for f in findings)
 
 
+def test_inspector_does_not_repair_for_target_words() -> None:
+    """Per-section length vs target_words is not a repair trigger."""
+    script = _good_script()
+    long = " ".join(f"word{i}" for i in range(200)) + "."
+    sections = list(script.teaching_sections)
+    sections[0] = sections[0].model_copy(update={"narration": long})
+    script = enrich_script_with_metrics(
+        script.model_copy(update={"teaching_sections": sections})
+    )
+    findings, *_ = QualityInspector().inspect(script)
+    too_long = [f for f in findings if f.code == "TOO_LONG"]
+    for finding in too_long:
+        assert finding.repair_action is None
+
+
 def test_qa_approves_good_script(_test_env: Path) -> None:
     from app.core.config import get_settings
 
@@ -158,7 +176,8 @@ def test_qa_approves_good_script(_test_env: Path) -> None:
 
     assert approved.status == "ready"
     assert approved.metadata.get("quality_assured") is True
-    assert approved.estimated_word_count >= V1_MIN_WORDS
+    assert approved.estimated_duration_sec >= SCRIPT_MIN_DURATION_SEC
+    assert approved.estimated_word_count > 0
     artifacts = _test_env / "projects" / project_id / "artifacts"
     assert (artifacts / "quality_report.json").is_file()
     assert (artifacts / "approved_script.json").is_file()
@@ -180,7 +199,8 @@ def test_qa_repairs_short_script(_test_env: Path) -> None:
         approved = qa.assure(project_id, script, raw=_raw())
 
     assert approved.status == "ready"
-    assert approved.estimated_word_count >= V1_MIN_WORDS
+    assert approved.estimated_duration_sec >= SCRIPT_MIN_DURATION_SEC
+    assert approved.estimated_word_count > 0
     assert approved.metadata.get("repair_attempts", 0) >= 1
     report_path = _test_env / "projects" / project_id / "artifacts" / "quality_report.json"
     assert report_path.is_file()

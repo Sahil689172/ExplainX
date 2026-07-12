@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "cmd /c c:\\Users\\hp\\ExplainX\\.cursor\\hooks\\run_audit.cmd",
+        "timeout": 600
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "cmd /c c:\\Users\\hp\\ExplainX\\.cursor\\hooks\\run_audit.cmd",
+        "timeout": 600
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "cmd /c c:\\Users\\hp\\ExplainX\\.cursor\\hooks\\run_audit.cmd",
+        "timeout": 600,
+        "matcher": "Write|Shell"
+      }
+    ],
+    "stop": [
+      {
+        "command": "cmd /c c:\\Users\\hp\\ExplainX\\.cursor\\hooks\\run_audit.cmd",
+        "timeout": 600,
+        "loop_limit": 1
+      }
+    ]
+  }
+}

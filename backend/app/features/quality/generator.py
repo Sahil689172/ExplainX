@@ -83,6 +83,9 @@ class PlaceholderRepairGenerator:
                 .replace("utilize", "use")
                 .replace("commence", "start")
             )
+            simplified = re.sub(r"```[\s\S]*?```", " ", simplified)
+            simplified = re.sub(r"(?i)</?html[^>]*>|<table\b[^>]*>", " ", simplified)
+            simplified = " ".join(simplified.split())
             return _pad_to(simplified, target) if count_words(simplified) < target else simplified
         if action == RepairAction.STRENGTHEN_INTRODUCTION:
             hook = (

@@ -80,6 +80,10 @@ class Settings(BaseSettings):
         description="When false, ContentIntelligenceService uses PlaceholderContentGenerator.",
     )
 
+    # MVP script duration acceptance window (seconds). Metrics still report freely.
+    script_min_duration_sec: int = Field(default=60, ge=1, le=3600)
+    script_max_duration_sec: int = Field(default=300, ge=1, le=7200)
+
     @field_validator("log_level")
     @classmethod
     def normalize_log_level(cls, value: str) -> str:

@@ -64,8 +64,16 @@ def setup_logging(settings: Settings) -> None:
 
     level = getattr(logging, settings.log_level, logging.INFO)
     root = logging.getLogger()
+    # Keep pytest LogCaptureHandler (and similar) so tests can still capture logs.
+    preserved = [
+        handler
+        for handler in root.handlers
+        if type(handler).__name__ == "LogCaptureHandler"
+    ]
     root.handlers.clear()
     root.setLevel(level)
+    for handler in preserved:
+        root.addHandler(handler)
 
     console = logging.StreamHandler(sys.stdout)
     console.setLevel(level)

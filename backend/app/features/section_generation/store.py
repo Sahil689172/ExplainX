@@ -8,7 +8,7 @@ from pathlib import Path
 
 from app.core.errors import NotFoundError
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
-from app.features.section_generation.schemas import SectionOutput
+from app.shared.section_output import SectionOutput
 
 
 class SectionOutputStore:

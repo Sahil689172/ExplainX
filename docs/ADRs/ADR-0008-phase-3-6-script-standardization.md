@@ -18,12 +18,16 @@ failures.
 
 ### Single V1 format
 
-| Metric | Target | Hard accept band |
-|--------|--------|------------------|
-| Duration | ~150s | 120–180s |
-| Words | 320–420 | 300–450 |
+| Metric | Generation target | MVP hard accept band |
+|--------|-------------------|----------------------|
+| Duration | ~150s | 60–300s (configurable) |
+| Words | 320–420 | reporting only (not hard-gated) |
 | Speaking rate | 140 WPM | used for all duration estimates |
 | Estimated scenes | 18–25 | derived (~7.5s/scene) |
+
+Per-section `target_words` remains **prompt guidance only** and does not fail
+validation. MVP prioritizes pipeline completion over strict 2–3 minute accuracy
+(see ADR-0011).
 
 Multiple duration presets are **retired**. API body fields
 `target_duration` / `target_duration_sec` remain for compatibility but are ignored.

@@ -385,6 +385,8 @@ TeachingOutline → SectionGenerationService → EducationalScript
 
 Approve EducationalScript before downstream use: metrics → validate → targeted repair.
 
+MVP priority: **stable end-to-end pipeline** over strict 2–3 minute duration accuracy.
+
 ### Pipeline
 
 ```
@@ -398,6 +400,28 @@ EducationalScript → ScriptMetricsCalculator → QualityAssuranceService → Ap
 - `QualityReport` + artifacts: `quality_report.json`, `approved_script.json`, `repair_log.json`
 - ADR-0011
 
+### MVP validation
+
+Hard requirements:
+
+- Estimated duration ≥ 60s and ≤ 300s (configurable)
+- At least one teaching section; no empty narration; no duplicate section IDs
+
+Not hard-gated:
+
+- Per-section `target_words` (prompt guidance only)
+- Total word count bands (metrics reporting only)
+
+### Repair triggers (MVP)
+
+Repair only when:
+
+- Total duration &lt; 60s
+- Empty sections
+- Missing sections
+
+Do not repair solely for `target_words` drift.
+
 ### Rules
 
 - Never fake metrics; recalculate after every repair
@@ -408,8 +432,9 @@ EducationalScript → ScriptMetricsCalculator → QualityAssuranceService → Ap
 ### Success Criteria
 
 - [x] PASS returns `status=ready` approved script  
-- [x] Short scripts are expanded via section repair  
+- [x] Scripts under 60s are expanded via section repair  
 - [x] QA artifacts persisted under `artifacts/`  
+- [x] `target_words` drift does not fail the pipeline  
 
 ---
 

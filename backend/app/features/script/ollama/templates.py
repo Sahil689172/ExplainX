@@ -2,9 +2,28 @@
 
 from __future__ import annotations
 
+from app.shared.prompt_format import dumps_schema, format_prompt
+
 PROMPT_TEMPLATE_VERSION = "1.3"
 
-# JSON example braces are doubled ({{ }}) so embedding via .format() is safe.
+# Pseudo-schema example — injected via dumps_schema, never raw braces in the template.
+EDUCATIONAL_SCRIPT_JSON_SCHEMA: dict = {
+    "title": "<string>",
+    "language": "<string>",
+    "summary": "<string>",
+    "key_concepts": [{"id": "<string>", "label": "<string>"}],
+    "learning_objectives": ["<string>"],
+    "teaching_sections": [
+        {
+            "id": "<string>",
+            "title": "<string>",
+            "narration": "<string>",
+            "concept_tags": ["<string>"],
+        }
+    ],
+    "warnings": ["<string>"],
+}
+
 JSON_SCHEMA_INSTRUCTIONS = """
 Return STRICT JSON only.
 No markdown.
@@ -13,22 +32,7 @@ No code fences.
 No trailing commentary.
 
 The JSON MUST match this shape exactly:
-{{
-  "title": string,
-  "language": string,
-  "summary": string,
-  "key_concepts": [ {{ "id": string, "label": string }} ],
-  "learning_objectives": [ string ],
-  "teaching_sections": [
-    {{
-      "id": string,
-      "title": string,
-      "narration": string,
-      "concept_tags": [ string ]
-    }}
-  ],
-  "warnings": [ string ]
-}}
+{schema_json}
 
 CRITICAL — do NOT include any numerical metadata.
 Do NOT output estimated_words, estimated_duration_sec, estimated_word_count,
@@ -163,3 +167,11 @@ Current script JSON:
 
 {json_schema_instructions}
 """.strip()
+
+
+def render_json_schema_instructions() -> str:
+    """Build schema instructions with JSON injected via dumps_schema."""
+    return format_prompt(
+        JSON_SCHEMA_INSTRUCTIONS,
+        schema_json=dumps_schema(EDUCATIONAL_SCRIPT_JSON_SCHEMA),
+    )

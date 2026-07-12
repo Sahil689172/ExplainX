@@ -38,12 +38,16 @@ def test_api_generate_with_ignored_duration_preset(client: TestClient, _test_env
     assert created.status_code == 201, created.text
     data = created.json()["data"]
     assert data["target_duration_sec"] == V1_TARGET_DURATION_SEC
-    assert data["metadata"]["processor"] == "topic_content_v1"
-    assert data["status"] == "placeholder"
+    assert data["metadata"].get("single_script_generation") is True
+    assert data["metadata"].get("section_generation") is False
+    assert data["metadata"].get("quality_assured") is True
+    assert data["status"] == "ready"
     assert len(data["teaching_sections"]) >= 1
 
     artifact = _test_env / "projects" / project_id / "artifacts" / "educational_script.json"
     assert artifact.is_file()
+    assert (_test_env / "projects" / project_id / "artifacts" / "approved_script.json").is_file()
+    assert (_test_env / "projects" / project_id / "artifacts" / "teaching_outline.json").is_file()
 
 
 def test_api_rejects_nothing_for_legacy_duration_field(client: TestClient) -> None:
@@ -80,4 +84,6 @@ def test_api_script_from_custom_script(client: TestClient) -> None:
     data = created.json()["data"]
     assert data["source_type"] == "script"
     assert data["target_duration_sec"] == V1_TARGET_DURATION_SEC
-    assert "Hello class" in " ".join(s["narration"] for s in data["teaching_sections"])
+    assert data["status"] == "ready"
+    assert data["metadata"].get("quality_assured") is True
+    assert len(data["teaching_sections"]) >= 1

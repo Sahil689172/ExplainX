@@ -2,9 +2,23 @@
 
 from __future__ import annotations
 
+from app.shared.prompt_format import dumps_schema, format_prompt
+
 PROMPT_TEMPLATE_VERSION = "1.0"
 
-# Braces doubled so this block is safe if ever passed through str.format().
+OUTLINE_JSON_SCHEMA: dict = {
+    "title": "<string>",
+    "language": "<string>",
+    "sections": [
+        {
+            "id": "<string>",
+            "title": "<string>",
+            "learning_objective": "<string>",
+            "key_concepts": ["<string>"],
+        }
+    ],
+}
+
 JSON_SCHEMA_INSTRUCTIONS = """
 Return STRICT JSON only.
 No markdown.
@@ -12,18 +26,7 @@ No explanations.
 No code fences.
 
 The JSON MUST match this shape exactly:
-{{
-  "title": string,
-  "language": string,
-  "sections": [
-    {{
-      "id": string,
-      "title": string,
-      "learning_objective": string,
-      "key_concepts": [ string ]
-    }}
-  ]
-}}
+{schema_json}
 
 Rules:
 - Produce a lesson PLAN only — never write narration or spoken script text.
@@ -65,3 +68,10 @@ Previous response:
 
 {json_schema_instructions}
 """.strip()
+
+
+def render_json_schema_instructions() -> str:
+    return format_prompt(
+        JSON_SCHEMA_INSTRUCTIONS,
+        schema_json=dumps_schema(OUTLINE_JSON_SCHEMA),
+    )

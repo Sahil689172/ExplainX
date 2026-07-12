@@ -35,7 +35,7 @@ class OllamaRepairGenerator:
 
     def repair_section(self, request: SectionRepairRequest) -> str:
         failures = "\n".join(f"- {item}" for item in request.validation_failures) or "(none)"
-        user = templates.USER.format(
+        user = templates.render_user(
             action=request.action.value,
             title=request.original_title,
             learning_objective=request.learning_objective or "(none)",

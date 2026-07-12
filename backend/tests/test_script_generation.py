@@ -152,17 +152,22 @@ def test_api_generate_and_get_script(client: TestClient, _test_env) -> None:
     created = client.post(f"/api/v1/projects/{project_id}/script")
     assert created.status_code == 201, created.text
     data = created.json()["data"]
-    assert data["status"] == "placeholder"
+    assert data["status"] == "ready"
     assert data["source_type"] == "topic"
     assert len(data["teaching_sections"]) >= 1
     assert len(data["key_concepts"]) >= 1
     assert data["target_duration_sec"] == V1_TARGET_DURATION_SEC
     assert data["estimated_duration_sec"] > 0
-    assert data["metadata"]["llm"] is False
-    assert data["metadata"]["used_presentation_plan"] is True
+    assert data["metadata"].get("single_script_generation") is True
+    assert data["metadata"].get("section_generation") is False
+    assert data["metadata"].get("quality_assured") is True
 
     artifact = _test_env / "projects" / project_id / "artifacts" / "educational_script.json"
     assert artifact.is_file()
+    assert (_test_env / "projects" / project_id / "artifacts" / "approved_script.json").is_file()
+    assert (_test_env / "projects" / project_id / "artifacts" / "teaching_outline.json").is_file()
+    assert (_test_env / "projects" / project_id / "artifacts" / "quality_report.json").is_file()
+    assert (_test_env / "projects" / project_id / "artifacts" / "repair_log.json").is_file()
 
     fetched = client.get(f"/api/v1/projects/{project_id}/script")
     assert fetched.status_code == 200
@@ -184,7 +189,10 @@ def test_api_script_from_custom_script_input(client: TestClient) -> None:
     assert created.status_code == 201, created.text
     data = created.json()["data"]
     assert data["source_type"] == "script"
-    assert "Hello class" in " ".join(s["narration"] for s in data["teaching_sections"])
+    assert data["status"] == "ready"
+    assert data["metadata"].get("quality_assured") is True
+    assert len(data["teaching_sections"]) >= 1
+    assert data["estimated_word_count"] > 0
 
 
 def test_api_requires_raw_content(client: TestClient) -> None:

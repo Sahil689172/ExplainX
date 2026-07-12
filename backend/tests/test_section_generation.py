@@ -14,14 +14,17 @@ from app.features.input.schemas import ExtractionStats, RawContent, RawContentSe
 from app.features.outline.budget import compute_total_word_budget
 from app.features.outline.generator import PlaceholderOutlineGenerator
 from app.features.outline.schemas import TeachingOutline
-from app.features.script.durations import V1_MIN_DURATION_SEC, V1_MIN_WORDS, V1_TARGET_DURATION_SEC
+from app.features.script.durations import (
+    SCRIPT_MIN_DURATION_SEC,
+    V1_TARGET_DURATION_SEC,
+)
 from app.features.script.metrics import count_words
 from app.features.script.validator import ScriptValidator
 from app.features.section_generation.generator import PlaceholderSectionGenerator
 from app.features.section_generation.merger import SectionMerger
 from app.features.section_generation.ollama.generator import OllamaSectionGenerator
 from app.features.section_generation.service import SectionGenerationService
-from app.features.section_generation.validator import SectionValidator
+from app.shared.section_validator import SectionValidator
 
 
 def _raw(
@@ -112,8 +115,8 @@ def test_section_merger_builds_educational_script() -> None:
 
     script = SectionMerger().merge(outline, outputs)
     assert len(script.teaching_sections) == len(outline.sections)
-    assert script.estimated_word_count >= V1_MIN_WORDS
-    assert script.estimated_duration_sec >= V1_MIN_DURATION_SEC
+    assert script.estimated_duration_sec >= SCRIPT_MIN_DURATION_SEC
+    assert script.estimated_word_count > 0
     assert script.metadata.get("section_generation") is True
     ScriptValidator().validate(script, raw=_raw())
 
@@ -189,12 +192,14 @@ def test_section_generation_service_persists_outputs(
     files = sorted(root.glob("section_*.json"))
     assert len(files) == len(outline.sections)
     assert files[0].name == "section_01.json"
-    assert script.estimated_word_count >= V1_MIN_WORDS
+    assert script.estimated_duration_sec >= SCRIPT_MIN_DURATION_SEC
+    assert script.estimated_word_count > 0
 
 
-def test_script_api_uses_section_generation(
+def test_script_api_uses_single_script_generation(
     client: TestClient, _test_env: Path
 ) -> None:
+    """Full script API path uses single-pass generation (not per-section outputs)."""
     project_id = _create_project(client, "Section Gen API Project")
     ingest = client.put(
         f"/api/v1/projects/{project_id}/source/topic",
@@ -205,17 +210,83 @@ def test_script_api_uses_section_generation(
     created = client.post(f"/api/v1/projects/{project_id}/script")
     assert created.status_code == 201, created.text
     data = created.json()["data"]
-    assert data["metadata"].get("section_generation") is True
+    assert data["metadata"].get("single_script_generation") is True
+    assert data["metadata"].get("section_generation") is False
 
     artifacts = _test_env / "projects" / project_id / "artifacts"
     assert (artifacts / "teaching_outline.json").is_file()
     assert (artifacts / "educational_script.json").is_file()
-    section_files = sorted((artifacts / "section_outputs").glob("section_*.json"))
-    assert len(section_files) >= 8
-    assert section_files[0].name == "section_01.json"
+    assert (artifacts / "approved_script.json").is_file()
+    assert not (artifacts / "section_outputs").exists() or not list(
+        (artifacts / "section_outputs").glob("section_*.json")
+    )
 
 
-def test_section_repair_loop_fixes_failing_section_only(
+def test_section_ignores_target_words_drift(
+    client: TestClient, _test_env: Path
+) -> None:
+    """Sections that miss target_words still pass — target_words is guidance only."""
+    from app.core.config import get_settings
+    from app.shared.section_output import SectionOutput
+
+    project_id = _create_project(client, "Section Target Drift")
+    ingest = client.put(
+        f"/api/v1/projects/{project_id}/source/topic",
+        json={"topic": "Queues for beginners", "replace": True},
+    )
+    assert ingest.status_code == 200, ingest.text
+
+    outline = _outline()
+    fat = [s.model_copy(update={"target_words": 20}) for s in outline.sections]
+    outline = outline.model_copy(
+        update={
+            "project_id": project_id,
+            "sections": fat,
+            "total_target_words": 20 * len(fat),
+        }
+    )
+
+    class OverLongGenerator:
+        def generate_section(
+            self,
+            *,
+            outline: TeachingOutline,
+            section,
+            index: int,
+            previous_section_summary: str,
+            next_section_title: str | None,
+        ) -> SectionOutput:
+            # Far above target_words=20 — must still be accepted.
+            narration = " ".join(f"word{i}" for i in range(80)) + "."
+            return SectionOutput(
+                outline_section_id=section.id,
+                index=index,
+                title=section.title,
+                narration=narration,
+                learning_objective=section.learning_objective,
+                key_concepts=list(section.key_concepts),
+                target_words=section.target_words,
+                summary="Summary of this section for context.",
+                warnings=[],
+                metadata={},
+                created_at=utc_now_iso(),
+            )
+
+    db_session.get_engine()
+    assert db_session.SessionLocal is not None
+    with db_session.SessionLocal() as session:
+        settings = get_settings()
+        script = SectionGenerationService(
+            session,
+            settings,
+            generator=OverLongGenerator(),
+        ).generate_from_outline(project_id, outline=outline)
+
+    assert len(script.teaching_sections) == len(fat)
+    assert count_words(script.teaching_sections[0].narration) == 80
+
+
+def test_section_repair_loop_fixes_unspeakable_section_only(
     client: TestClient, _test_env: Path
 ) -> None:
     """Validate → repair → revalidate; only the failing section is repaired."""
@@ -223,7 +294,8 @@ def test_section_repair_loop_fixes_failing_section_only(
     from app.features.quality.generator import PlaceholderRepairGenerator
     from app.features.quality.repair import ScriptRepairService
     from app.features.quality.schemas import SectionRepairRequest
-    from app.features.section_generation.schemas import SectionOutput
+    from app.features.quality.service import QualityAssuranceService
+    from app.shared.section_output import SectionOutput
 
     project_id = _create_project(client, "Section Repair Loop")
     ingest = client.put(
@@ -246,7 +318,7 @@ def test_section_repair_loop_fixes_failing_section_only(
     generate_calls: list[str] = []
     repair_calls: list[str] = []
 
-    class ShortThenOkGenerator:
+    class BadFormatGenerator:
         def generate_section(
             self,
             *,
@@ -258,7 +330,7 @@ def test_section_repair_loop_fixes_failing_section_only(
         ) -> SectionOutput:
             generate_calls.append(section.id)
             if section.id == failing_id:
-                narration = "Too short."
+                narration = "See ```code``` block then continue speaking clearly."
             else:
                 narration = " ".join(f"word{i}" for i in range(section.target_words)) + "."
             return SectionOutput(
@@ -271,7 +343,7 @@ def test_section_repair_loop_fixes_failing_section_only(
                 target_words=section.target_words,
                 summary="Summary of this section for context.",
                 warnings=[],
-                metadata={"generator": "test_short"},
+                metadata={"generator": "test_unspeakable"},
                 created_at=utc_now_iso(),
             )
 
@@ -280,10 +352,8 @@ def test_section_repair_loop_fixes_failing_section_only(
             repair_calls.append(request.section_id)
             assert request.original_narration
             assert request.target_words == 40
-            assert request.actual_words == 2
             assert request.validation_failures
             assert request.learning_objective
-            # First section has a following title; previous summary is empty.
             assert request.next_section_title is not None
             return super().repair_section(request)
 
@@ -291,19 +361,24 @@ def test_section_repair_loop_fixes_failing_section_only(
     assert db_session.SessionLocal is not None
     with db_session.SessionLocal() as session:
         settings = get_settings()
-        service = SectionGenerationService(
+        qa = QualityAssuranceService(
             session,
             settings,
-            generator=ShortThenOkGenerator(),
             repair_service=ScriptRepairService(
                 settings, generator=TrackingRepair()
             ),
+        )
+        service = SectionGenerationService(
+            session,
+            settings,
+            generator=BadFormatGenerator(),
+            section_assurer=qa,
         )
         script = service.generate_from_outline(project_id, outline=outline)
 
     assert generate_calls == [s.id for s in thin]
     assert repair_calls == [failing_id]
-    assert count_words(script.teaching_sections[0].narration) == 40
+    assert "```" not in script.teaching_sections[0].narration
     assert count_words(script.teaching_sections[1].narration) == thin[1].target_words
 
 
@@ -315,7 +390,8 @@ def test_section_repair_loop_exhausts_then_raises(
     from app.core.errors import ValidationAppError
     from app.features.quality.repair import ScriptRepairService
     from app.features.quality.schemas import SectionRepairRequest
-    from app.features.section_generation.schemas import SectionOutput
+    from app.features.quality.service import QualityAssuranceService
+    from app.shared.section_output import SectionOutput
 
     project_id = _create_project(client, "Section Repair Exhaust")
     ingest = client.put(
@@ -336,7 +412,7 @@ def test_section_repair_loop_exhausts_then_raises(
     failing_id = thin[0].id
     repair_attempts: list[int] = []
 
-    class AlwaysShortFirstGenerator:
+    class AlwaysUnspeakableFirstGenerator:
         def generate_section(
             self,
             *,
@@ -347,7 +423,7 @@ def test_section_repair_loop_exhausts_then_raises(
             next_section_title: str | None,
         ) -> SectionOutput:
             if section.id == failing_id:
-                narration = "Still short."
+                narration = "Broken ```fence``` remains."
             else:
                 narration = " ".join(f"word{i}" for i in range(section.target_words)) + "."
             return SectionOutput(
@@ -368,23 +444,25 @@ def test_section_repair_loop_exhausts_then_raises(
         def repair_section(self, request: SectionRepairRequest) -> str:
             repair_attempts.append(request.actual_words)
             assert request.section_id == failing_id
-            assert request.actual_words >= 1
-            assert request.target_words == 40
             assert request.validation_failures
-            assert request.learning_objective
-            return "Still short after repair."
+            return "Still broken ```fence``` after repair."
 
     db_session.get_engine()
     assert db_session.SessionLocal is not None
     with db_session.SessionLocal() as session:
         settings = get_settings()
-        service = SectionGenerationService(
+        qa = QualityAssuranceService(
             session,
             settings,
-            generator=AlwaysShortFirstGenerator(),
             repair_service=ScriptRepairService(
                 settings, generator=StubbornRepair()
             ),
+        )
+        service = SectionGenerationService(
+            session,
+            settings,
+            generator=AlwaysUnspeakableFirstGenerator(),
+            section_assurer=qa,
         )
         try:
             service.generate_from_outline(project_id, outline=outline)

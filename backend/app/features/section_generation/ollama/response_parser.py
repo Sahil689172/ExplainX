@@ -11,7 +11,7 @@ from app.core.timeutil import utc_now_iso
 from app.features.outline.schemas import TeachingSection
 from app.features.script.metrics import count_words
 from app.features.section_generation.ollama import templates
-from app.features.section_generation.schemas import SectionOutput
+from app.shared.section_output import SectionOutput
 
 _FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE | re.MULTILINE)
 

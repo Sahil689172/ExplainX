@@ -6,7 +6,7 @@ from app.core.timeutil import utc_now_iso
 from app.features.outline.schemas import TeachingOutline, TeachingSection
 from app.features.script.metrics import count_words
 from app.features.section_generation.protocols import SectionGenerator
-from app.features.section_generation.schemas import SectionOutput
+from app.shared.section_output import SectionOutput
 
 
 def _pad_to_words(text: str, *, target_words: int) -> str:

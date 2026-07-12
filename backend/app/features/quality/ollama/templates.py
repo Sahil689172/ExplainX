@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
+from app.shared.prompt_format import dumps_schema, format_prompt
+
 PROMPT_TEMPLATE_VERSION = "1.0"
+
+REPAIR_JSON_SCHEMA: dict = {
+    "narration": "<string>",
+}
 
 SYSTEM = """
 You are an expert educational editor for ExplainX.
@@ -33,9 +39,7 @@ Original narration:
 {original_narration}
 
 Return STRICT JSON only:
-{{
-  "narration": string
-}}
+{schema_json}
 
 Rules:
 - Return ONLY the repaired narration for this section.
@@ -43,3 +47,12 @@ Rules:
 - Do not include titles, markdown, or numerical metadata.
 - Aim for about {target_words} spoken words.
 """.strip()
+
+
+def render_user(**kwargs: object) -> str:
+    """Render the repair user prompt with schema_json injected via dumps_schema."""
+    return format_prompt(
+        USER,
+        schema_json=dumps_schema(REPAIR_JSON_SCHEMA),
+        **kwargs,
+    )

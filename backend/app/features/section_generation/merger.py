@@ -14,7 +14,7 @@ from app.features.script.schemas import (
     ScriptConcept,
     TeachingSection,
 )
-from app.features.section_generation.schemas import SectionOutput
+from app.shared.section_output import SectionOutput
 
 
 class SectionMerger:

@@ -17,6 +17,7 @@ from app.features.outline.validator import OutlineValidator
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
 from app.features.script.durations import resolve_target_duration_sec
+from app.shared.pipeline_timing import timed_step
 
 logger = get_logger(__name__)
 
@@ -62,20 +63,21 @@ class TeachingOutlineService:
         )
         total_words = compute_total_word_budget(duration)
 
-        outline = self._generator.generate(
-            raw,
-            target_duration_sec=duration,
-            total_target_words=total_words,
-        )
-        outline = apply_word_budget(outline, total_target_words=total_words)
-        outline = outline.model_copy(
-            update={
-                "target_duration_sec": duration,
-                "total_target_words": total_words,
-            }
-        )
-        self._validator.validate(outline, raw=raw)
-        self._outline_store.write(project_id, outline)
+        with timed_step("Outline"):
+            outline = self._generator.generate(
+                raw,
+                target_duration_sec=duration,
+                total_target_words=total_words,
+            )
+            outline = apply_word_budget(outline, total_target_words=total_words)
+            outline = outline.model_copy(
+                update={
+                    "target_duration_sec": duration,
+                    "total_target_words": total_words,
+                }
+            )
+            self._validator.validate(outline, raw=raw)
+            self._outline_store.write(project_id, outline)
 
         logger.info(
             "Teaching outline generated",

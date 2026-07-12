@@ -1,19 +1,23 @@
-"""ExplainX V1 educational script duration and pacing constants (Phase 3.6).
+"""ExplainX educational script duration and pacing constants.
 
-V1 supports ONE format: a 2–3 minute animated explainer narration.
-Multiple duration presets from Phase 3 are retired.
+MVP prioritizes a stable end-to-end pipeline over strict 2–3 minute accuracy.
+Hard validation uses a wide duration window; word budgets remain guidance only.
 """
 
 from __future__ import annotations
 
-# Canonical V1 target (midpoint of 120–180s).
+# Canonical generation target (prompts / outline word-budget guidance).
 V1_TARGET_DURATION_SEC = 150
 
-# Hard acceptance window for generated scripts.
-V1_MIN_DURATION_SEC = 120
-V1_MAX_DURATION_SEC = 180
+# MVP hard acceptance window for generated scripts.
+SCRIPT_MIN_DURATION_SEC = 60
+SCRIPT_MAX_DURATION_SEC = 300
 
-# Word targets at ~140 WPM for 2–3 minutes.
+# Backward-compatible aliases used by validators / tests.
+V1_MIN_DURATION_SEC = SCRIPT_MIN_DURATION_SEC
+V1_MAX_DURATION_SEC = SCRIPT_MAX_DURATION_SEC
+
+# Word targets at ~140 WPM — guidance for prompts/outline only (not hard validation).
 V1_TARGET_WORDS_MIN = 320
 V1_TARGET_WORDS_MAX = 420
 V1_MIN_WORDS = 300
@@ -36,9 +40,9 @@ DEFAULT_TARGET_DURATION_SEC = V1_TARGET_DURATION_SEC
 
 
 def word_budget(target_duration_sec: int | None = None) -> int:
-    """Word budget for V1 (ignores multi-duration presets)."""
+    """Word budget for prompt guidance (ignores multi-duration presets)."""
     duration = target_duration_sec or V1_TARGET_DURATION_SEC
-    duration = max(V1_MIN_DURATION_SEC, min(V1_MAX_DURATION_SEC, duration))
+    duration = max(SCRIPT_MIN_DURATION_SEC, min(SCRIPT_MAX_DURATION_SEC, duration))
     return int(round((V1_WPM / 60.0) * duration))
 
 
@@ -47,7 +51,7 @@ def resolve_target_duration_sec(
     label: str | None = None,
     seconds: int | None = None,
 ) -> int:
-    """V1 always returns the canonical 150s target.
+    """Always returns the canonical 150s generation target.
 
     Optional request fields are accepted for API compatibility but ignored.
     """
@@ -62,7 +66,7 @@ def label_for_seconds(seconds: int) -> str:
 
 
 def estimate_scene_count(estimated_duration_sec: float) -> int:
-    """Estimate scene count for a 2–3 minute explainer (6–10s scenes)."""
+    """Estimate scene count for an explainer (6–10s scenes)."""
     if estimated_duration_sec <= 0:
         return V1_SCENE_COUNT_MIN
     # Prefer ~7.5s average scene length.

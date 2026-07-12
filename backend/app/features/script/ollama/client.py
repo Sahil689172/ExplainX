@@ -10,6 +10,7 @@ import httpx
 from app.core.config import Settings
 from app.core.errors import ExplainXError
 from app.core.logging import get_logger
+from app.shared.pipeline_timing import timed_step
 
 logger = get_logger(__name__)
 
@@ -180,6 +181,10 @@ class OllamaClient:
 
     def generate(self, *, system: str, prompt: str) -> str:
         """Call Ollama and return the raw ``response`` text."""
+        with timed_step("Ollama"):
+            return self._generate_impl(system=system, prompt=prompt)
+
+    def _generate_impl(self, *, system: str, prompt: str) -> str:
         if not self._health_checked:
             self.ensure_ready()
 
