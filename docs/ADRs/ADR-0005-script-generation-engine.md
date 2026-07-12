@@ -1,7 +1,13 @@
 # ADR-0005: Script Generation Engine (EducationalScript)
 
-- Status: Accepted
+- Status: Superseded by [ADR-0006](./ADR-0006-phase-3-content-intelligence.md) for generation architecture
 - Date: 2026-07-12
+
+## Note
+
+Phase 3 Content Intelligence (`ContentIntelligenceService`, input processors,
+`PlaceholderContentGenerator`) is the active generation path. This ADR remains
+for schema history; see ADR-0006 for current architecture.
 
 ## Context
 

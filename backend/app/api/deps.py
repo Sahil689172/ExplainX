@@ -14,9 +14,9 @@ from app.core.config import Settings, get_settings
 from app.core.di import AppContainer, get_container
 from app.db.session import get_db_session
 from app.features.input.service import InputService
-from app.features.presentation.service import ContentIntelligenceService
+from app.features.presentation.service import PresentationPlanService
 from app.features.projects.service import ProjectService
-from app.features.script.service import ScriptGenerationService
+from app.features.script.service import ContentIntelligenceService
 
 
 def settings_dep() -> Settings:
@@ -55,17 +55,21 @@ def get_input_service(
     return InputService(session, settings)
 
 
+def get_presentation_plan_service(
+    session: Session = Depends(get_db_session),
+    settings: Settings = Depends(settings_dep),
+) -> PresentationPlanService:
+    """Inject PresentationPlanService (Phase 2.3)."""
+    return PresentationPlanService(session, settings)
+
+
 def get_content_intelligence_service(
     session: Session = Depends(get_db_session),
     settings: Settings = Depends(settings_dep),
 ) -> ContentIntelligenceService:
-    """Inject ContentIntelligenceService (Phase 2.3)."""
+    """Inject ContentIntelligenceService (Phase 3 — EducationalScript)."""
     return ContentIntelligenceService(session, settings)
 
 
-def get_script_generation_service(
-    session: Session = Depends(get_db_session),
-    settings: Settings = Depends(settings_dep),
-) -> ScriptGenerationService:
-    """Inject ScriptGenerationService (Script Generation Engine)."""
-    return ScriptGenerationService(session, settings)
+# Backward-compatible aliases
+get_script_generation_service = get_content_intelligence_service

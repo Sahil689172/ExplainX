@@ -13,12 +13,16 @@ API_TAGS_METADATA = [
     {"name": "projects", "description": "Project lifecycle management"},
     {"name": "inputs", "description": "Input Intelligence — topic, PDF, script → RawContent"},
     {
+        "name": "presentation-plan",
+        "description": "Presentation planning — RawContent → PresentationPlan (placeholder)",
+    },
+    {
         "name": "content-intelligence",
-        "description": "Content Intelligence — RawContent → PresentationPlan (placeholder)",
+        "description": "Phase 3 Content Intelligence — any input → EducationalScript",
     },
     {
         "name": "script-generation",
-        "description": "Script Generation — RawContent → EducationalScript (placeholder)",
+        "description": "Alias tag retained for older OpenAPI clients (same as content-intelligence)",
     },
     {"name": "documents", "description": "Document listing hints (uploads are project-scoped)"},
     {"name": "agents", "description": "Agent pipeline controls (stub)"},

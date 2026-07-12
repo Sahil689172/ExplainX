@@ -1,4 +1,4 @@
-"""EducationalScript artifact — Script Generation Engine output."""
+"""EducationalScript artifact — Phase 3 Content Intelligence output."""
 
 from __future__ import annotations
 
@@ -54,9 +54,9 @@ class ScriptConcept(BaseModel):
 class EducationalScript(BaseModel):
     """Common educational narration script for every input type.
 
-    Produced from ``RawContent`` (topic / PDF / custom script). An LLM-backed
-    ``ScriptGenerator`` may replace the placeholder later without changing
-    consumers of this schema.
+    Produced from topic / PDF / custom script via ContentIntelligenceService.
+    ``PlaceholderContentGenerator`` may later be replaced by
+    ``OllamaContentGenerator`` without changing this schema.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -73,6 +73,7 @@ class EducationalScript(BaseModel):
     beats: list[ScriptBeat] = Field(min_length=1)
     key_concepts: list[ScriptConcept] = Field(default_factory=list)
     estimated_duration_sec: float = Field(ge=0.0)
+    target_duration_sec: int | None = Field(default=None, ge=1)
     warnings: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
     created_at: str
@@ -85,3 +86,18 @@ class EducationalScript(BaseModel):
         if len(cleaned) < 2:
             raise ValueError("language must be at least 2 characters")
         return cleaned
+
+
+class GenerateScriptRequest(BaseModel):
+    """Optional body for POST /projects/{id}/script (Phase 3)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    target_duration: str | None = Field(
+        default=None,
+        description="One of: 30s, 60s, 90s, 3min, 5min",
+    )
+    target_duration_sec: int | None = Field(
+        default=None,
+        description="Explicit seconds; must be 30, 60, 90, 180, or 300",
+    )

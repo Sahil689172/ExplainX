@@ -79,13 +79,22 @@ async def system_modules(
             name="content_intelligence",
             status="placeholder",
             available=True,
+            detail=(
+                "Phase 3 EducationalScript via Topic/PDF/Script processors + "
+                "PlaceholderContentGenerator (Ollama-swappable)"
+            ),
+        ),
+        ModuleStatusItem(
+            name="presentation_plan",
+            status="placeholder",
+            available=True,
             detail="Phase 2.3 PresentationPlan schema + placeholder planner (no LLM)",
         ),
         ModuleStatusItem(
             name="script_generation",
             status="placeholder",
             available=True,
-            detail="EducationalScript schema + PlaceholderScriptGenerator (no LLM)",
+            detail="EducationalScript endpoints (Phase 3 Content Intelligence)",
         ),
         ModuleStatusItem(
             name="agents",

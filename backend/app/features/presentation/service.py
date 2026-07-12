@@ -1,4 +1,4 @@
-"""ContentIntelligenceService — RawContent → PresentationPlan (Phase 2.3)."""
+"""PresentationPlanService — RawContent → PresentationPlan (Phase 2.3)."""
 
 from __future__ import annotations
 
@@ -19,11 +19,14 @@ from app.features.projects.repository import ProjectRepository
 logger = get_logger(__name__)
 
 
-class ContentIntelligenceService:
+class PresentationPlanService:
     """Orchestrates analyzers behind ``PresentationPlanner``.
 
     Phase 2.3 uses a deterministic placeholder planner. Swap in an LLM-backed
     ``PresentationPlanner`` later without changing this service's public API.
+
+    Note: Phase 3 ``ContentIntelligenceService`` (EducationalScript) lives under
+    ``app.features.script`` — this class only builds PresentationPlan.
     """
 
     def __init__(

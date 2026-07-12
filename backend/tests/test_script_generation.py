@@ -59,6 +59,7 @@ def test_placeholder_implements_protocol() -> None:
     assert script.estimated_duration_sec > 0
     assert script.metadata["llm"] is False
     assert "Today we will learn" in script.full_text
+    assert script.target_duration_sec == 60
 
 
 def test_custom_script_preserves_wording() -> None:
@@ -164,6 +165,7 @@ def test_api_generate_and_get_script(client: TestClient, _test_env) -> None:
     assert data["estimated_duration_sec"] > 0
     assert data["metadata"]["llm"] is False
     assert data["metadata"]["used_presentation_plan"] is True
+    assert data["target_duration_sec"] == 60
 
     artifact = _test_env / "projects" / project_id / "artifacts" / "v1" / "script.json"
     assert artifact.is_file()

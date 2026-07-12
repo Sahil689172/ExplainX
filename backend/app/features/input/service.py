@@ -12,6 +12,14 @@ from app.core.errors import ConflictError, ExplainXError, NotFoundError, Validat
 from app.core.logging import get_logger
 from app.core.timeutil import utc_now_iso
 from app.features.input.dispatcher import InputRouter
+from app.features.input.pdf_extract import (
+    PDF_MAX_BYTES,
+    SCRIPT_MAX_LEN,
+    SCRIPT_MIN_LEN,
+    TOPIC_MAX_LEN,
+    TOPIC_MIN_LEN,
+    validate_pdf_size,
+)
 from app.features.input.providers.base import ProcessorContext, sha256_bytes, sha256_text
 from app.features.input.schemas import DocumentUploadMeta, RawContent, ScriptSourceRequest, TopicSourceRequest
 from app.features.input.store import (
@@ -24,7 +32,7 @@ from app.features.projects.repository import ProjectRepository
 
 logger = get_logger(__name__)
 
-MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+MAX_UPLOAD_BYTES = PDF_MAX_BYTES
 PDF_EXTENSIONS = {".pdf"}
 
 
@@ -49,6 +57,18 @@ class InputService:
         validate_project_id(project_id)
         project = self._require_project(project_id)
         self._ensure_can_replace(project_id, replace=payload.replace)
+        topic_len = len(payload.topic)
+        if topic_len < TOPIC_MIN_LEN or topic_len > TOPIC_MAX_LEN:
+            raise ValidationAppError(
+                f"Topic length must be between {TOPIC_MIN_LEN} and {TOPIC_MAX_LEN} characters.",
+                code="VALIDATION_ERROR",
+                details={
+                    "field": "topic",
+                    "length": topic_len,
+                    "min": TOPIC_MIN_LEN,
+                    "max": TOPIC_MAX_LEN,
+                },
+            )
 
         relative = self._store.write_text_source(
             project_id, TOPIC_SOURCE_FILENAME, payload.topic
@@ -75,6 +95,18 @@ class InputService:
         validate_project_id(project_id)
         self._require_project(project_id)
         self._ensure_can_replace(project_id, replace=payload.replace)
+        script_len = len(payload.script)
+        if script_len < SCRIPT_MIN_LEN or script_len > SCRIPT_MAX_LEN:
+            raise ValidationAppError(
+                f"Script length must be between {SCRIPT_MIN_LEN} and {SCRIPT_MAX_LEN} characters.",
+                code="VALIDATION_ERROR",
+                details={
+                    "field": "script",
+                    "length": script_len,
+                    "min": SCRIPT_MIN_LEN,
+                    "max": SCRIPT_MAX_LEN,
+                },
+            )
 
         relative = self._store.write_text_source(
             project_id, SCRIPT_SOURCE_FILENAME, payload.script
@@ -111,19 +143,7 @@ class InputService:
         self._require_project(project_id)
         self._ensure_can_replace(project_id, replace=replace)
 
-        if len(data) == 0:
-            raise ValidationAppError(
-                "Uploaded file is empty.",
-                code="VALIDATION_ERROR",
-                details={"field": "file"},
-            )
-        if len(data) > MAX_UPLOAD_BYTES:
-            raise ExplainXError(
-                "Upload exceeds the maximum allowed size.",
-                code="UPLOAD_TOO_LARGE",
-                status_code=413,
-                details={"max_bytes": MAX_UPLOAD_BYTES, "size_bytes": len(data)},
-            )
+        validate_pdf_size(len(data))
 
         suffix = Path(filename).suffix.lower()
         if suffix not in PDF_EXTENSIONS:

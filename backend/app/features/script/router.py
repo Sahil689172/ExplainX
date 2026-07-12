@@ -1,29 +1,36 @@
-"""Script Generation HTTP routes — RawContent → EducationalScript."""
+"""Content Intelligence HTTP routes — any input → EducationalScript (Phase 3)."""
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Body, Depends, Request, status
 
-from app.api.deps import get_script_generation_service, settings_dep
+from app.api.deps import get_content_intelligence_service, settings_dep
 from app.api.middleware.request_id import get_request_id
 from app.core.config import Settings
-from app.features.script.service import ScriptGenerationService
+from app.features.script.schemas import GenerateScriptRequest
+from app.features.script.service import ContentIntelligenceService
 from app.shared.envelopes import success_payload
 
-router = APIRouter(prefix="/projects", tags=["script-generation"])
+router = APIRouter(prefix="/projects", tags=["content-intelligence"])
 
 
 @router.post("/{project_id}/script", status_code=status.HTTP_201_CREATED)
 async def generate_script(
     project_id: str,
     request: Request,
-    service: ScriptGenerationService = Depends(get_script_generation_service),
+    payload: Annotated[GenerateScriptRequest | None, Body()] = None,
+    service: ContentIntelligenceService = Depends(get_content_intelligence_service),
     settings: Settings = Depends(settings_dep),
 ) -> dict[str, Any]:
-    """Generate an EducationalScript from the project's RawContent."""
-    script = service.generate_script(project_id)
+    """Generate one EducationalScript from the project's topic / PDF / script input."""
+    body = payload or GenerateScriptRequest()
+    script = service.generate_script(
+        project_id,
+        target_duration=body.target_duration,
+        target_duration_sec=body.target_duration_sec,
+    )
     return success_payload(
         script.model_dump(mode="json"),
         request_id=get_request_id(request),
@@ -35,7 +42,7 @@ async def generate_script(
 async def get_script(
     project_id: str,
     request: Request,
-    service: ScriptGenerationService = Depends(get_script_generation_service),
+    service: ContentIntelligenceService = Depends(get_content_intelligence_service),
     settings: Settings = Depends(settings_dep),
 ) -> dict[str, Any]:
     script = service.get_script(project_id)

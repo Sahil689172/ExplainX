@@ -1,15 +1,21 @@
-"""PDF file → RawContent via local text extraction (no AI / no OCR)."""
+"""PDF file → RawContent via PyMuPDF4LLM (no AI / no OCR in v1)."""
 
 from __future__ import annotations
 
 from app.core.enums import SourceType
 from app.core.errors import ValidationAppError
+from app.features.input.pdf_extract import (
+    PDF_MAX_PAGES,
+    extract_pdf_markdown_sections,
+    inspect_pdf,
+    validate_pdf_size,
+)
 from app.features.input.providers.base import (
     BaseInputProcessor,
     ProcessorContext,
     sha256_bytes,
 )
-from app.features.input.schemas import RawContent, RawContentSection
+from app.features.input.schemas import RawContent
 
 
 class PDFProcessor(BaseInputProcessor):
@@ -23,79 +29,16 @@ class PDFProcessor(BaseInputProcessor):
                 details={"path": str(ctx.file_path) if ctx.file_path else None},
             )
 
-        try:
-            from pypdf import PdfReader
-        except ImportError as exc:  # pragma: no cover
-            raise ValidationAppError(
-                "PDF support requires the pypdf package.",
-                code="PARSER_UNSUPPORTED_TYPE",
-                details={"dependency": "pypdf"},
-            ) from exc
-
-        try:
-            reader = PdfReader(str(ctx.file_path))
-        except Exception as exc:  # noqa: BLE001
-            raise ValidationAppError(
-                "Failed to open PDF.",
-                code="PARSER_UNSUPPORTED_TYPE",
-                details={"error": str(exc)},
-            ) from exc
-
-        if getattr(reader, "is_encrypted", False):
-            try:
-                unlocked = reader.decrypt("")  # type: ignore[attr-defined]
-            except Exception:  # noqa: BLE001
-                unlocked = 0
-            if not unlocked:
-                raise ValidationAppError(
-                    "Encrypted PDFs are not supported without a password.",
-                    code="PARSER_UNSUPPORTED_TYPE",
-                    details={"reason": "encrypted"},
-                )
-
-        warnings: list[str] = []
-        sections: list[RawContentSection] = []
-        empty_pages = 0
-
-        for index, page in enumerate(reader.pages, start=1):
-            try:
-                page_text = page.extract_text() or ""
-            except Exception as exc:  # noqa: BLE001
-                warnings.append(f"page_{index}_extract_failed: {exc}")
-                page_text = ""
-            cleaned = page_text.strip()
-            if not cleaned:
-                empty_pages += 1
-                continue
-            sections.append(
-                RawContentSection(
-                    id=f"page-{index}",
-                    text=cleaned,
-                    order=len(sections) + 1,
-                    title=f"Page {index}",
-                )
-            )
-
-        page_count = len(reader.pages)
-        if empty_pages:
-            warnings.append(
-                f"{empty_pages} page(s) produced no extractable text "
-                "(scanned PDFs need OCR in a later phase)."
-            )
-        if not sections:
-            raise ValidationAppError(
-                "PDF produced no extractable text.",
-                code="PARSER_EMPTY_CONTENT",
-                details={"page_count": page_count, "warnings": warnings},
-            )
-
         data = ctx.file_path.read_bytes()
+        validate_pdf_size(len(data))
+        page_count = inspect_pdf(ctx.file_path)
+        extracted = extract_pdf_markdown_sections(ctx.file_path)
         source_hash = ctx.source_hash or sha256_bytes(data)
 
         return self._build(
             project_id=ctx.project_id,
-            sections=sections,
-            warnings=warnings,
+            sections=extracted.sections,
+            warnings=extracted.warnings,
             source_path=ctx.source_path_relative,
             source_hash=source_hash,
             metadata={
@@ -103,6 +46,8 @@ class PDFProcessor(BaseInputProcessor):
                 "language_hint": ctx.language_hint,
                 "original_filename": ctx.original_filename,
                 "pdf_page_count": page_count,
+                "pdf_max_pages": PDF_MAX_PAGES,
+                "extractor": "pymupdf4llm",
             },
             page_count=page_count,
         )
