@@ -6,7 +6,7 @@ from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,6 +36,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
+        populate_by_name=True,
     )
 
     env: AppEnv = AppEnv.DEVELOPMENT
@@ -54,6 +55,21 @@ class Settings(BaseSettings):
     database_url: str | None = None
 
     max_concurrent_jobs: int = 1
+
+    # Local LLM (Ollama) — also accepts unprefixed OLLAMA_* env vars (Phase 3.5).
+    ollama_base_url: str = Field(
+        default="http://127.0.0.1:11434",
+        validation_alias=AliasChoices("OLLAMA_BASE_URL", "EXPLAINX_OLLAMA_BASE_URL"),
+    )
+    ollama_model: str = Field(
+        default="qwen2.5:3b",
+        validation_alias=AliasChoices("OLLAMA_MODEL", "EXPLAINX_OLLAMA_MODEL"),
+    )
+    ollama_timeout_sec: float = Field(default=120.0, ge=5.0, le=600.0)
+    ollama_enabled: bool = Field(
+        default=True,
+        description="When false, ContentIntelligenceService uses PlaceholderContentGenerator.",
+    )
 
     @field_validator("log_level")
     @classmethod

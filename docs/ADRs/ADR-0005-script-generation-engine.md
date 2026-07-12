@@ -5,16 +5,9 @@
 
 ## Note
 
-Phase 3 Content Intelligence (`ContentIntelligenceService`, input processors,
-`PlaceholderContentGenerator`) is the active generation path. This ADR remains
-for schema history; see ADR-0006 for current architecture.
-
-## Context
-
-Topic, PDF, and custom script inputs are normalized to `RawContent` (Phase 2.1/2.2).
-Downstream voice, scenes, and DSL need a single **EducationalScript** narration
-contract. LLM/Ollama script writing comes later; the engine must still ship a
-stable schema and swappable generator interface now.
+Schema and HTTP routes from this ADR remain in force. Generation architecture
+is defined by [ADR-0006](./ADR-0006-phase-3-content-intelligence.md) and
+[ADR-0007](./ADR-0007-phase-3-5-ollama-integration.md) (`OllamaContentGenerator`).
 
 ## Decision
 

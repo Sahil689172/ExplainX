@@ -77,11 +77,11 @@ async def system_modules(
         ),
         ModuleStatusItem(
             name="content_intelligence",
-            status="placeholder",
+            status="ready",
             available=True,
             detail=(
-                "Phase 3 EducationalScript via Topic/PDF/Script processors + "
-                "PlaceholderContentGenerator (Ollama-swappable)"
+                "Phase 3.5 EducationalScript via processors + "
+                "OllamaContentGenerator (Placeholder in tests)"
             ),
         ),
         ModuleStatusItem(
@@ -94,7 +94,7 @@ async def system_modules(
             name="script_generation",
             status="placeholder",
             available=True,
-            detail="EducationalScript endpoints (Phase 3 Content Intelligence)",
+            detail="EducationalScript endpoints (Phase 3.5 Ollama / Placeholder)",
         ),
         ModuleStatusItem(
             name="agents",

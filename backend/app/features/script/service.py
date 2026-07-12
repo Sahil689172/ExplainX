@@ -26,7 +26,7 @@ from app.features.presentation.store import PresentationPlanStore
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
 from app.features.script.durations import resolve_target_duration_sec
-from app.features.script.generator import PlaceholderContentGenerator
+from app.features.script.factory import create_content_generator
 from app.features.script.processors.pdf_processor import PDFContentProcessor
 from app.features.script.processors.script_processor import ScriptContentProcessor
 from app.features.script.processors.topic_processor import TopicContentProcessor
@@ -46,11 +46,11 @@ class ContentIntelligenceService:
         RawContent (+ optional source PDF)
             → input-specific ContentProcessor
                   TopicContentProcessor | PDFContentProcessor | ScriptContentProcessor
-            → ContentGenerator (PlaceholderContentGenerator now; Ollama later)
+            → ContentGenerator (OllamaContentGenerator by default; Placeholder in tests)
             → EducationalScript
 
-    Inject ``generator=OllamaContentGenerator(...)`` later without changing
-    processors, routes, validator, or store.
+    Inject ``generator=...`` to override without changing processors, routes,
+    validator, or store.
     """
 
     def __init__(
@@ -69,7 +69,7 @@ class ContentIntelligenceService:
         self._raw_store = InputArtifactStore(self._fs)
         self._plan_store = PresentationPlanStore(self._fs)
         self._script_store = ScriptArtifactStore(self._fs)
-        self._generator = generator or PlaceholderContentGenerator()
+        self._generator = generator or create_content_generator(settings)
         self._validator = validator or ScriptValidator()
         self._processors: dict[SourceType, ContentProcessor] = processors or {
             SourceType.TOPIC: TopicContentProcessor(self._generator),

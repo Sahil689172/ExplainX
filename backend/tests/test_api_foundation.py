@@ -40,7 +40,7 @@ def test_system_modules_lists_stubs(client: TestClient) -> None:
     assert items["projects"]["available"] is True
     assert items["documents"]["status"] == "ready"
     assert items["input_intelligence"]["available"] is True
-    assert items["content_intelligence"]["status"] == "placeholder"
+    assert items["content_intelligence"]["status"] == "ready"
     assert items["script_generation"]["status"] == "placeholder"
     assert items["rendering"]["available"] is False
 

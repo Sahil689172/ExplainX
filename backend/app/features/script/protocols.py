@@ -16,8 +16,7 @@ class ContentGenerator(Protocol):
     """Turn prepared narration material into EducationalScript.
 
     ``PlaceholderContentGenerator`` is deterministic (no LLM).
-    ``OllamaContentGenerator`` can replace it later without changing
-    ``ContentIntelligenceService`` or input processors.
+    ``OllamaContentGenerator`` is the default ContentGenerator in Phase 3.5.
     """
 
     def generate(

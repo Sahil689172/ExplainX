@@ -90,7 +90,7 @@ class PlaceholderContentGenerator:
         beat_order = 1
         out_warnings = list(warnings or [])
         out_warnings.append(
-            "Placeholder content generator — OllamaContentGenerator not wired yet."
+            "Placeholder content generator — deterministic fallback (no LLM)."
         )
 
         for index, (source, sec_budget) in enumerate(
