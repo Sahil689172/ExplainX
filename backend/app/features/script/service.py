@@ -21,29 +21,26 @@ from app.features.input.pdf_extract import (
 )
 from app.features.input.schemas import RawContent
 from app.features.input.store import InputArtifactStore
-from app.features.presentation.schemas import PresentationPlan
-from app.features.presentation.store import PresentationPlanStore
+from app.features.outline.service import TeachingOutlineService
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
 from app.features.script.durations import V1_TARGET_DURATION_SEC, resolve_target_duration_sec
-from app.features.script.factory import create_content_generator
 from app.features.script.metrics import ScriptMetricsCalculator, enrich_script_with_metrics
-from app.features.script.processors.pdf_processor import PDFContentProcessor
-from app.features.script.processors.script_processor import ScriptContentProcessor
-from app.features.script.processors.topic_processor import TopicContentProcessor
-from app.features.script.protocols import ContentGenerator, ContentProcessor
 from app.features.script.schemas import EducationalScript
 from app.features.script.store import ScriptArtifactStore
 from app.features.script.validator import ScriptValidator
+from app.features.section_generation.service import SectionGenerationService
 
 logger = get_logger(__name__)
 
 
 class ContentIntelligenceService:
-    """Generate one EducationalScript from topic / PDF / custom script.
+    """Generate TeachingOutline then EducationalScript via per-section narration.
 
-    Phase 3.6 standardizes on a single V1 format: a 2–3 minute explainer
-    (120–180s, ~320–420 words). Optional duration request fields are ignored.
+    Phase 3.8 pipeline:
+    RawContent → TeachingOutline → SectionGenerationService → EducationalScript.
+
+    Public HTTP APIs are unchanged.
     """
 
     def __init__(
@@ -51,25 +48,20 @@ class ContentIntelligenceService:
         session: Session,
         settings: Settings,
         *,
-        generator: ContentGenerator | None = None,
         validator: ScriptValidator | None = None,
-        processors: dict[SourceType, ContentProcessor] | None = None,
+        outline_service: TeachingOutlineService | None = None,
+        section_service: SectionGenerationService | None = None,
     ) -> None:
         self._session = session
         self._settings = settings
         self._repo = ProjectRepository(session)
         self._fs = ProjectFilesystem(settings)
         self._raw_store = InputArtifactStore(self._fs)
-        self._plan_store = PresentationPlanStore(self._fs)
         self._script_store = ScriptArtifactStore(self._fs)
         self._metrics = ScriptMetricsCalculator()
-        self._generator = generator or create_content_generator(settings)
         self._validator = validator or ScriptValidator()
-        self._processors: dict[SourceType, ContentProcessor] = processors or {
-            SourceType.TOPIC: TopicContentProcessor(self._generator),
-            SourceType.SCRIPT: ScriptContentProcessor(self._generator),
-            SourceType.PDF: PDFContentProcessor(self._generator),
-        }
+        self._outline_service = outline_service or TeachingOutlineService(session, settings)
+        self._section_service = section_service or SectionGenerationService(session, settings)
 
     def generate_script(
         self,
@@ -84,29 +76,36 @@ class ContentIntelligenceService:
         self._validate_raw_input(raw)
 
         # V1: always the canonical 2–3 minute target (request fields ignored).
-        duration = resolve_target_duration_sec(
+        _ = resolve_target_duration_sec(
             label=target_duration,
             seconds=target_duration_sec,
         )
-        plan = self._optional_plan(project_id)
-        pdf_path = self._resolve_pdf_path(project_id, raw)
 
-        processor = self._processors.get(raw.source_type)
-        if processor is None:
-            raise ValidationAppError(
-                f"No content processor for source_type={raw.source_type.value}.",
-                code="UNSUPPORTED_SOURCE_TYPE",
-                details={"source_type": raw.source_type.value},
-            )
+        # Phase 3.7: lesson plan (no narration).
+        outline = self._outline_service.generate_outline(
+            project_id,
+            target_duration=target_duration,
+            target_duration_sec=target_duration_sec,
+        )
 
-        script = processor.process(
-            raw,
-            target_duration_sec=duration,
-            plan=plan,
-            pdf_path=pdf_path,
+        # Phase 3.8: one LLM/placeholder call per outline section, then merge.
+        script = self._section_service.generate_from_outline(
+            project_id,
+            outline=outline,
         )
         script = enrich_script_with_metrics(
-            script.model_copy(update={"target_duration_sec": V1_TARGET_DURATION_SEC})
+            script.model_copy(
+                update={
+                    "target_duration_sec": V1_TARGET_DURATION_SEC,
+                    "metadata": {
+                        **(script.metadata or {}),
+                        "teaching_outline_id": outline.outline_id,
+                        "outline_section_count": len(outline.sections),
+                        "outline_total_target_words": outline.total_target_words,
+                        "section_generation": True,
+                    },
+                }
+            )
         )
         metrics = self._metrics.compute(script)
         self._validator.validate(script, raw=raw)
@@ -132,6 +131,7 @@ class ContentIntelligenceService:
                 "target_duration_sec": V1_TARGET_DURATION_SEC,
                 "estimated_duration_sec": script.estimated_duration_sec,
                 "estimated_word_count": script.estimated_word_count,
+                "section_generation": True,
             },
         )
         return script
@@ -170,7 +170,6 @@ class ContentIntelligenceService:
                     },
                 )
         elif raw.source_type == SourceType.PDF:
-            # File-level checks when the source PDF is still on disk.
             path = self._resolve_pdf_path(raw.project_id, raw)
             if path is not None and path.is_file():
                 validate_pdf_size(path.stat().st_size)
@@ -188,12 +187,6 @@ class ContentIntelligenceService:
         try:
             return self._raw_store.absolute_source_path(project_id, raw.source_path)
         except ValidationAppError:
-            return None
-
-    def _optional_plan(self, project_id: str) -> PresentationPlan | None:
-        try:
-            return self._plan_store.read(project_id)
-        except NotFoundError:
             return None
 
     def _require_project(self, project_id: str):

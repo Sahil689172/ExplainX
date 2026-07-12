@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.core.enums import SourceType
 from app.features.script.durations import V1_TARGET_DURATION_SEC
@@ -40,6 +40,10 @@ class EducationalScript(BaseModel):
     """V1 high-quality educational narration for a 2–3 minute explainer.
 
     Target band: 120–180 seconds, ~320–420 words, ~18–25 estimated scenes.
+
+    Numerical fields (``estimated_*``) are always filled by
+    ``ScriptMetricsCalculator`` from narration at 140 WPM — never guessed
+    by an LLM.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -81,16 +85,31 @@ class EducationalScript(BaseModel):
 
 
 class ScriptMetrics(BaseModel):
-    """Derived metrics for a standardized EducationalScript."""
+    """Derived metrics for a standardized EducationalScript.
+
+    All values are calculated from narration at 140 WPM — never from the LLM.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
     total_words: int = Field(ge=0)
+    total_duration_sec: float = Field(
+        ge=0.0,
+        description="Total speaking duration in seconds (alias of estimated_duration_sec).",
+    )
     estimated_duration_sec: float = Field(ge=0.0)
     estimated_scene_count: int = Field(ge=0)
     average_words_per_section: float = Field(ge=0.0)
     reading_level: str = Field(min_length=1, max_length=64)
     language: str = Field(min_length=2, max_length=16)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _backfill_total_duration(cls, data: Any) -> Any:
+        if isinstance(data, dict) and "total_duration_sec" not in data:
+            if "estimated_duration_sec" in data:
+                data = {**data, "total_duration_sec": data["estimated_duration_sec"]}
+        return data
 
 
 class GenerateScriptRequest(BaseModel):

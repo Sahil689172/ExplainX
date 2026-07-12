@@ -12,13 +12,10 @@ from app.features.script.durations import (
     V1_TARGET_DURATION_SEC,
     V1_TARGET_WORDS_MAX,
     V1_TARGET_WORDS_MIN,
-    V1_WPM,
-    duration_from_words,
-    estimate_scene_count,
     label_for_seconds,
     word_budget,
 )
-from app.features.script.metrics import count_words, enrich_script_with_metrics
+from app.features.script.metrics import ScriptMetricsCalculator, enrich_script_with_metrics
 from app.features.script.protocols import ContentGenerator
 from app.features.script.schemas import EducationalScript, ScriptConcept, TeachingSection
 
@@ -91,7 +88,8 @@ class PlaceholderContentGenerator:
             word_budget=budget,
         )
 
-        total_words = sum(s.estimated_words for s in teaching)
+        calculator = ScriptMetricsCalculator()
+        total_words = sum(calculator.words_for_narration(s.narration) for s in teaching)
         # Ensure global band even if section packing drifted.
         if total_words < V1_TARGET_WORDS_MIN or total_words > V1_TARGET_WORDS_MAX:
             joined = " ".join(s.narration for s in teaching)
@@ -102,8 +100,6 @@ class PlaceholderContentGenerator:
             )
             teaching = self._repack_from_text(joined, title=title, concept_tags=concept_tags)
 
-        duration = duration_from_words(sum(s.estimated_words for s in teaching), wpm=V1_WPM)
-        scene_count = estimate_scene_count(duration)
         summary = (
             f"A clear 2–3 minute explanation of {title}, covering the core idea, "
             f"key steps, and a practical takeaway for learners."
@@ -119,6 +115,7 @@ class PlaceholderContentGenerator:
             "Placeholder content generator — deterministic V1 2–3 minute script."
         )
 
+        # Numerical fields are placeholders; enrich_script_with_metrics overwrites them.
         script = EducationalScript(
             script_id=str(uuid.uuid4()),
             project_id=project_id,
@@ -128,9 +125,9 @@ class PlaceholderContentGenerator:
             title=title[:200],
             language=language,
             target_duration_sec=target,
-            estimated_duration_sec=duration,
-            estimated_word_count=sum(s.estimated_words for s in teaching),
-            estimated_scene_count=scene_count,
+            estimated_duration_sec=0.0,
+            estimated_word_count=0,
+            estimated_scene_count=0,
             summary=summary,
             key_concepts=concept_list,
             learning_objectives=objectives,
@@ -249,18 +246,18 @@ class PlaceholderContentGenerator:
             ]
 
         # Distribute word budget across outline sections.
+        # Section estimated_* are placeholders; enrich_script_with_metrics overwrites.
         per = max(40, word_budget // max(len(outlines), 1))
         teaching: list[TeachingSection] = []
         for index, (section_title, seed) in enumerate(outlines, start=1):
             narration = _pad_to_word_target(seed, min_words=per - 5, max_words=per + 10)
-            words = count_words(narration)
             teaching.append(
                 TeachingSection(
                     id=_new_id("teach"),
                     title=section_title,
                     narration=narration,
-                    estimated_duration_sec=duration_from_words(words),
-                    estimated_words=words,
+                    estimated_duration_sec=0.0,
+                    estimated_words=0,
                     concept_tags=list(concept_tags),
                 )
             )
@@ -293,14 +290,13 @@ class PlaceholderContentGenerator:
             narration = " ".join(chunk)
             if not narration.endswith((".", "!", "?")):
                 narration += "."
-            w = count_words(narration)
             teaching.append(
                 TeachingSection(
                     id=_new_id("teach"),
                     title=titles[index - 1] if index <= len(titles) else f"Section {index}",
                     narration=narration,
-                    estimated_duration_sec=duration_from_words(w),
-                    estimated_words=w,
+                    estimated_duration_sec=0.0,
+                    estimated_words=0,
                     concept_tags=list(concept_tags),
                 )
             )

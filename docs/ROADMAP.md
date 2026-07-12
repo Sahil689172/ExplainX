@@ -5,16 +5,18 @@
 **Last Updated:** 2026-07-11  
 **Product Versions Crosswalk:** Constitution V1–V5  
 **Companions:** All files under `docs/` especially  
-[`PROJECT_CONSTITUTION.md`](./PROJECT_CONSTITUTION.md) ·  
-[`DEVELOPMENT_GUIDE.md`](./DEVELOPMENT_GUIDE.md) ·  
-[`FOLDER_STRUCTURE.md`](./FOLDER_STRUCTURE.md) ·  
-[`SYSTEM_ARCHITECTURE.md`](./SYSTEM_ARCHITECTURE.md)  
+`[PROJECT_CONSTITUTION.md](./PROJECT_CONSTITUTION.md)` ·  
+`[DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md)` ·  
+`[FOLDER_STRUCTURE.md](./FOLDER_STRUCTURE.md)` ·  
+`[SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md)`  
 
 > **Purpose:** Enable any developer to build ExplainX **from scratch** in a sane order.  
 > Each phase lists objective, deliverables, dependencies, success criteria, and future extensions.  
 > Do not skip foundational phases to “jump to video.” Deterministic engines before LLM spectacle.
 
 ---
+
+
 
 ## Table of Contents
 
@@ -40,30 +42,42 @@
 
 ---
 
+
+
 ## 1. How to Use This Roadmap
+
+
 
 ### 1.1 Rules
 
-1. Complete **success criteria** before treating a phase as done.  
-2. Honor **dependencies** — later phases assume earlier artifacts exist.  
-3. Prefer **fixtures** to unblock engines before agents are smart.  
-4. Update specs when contracts change (Definition of Done).  
+1. Complete **success criteria** before treating a phase as done.
+2. Honor **dependencies** — later phases assume earlier artifacts exist.
+3. Prefer **fixtures** to unblock engines before agents are smart.
+4. Update specs when contracts change (Definition of Done).
 5. Cursor prompts should cite the **current phase** + relevant docs.
+
+
 
 ### 1.2 Phase Status Legend (for planning boards)
 
-| Status | Meaning |
-|--------|---------|
-| `NOT STARTED` | No implementation |
-| `IN PROGRESS` | Active development |
-| `BLOCKED` | Waiting on dependency |
-| `DONE` | Success criteria met |
+
+| Status        | Meaning               |
+| ------------- | --------------------- |
+| `NOT STARTED` | No implementation     |
+| `IN PROGRESS` | Active development    |
+| `BLOCKED`     | Waiting on dependency |
+| `DONE`        | Success criteria met  |
+
+
+
 
 ### 1.3 Note on Phase 11 & 12
 
 Testing and documentation run **continuously**, but each has a hardening phase so quality is not deferred forever.
 
 ---
+
+
 
 ## 2. Roadmap Overview Diagram
 
@@ -107,7 +121,11 @@ Engine (can overlap)       │
 
 ---
 
+
+
 ## Phase 0 — Architecture
+
+
 
 ### Objective
 
@@ -125,11 +143,15 @@ Establish the permanent product and engineering specifications so implementation
 - `docs/DEVELOPMENT_GUIDE.md`  
 - `docs/CODING_STANDARDS.md`  
 - `docs/ROADMAP.md` (this file)  
-- ADR process under `docs/ADRs/`  
+- ADR process under `docs/ADRs/`
+
+
 
 ### Dependencies
 
 - None (starting point)
+
+
 
 ### Success Criteria
 
@@ -138,15 +160,21 @@ Establish the permanent product and engineering specifications so implementation
 - [ ] V1 constraints (offline, free, hardware) documented  
 - [ ] Team (or solo developer) accepts docs as source of truth  
 
+
+
 ### Future Extensions
 
 - Additional ADRs as decisions arise  
 - OpenAPI/JSON Schema mirrors of DSL & API  
-- Threat model doc for networked V5  
+- Threat model doc for networked V5
 
 ---
 
+
+
 ## Phase 1 — Core Infrastructure
+
+
 
 ### Objective
 
@@ -161,11 +189,15 @@ Stand up the runnable skeleton: repo layout, config, logging, DB, storage ports,
 - Ports with **fake** adapters (LLM/TTS/renderer fakes)  
 - API: health, doctor, projects CRUD, jobs list/get stubs  
 - `.gitignore` for `data/`; `.env.example`  
-- Basic CI: lint + empty/unit smoke  
+- Basic CI: lint + empty/unit smoke
+
+
 
 ### Dependencies
 
-- Phase 0 architecture docs  
+- Phase 0 architecture docs
+
+
 
 ### Success Criteria
 
@@ -175,15 +207,21 @@ Stand up the runnable skeleton: repo layout, config, logging, DB, storage ports,
 - [ ] Job row can be inserted and polled with stub statuses  
 - [ ] No model weights required for this phase  
 
+
+
 ### Future Extensions
 
 - Postgres adapter behind same repositories  
 - Split API vs worker processes  
-- Auth middleware for networked mode  
+- Auth middleware for networked mode
 
 ---
 
+
+
 ## Phase 2 — Document Intelligence
+
+
 
 ### Objective
 
@@ -198,11 +236,15 @@ Ingest source inputs and produce clean, structured text ready for knowledge extr
 - Artifacts: `raw_document`, `clean_document`, `document_structure`  
 - Orchestrator nodes for these stages + checkpoints  
 - Fixtures: sample MD/TXT documents  
-- Contract tests with no LLM or deterministic parsing only  
+- Contract tests with no LLM or deterministic parsing only
+
+
 
 ### Dependencies
 
-- Phase 1 (storage, jobs, API)  
+- Phase 1 (storage, jobs, API)
+
+
 
 ### Success Criteria
 
@@ -212,15 +254,21 @@ Ingest source inputs and produce clean, structured text ready for knowledge extr
 - [ ] Failures return stable error codes (`PARSER_*`, `CLEAN_*`)  
 - [ ] Resume skips completed parse/clean when hashes match  
 
+
+
 ### Future Extensions
 
 - OCR plugin for scanned PDFs  
 - Table-aware parsing  
-- Bibliography/footnote channels  
+- Bibliography/footnote channels
 
 ---
 
+
+
 ## Phase 3 — Knowledge Intelligence
+
+
 
 ### Objective
 
@@ -234,12 +282,16 @@ Turn structured documents into teachable concepts, classifications, difficulty, 
 - **Explanation Strategy Agent**  
 - Artifacts: `knowledge_model`, `topic_labels`, `difficulty_profile`, `explanation_plan`  
 - LLM port wired to Ollama (Qwen2.5 3B) with strict JSON validation + repair retries  
-- Contract tests with mocked LLM + one optional manual integration test  
+- Contract tests with mocked LLM + one optional manual integration test
+
+
 
 ### Dependencies
 
 - Phase 2 document artifacts  
-- Local Ollama available for real runs (mocks for CI)  
+- Local Ollama available for real runs (mocks for CI)
+
+
 
 ### Success Criteria
 
@@ -249,15 +301,89 @@ Turn structured documents into teachable concepts, classifications, difficulty, 
 - [ ] Caching by input hash + agent version works  
 - [ ] No agent calls another agent directly  
 
+
+
 ### Future Extensions
 
 - Knowledge graph visualization for debug UI  
 - Curriculum taxonomy packs  
-- Cross-project concept reuse  
+- Cross-project concept reuse
 
 ---
 
+## Phase 3.7 — Teaching Outline Service
+
+### Objective
+
+Insert a lesson-plan stage between RawContent and EducationalScript so narration
+is planned before it is written.
+
+### Pipeline
+
+```
+RawContent → TeachingOutline → EducationalScript
+```
+
+### Deliverables
+
+- `TeachingOutline` + outline `TeachingSection` schemas (no narration)
+- `TeachingOutlineService`, `OutlineGenerator`, Placeholder + Ollama generators
+- `OutlineValidator` (8–12 sections; word budget at 140 WPM)
+- Artifact: `artifacts/teaching_outline.json`
+- ADR-0009
+
+### Non-goals
+
+- No new HTTP APIs  
+- No Scene Planning  
+- No narration inside the outline
+
+### Success Criteria
+
+- [x] Outline has 8–12 sections with id, title, learning_objective, target_words, key_concepts  
+- [x] Total `target_words` matches duration × 140 WPM (±2)  
+- [x] Script generation persists `teaching_outline.json` before EducationalScript  
+
+---
+
+## Phase 3.8 — Section Generation Engine
+
+### Objective
+
+Generate EducationalScript from TeachingOutline **one section at a time**, then merge.
+
+### Pipeline
+
+```
+TeachingOutline → SectionGenerationService → EducationalScript
+```
+
+### Deliverables
+
+- `SectionGenerationService`, `SectionGenerator`, Placeholder + Ollama generators
+- `SectionMerger`, `SectionValidator`
+- Artifacts: `artifacts/section_outputs/section_XX.json` + `educational_script.json`
+- ADR-0010
+
+### Rules
+
+- Never generate the full script in one LLM call
+- Each call receives title, objective, target_words, concepts, previous summary, next title
+- EducationalScript schema unchanged
+
+### Success Criteria
+
+- [x] Independent per-section narration generation  
+- [x] Merged EducationalScript validates in the V1 band  
+- [x] Section outputs persisted under `artifacts/section_outputs/`  
+
+---
+
+
+
 ## Phase 4 — Content Intelligence
+
+
 
 ### Objective
 
@@ -270,11 +396,15 @@ Produce learner-facing narrative content: script, scenes, and catalog metadata.
 - **Metadata Agent**  
 - Artifacts: `narration_script`, `scene_plan`, `project_metadata`  
 - API endpoints: generate script/scenes; GET script/scenes  
-- Coverage validation (beats assigned; outline coverage checks)  
+- Coverage validation (beats assigned; outline coverage checks)
+
+
 
 ### Dependencies
 
-- Phase 3 knowledge plane artifacts  
+- Phase 3 knowledge plane artifacts
+
+
 
 ### Success Criteria
 
@@ -284,15 +414,21 @@ Produce learner-facing narrative content: script, scenes, and catalog metadata.
 - [ ] Generate endpoints return `202` + job progress  
 - [ ] Contract tests pass with fake LLM  
 
+
+
 ### Future Extensions
 
 - Style presets (teacher/documentary)  
 - Quiz/recap scene modes  
-- Automatic split/merge from measured audio durations  
+- Automatic split/merge from measured audio durations
 
 ---
 
+
+
 ## Phase 5 — Presentation Engine
+
+
 
 ### Objective
 
@@ -309,12 +445,16 @@ Compile visual plans into the Presentation DSL and scene graph using diagram-fir
 - Theme packs: NotebookLM, Whiteboard, Corporate, Minimal, Comic, Dark  
 - Asset resolution against `/assets` packs  
 - API: generate presentation; GET presentation DSL  
-- Golden DSL fixtures for Binary Search / Photosynthesis / Networking  
+- Golden DSL fixtures for Binary Search / Photosynthesis / Networking
+
+
 
 ### Dependencies
 
 - Phase 4 scene plan (for full path)  
-- **Can start earlier** with hand-written scene/visual fixtures to unblock compiler  
+- **Can start earlier** with hand-written scene/visual fixtures to unblock compiler
+
+
 
 ### Success Criteria
 
@@ -324,15 +464,21 @@ Compile visual plans into the Presentation DSL and scene graph using diagram-fir
 - [ ] DSL validation errors are actionable  
 - [ ] Presentation engine does not import agents  
 
+
+
 ### Future Extensions
 
 - Watercolor / Anime themes  
 - Domain procedural compilers  
-- Plugin `image` kind (V3)  
+- Plugin `image` kind (V3)
 
 ---
 
+
+
 ## Phase 6 — Animation Engine
+
+
 
 ### Objective
 
@@ -347,12 +493,16 @@ Add pedagogical motion and camera framing, then bind an absolute timeline.
 - DSL sections: `animations`, `camera`, `timeline`  
 - API: generate timeline  
 - Unit tests for easing, keyframes, bind rules  
-- Golden timeline fixtures  
+- Golden timeline fixtures
+
+
 
 ### Dependencies
 
 - Phase 5 compiled DSL  
-- Voice durations preferred for final bind (see Phase 7); can bind with hints earlier for engine tests  
+- Voice durations preferred for final bind (see Phase 7); can bind with hints earlier for engine tests
+
+
 
 ### Success Criteria
 
@@ -362,15 +512,21 @@ Add pedagogical motion and camera framing, then bind an absolute timeline.
 - [ ] `duration.resolved_sec` populated when audio present  
 - [ ] Timeline Agent invokes engine — renderer still unused or optional  
 
+
+
 ### Future Extensions
 
 - Theme motion packs  
 - Word-level caption tracks  
-- Cinematic camera presets  
+- Cinematic camera presets
 
 ---
 
+
+
 ## Phase 7 — Multilingual Engine
+
+
 
 ### Objective
 
@@ -384,13 +540,17 @@ Enable local translation, TTS narration, and subtitles so videos are spoken and 
 - DSL updates: `voice`, `subtitles`  
 - API: generate narration/subtitles; download audio/subs  
 - Voice/language catalog endpoints  
-- Memory policy: do not load translation + LLM + whisper simultaneously without need  
+- Memory policy: do not load translation + LLM + whisper simultaneously without need
+
+
 
 ### Dependencies
 
 - Phase 4 script (required)  
 - Phase 6 can finalize bind after voice durations (iteration loop)  
-- Piper voices installed under `data/models`  
+- Piper voices installed under `data/models`
+
+
 
 ### Success Criteria
 
@@ -400,15 +560,21 @@ Enable local translation, TTS narration, and subtitles so videos are spoken and 
 - [ ] Timeline re-bind succeeds using real audio durations  
 - [ ] Failures use `VOICE_*` / `SUBTITLE_*` / `TRANSLATE_*` codes  
 
+
+
 ### Future Extensions
 
 - More language pairs and voice packs  
 - Dual-language subtitles  
-- Glossary-constrained translation  
+- Glossary-constrained translation
 
 ---
 
+
+
 ## Phase 8 — Rendering Engine
+
+
 
 ### Objective
 
@@ -422,14 +588,18 @@ Rasterize the bound presentation timeline into MP4 (plus thumbnail), mux audio, 
 - **Output Manager** / export package  
 - API: render, export, download video/thumb/zip/manifest  
 - Pause/cancel behavior around chunk boundaries (best effort)  
-- Fixture path: golden DSL+timeline+silent/beep audio → MP4 in CI-optional job  
+- Fixture path: golden DSL+timeline+silent/beep audio → MP4 in CI-optional job
+
+
 
 ### Dependencies
 
 - Phase 5 DSL  
 - Phase 6 timeline  
 - Phase 7 audio/subs for full product path  
-- FFmpeg installed  
+- FFmpeg installed
+
+
 
 ### Success Criteria
 
@@ -439,15 +609,21 @@ Rasterize the bound presentation timeline into MP4 (plus thumbnail), mux audio, 
 - [ ] Renderer never imports/calls agents or LLM port  
 - [ ] Encode failure leaves DSL/timeline intact for retry  
 
+
+
 ### Future Extensions
 
 - Hardware encoders (QSV/Iris Xe)  
 - Cloud render plugin (V4)  
-- Chunked distributed frames  
+- Chunked distributed frames
 
 ---
 
+
+
 ## Phase 9 — Frontend
+
+
 
 ### Objective
 
@@ -462,12 +638,16 @@ Deliver a usable local operator UI for create → generate → monitor → downl
 - Export/download flows  
 - Theme/voice/language selectors  
 - Typed API client matching `API_SPECIFICATION.md`  
-- Doctor/readiness banner when models missing  
+- Doctor/readiness banner when models missing
+
+
 
 ### Dependencies
 
 - Phase 1 API minimum (UI stubs)  
-- Phases 2–8 for full product loop (progressive enablement)  
+- Phases 2–8 for full product loop (progressive enablement)
+
+
 
 ### Success Criteria
 
@@ -477,15 +657,21 @@ Deliver a usable local operator UI for create → generate → monitor → downl
 - [ ] Polling does not freeze the UI  
 - [ ] Responsive enough for desktop laptop use  
 
+
+
 ### Future Extensions
 
 - DSL debug inspector (dev mode)  
 - Collaborative presence (V5)  
-- Desktop shell (Tauri/Electron)  
+- Desktop shell (Tauri/Electron)
 
 ---
 
+
+
 ## Phase 10 — Optimization
+
+
 
 ### Objective
 
@@ -500,11 +686,15 @@ Make the V1 path reliable on constrained hardware: memory, cache, resume, and en
 - DB/query indexes verified  
 - Progress percent heuristics improved  
 - Disk GC for temp frames  
-- Performance notes measured on target-class machine  
+- Performance notes measured on target-class machine
+
+
 
 ### Dependencies
 
-- Phases 1–9 functional path  
+- Phases 1–9 functional path
+
+
 
 ### Success Criteria
 
@@ -514,15 +704,21 @@ Make the V1 path reliable on constrained hardware: memory, cache, resume, and en
 - [ ] Doctor reports memory/disk warnings usefully  
 - [ ] Sample 3-minute 720p path completes on 16GB-class machine without crash  
 
+
+
 ### Future Extensions
 
 - Parallel TTS workers with caps  
 - Smarter scene chunk encoding  
-- Remote cache (later)  
+- Remote cache (later)
 
 ---
 
+
+
 ## Phase 11 — Testing
+
+
 
 ### Objective
 
@@ -537,11 +733,15 @@ Institutionalize quality gates so regressions cannot silently break DSL, agents,
 - Optional Playwright smoke for critical UI  
 - Boundary import linter (`agents` ↛ each other; `render` ↛ `agents`)  
 - Nightly/manual full offline pipeline job documented  
-- Coverage of critical paths reported  
+- Coverage of critical paths reported
+
+
 
 ### Dependencies
 
-- Code from Phases 1–10 (testing starts earlier; this phase hardens)  
+- Code from Phases 1–10 (testing starts earlier; this phase hardens)
+
+
 
 ### Success Criteria
 
@@ -551,15 +751,21 @@ Institutionalize quality gates so regressions cannot silently break DSL, agents,
 - [ ] Flake rate acceptable; quarantine policy exists  
 - [ ] Architecture boundary tests exist for critical forbidden imports  
 
+
+
 ### Future Extensions
 
 - Visual regression screenshots of composed frames  
 - Property-based tests for timeline binder  
-- Load tests for API job queue  
+- Load tests for API job queue
 
 ---
 
+
+
 ## Phase 12 — Documentation
+
+
 
 ### Objective
 
@@ -573,11 +779,15 @@ Make ExplainX approachable for new contributors and operators: runbooks, changel
 - Contributor quickstart linking Development Guide + Coding Standards  
 - Operator runbook: backup/restore per `DATABASE_DESIGN.md`  
 - Release notes template  
-- Optional diagram exports under `docs/diagrams/`  
+- Optional diagram exports under `docs/diagrams/`
+
+
 
 ### Dependencies
 
-- Ongoing from Phase 0; finalize for each release  
+- Ongoing from Phase 0; finalize for each release
+
+
 
 ### Success Criteria
 
@@ -586,75 +796,93 @@ Make ExplainX approachable for new contributors and operators: runbooks, changel
 - [ ] Release checklist references docs explicitly  
 - [ ] Model download steps verified offline after install  
 
+
+
 ### Future Extensions
 
 - Public developer portal  
 - Auto-generated OpenAPI UI  
-- Localized docs  
+- Localized docs
 
 ---
+
+
 
 ## 16. Recommended Parallel Tracks
 
 A small team can parallelize carefully:
 
-| Track A (Backend core) | Track B (Deterministic media) | Track C (UI) |
-|------------------------|-------------------------------|--------------|
-| Phase 1 → 2 → 3 → 4 | Phase 5 → 6 → 8 (fixtures first) | Phase 9 against API stubs |
-| Phase 7 after script exists | Integrate when agents ready | Enable buttons as jobs land |
+
+| Track A (Backend core)      | Track B (Deterministic media)    | Track C (UI)                |
+| --------------------------- | -------------------------------- | --------------------------- |
+| Phase 1 → 2 → 3 → 4         | Phase 5 → 6 → 8 (fixtures first) | Phase 9 against API stubs   |
+| Phase 7 after script exists | Integrate when agents ready      | Enable buttons as jobs land |
+
 
 **Integration rule:** merge only behind working contracts; fake adapters keep CI green.
 
 ---
 
+
+
 ## 17. Product Version Crosswalk
 
-| Product Version (Constitution) | Roadmap Phases Primarily Involved |
-|--------------------------------|-----------------------------------|
-| **V1** Offline educational video | Phases 0–12 (core complete through optimization + hardening) |
-| **V2** Better themes & plugins | Extend Phase 5 themes + plugin registry (Phase 1 plugins table) |
-| **V3** Optional image generation | Phase 5 plugin visual backend; Asset Agent extensions |
-| **V4** Cloud rendering | Phase 8 cloud adapter; API flags; privacy warnings |
-| **V5** Collaborative editing | Phase 9 collab UI + API auth/ACL + DB sharing |
+
+| Product Version (Constitution)   | Roadmap Phases Primarily Involved                               |
+| -------------------------------- | --------------------------------------------------------------- |
+| **V1** Offline educational video | Phases 0–12 (core complete through optimization + hardening)    |
+| **V2** Better themes & plugins   | Extend Phase 5 themes + plugin registry (Phase 1 plugins table) |
+| **V3** Optional image generation | Phase 5 plugin visual backend; Asset Agent extensions           |
+| **V4** Cloud rendering           | Phase 8 cloud adapter; API flags; privacy warnings              |
+| **V5** Collaborative editing     | Phase 9 collab UI + API auth/ACL + DB sharing                   |
+
 
 ---
+
+
 
 ## 18. From-Scratch Build Checklist
 
 Use this as a literal build order:
 
-1. [ ] Read all Phase 0 docs  
-2. [ ] Scaffold repo (`FOLDER_STRUCTURE`)  
-3. [ ] Core infra: config, DB, API projects/jobs  
-4. [ ] Document intelligence agents + upload  
-5. [ ] Knowledge intelligence agents + Ollama port  
-6. [ ] Script/scenes/metadata agents  
-7. [ ] DSL models + presentation engine + themes/assets  
-8. [ ] Animation/camera/timeline engines + agents  
-9. [ ] Translation/voice/subtitles  
-10. [ ] Rendering + export  
-11. [ ] Frontend operator UI  
-12. [ ] Caching, resume, hardware hardening  
-13. [ ] CI/testing gates  
-14. [ ] README + changelog + release  
+1. [ ] Read all Phase 0 docs
+2. [ ] Scaffold repo (`FOLDER_STRUCTURE`)
+3. [ ] Core infra: config, DB, API projects/jobs
+4. [ ] Document intelligence agents + upload
+5. [ ] Knowledge intelligence agents + Ollama port
+6. [ ] Script/scenes/metadata agents
+7. [ ] DSL models + presentation engine + themes/assets
+8. [ ] Animation/camera/timeline engines + agents
+9. [ ] Translation/voice/subtitles
+10. [ ] Rendering + export
+11. [ ] Frontend operator UI
+12. [ ] Caching, resume, hardware hardening
+13. [ ] CI/testing gates
+14. [ ] README + changelog + release
 
 **First celebrated milestone:** fixture DSL → MP4 with **no LLM**.  
 **Second:** markdown topic → MP4 offline end-to-end.
 
 ---
 
+
+
 ## 19. Risk Register
 
-| Risk | Phase | Mitigation |
-|------|-------|------------|
-| LLM JSON unreliability | 3–5 | Strict schemas, repair retries, templates |
-| RAM exhaustion on 16GB | 7–10 | Sequential model loads, draft encodes |
-| PDF extraction poor | 2 | Warnings, MD/TXT first-class, OCR later |
-| Scope creep (generative video) | all | Constitution: presentation engine, not Sora |
-| Doc drift | 12 | DoD requires doc updates with contracts |
-| Over-parallel jobs | 10 | Default concurrency 1 |
+
+| Risk                           | Phase | Mitigation                                  |
+| ------------------------------ | ----- | ------------------------------------------- |
+| LLM JSON unreliability         | 3–5   | Strict schemas, repair retries, templates   |
+| RAM exhaustion on 16GB         | 7–10  | Sequential model loads, draft encodes       |
+| PDF extraction poor            | 2     | Warnings, MD/TXT first-class, OCR later     |
+| Scope creep (generative video) | all   | Constitution: presentation engine, not Sora |
+| Doc drift                      | 12    | DoD requires doc updates with contracts     |
+| Over-parallel jobs             | 10    | Default concurrency 1                       |
+
 
 ---
+
+
 
 ## Closing Statement
 

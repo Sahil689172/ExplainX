@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from app.cli import dev_cli
 from app.cli.dev_cli import (
     EXIT_APP_ERROR,
     EXIT_OK,
@@ -16,6 +17,24 @@ from app.cli.dev_cli import (
     validate_topic,
 )
 from app.cli.dev_cli import ValidationAppErrorLike
+from app.db import session as db_session
+
+
+def test_cli_startup_initializes_session_local(_test_env: Path) -> None:
+    """CLI bootstrap must bind SessionLocal like app.main before services run."""
+    db_session.reset_db_engine()
+    assert db_session.SessionLocal is None
+
+    cfg = dev_cli.bootstrap()
+    assert cfg is not None
+    assert db_session.SessionLocal is not None
+
+    session = dev_cli._session()
+    try:
+        assert session.bind is not None
+        assert session.bind is db_session.get_engine()
+    finally:
+        session.close()
 
 
 def test_validate_topic_ok() -> None:

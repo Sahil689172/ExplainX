@@ -56,16 +56,25 @@ class Settings(BaseSettings):
 
     max_concurrent_jobs: int = 1
 
-    # Local LLM (Ollama) — also accepts unprefixed OLLAMA_* env vars (Phase 3.5).
+    # Local LLM (Ollama) — prefer unprefixed OLLAMA_* env vars.
     ollama_base_url: str = Field(
         default="http://127.0.0.1:11434",
         validation_alias=AliasChoices("OLLAMA_BASE_URL", "EXPLAINX_OLLAMA_BASE_URL"),
     )
     ollama_model: str = Field(
-        default="qwen2.5:3b",
+        default="llama3:latest",
         validation_alias=AliasChoices("OLLAMA_MODEL", "EXPLAINX_OLLAMA_MODEL"),
     )
-    ollama_timeout_sec: float = Field(default=120.0, ge=5.0, le=600.0)
+    ollama_timeout_sec: float = Field(
+        default=300.0,
+        ge=5.0,
+        le=600.0,
+        validation_alias=AliasChoices(
+            "OLLAMA_TIMEOUT",
+            "EXPLAINX_OLLAMA_TIMEOUT",
+            "EXPLAINX_OLLAMA_TIMEOUT_SEC",
+        ),
+    )
     ollama_enabled: bool = Field(
         default=True,
         description="When false, ContentIntelligenceService uses PlaceholderContentGenerator.",

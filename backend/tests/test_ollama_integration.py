@@ -29,6 +29,7 @@ def _words(n: int, seed: str = "learning") -> str:
 
 def _valid_payload(*, title: str = "Binary Search") -> dict[str, Any]:
     # ~360 words across sections → ~154s at 140 WPM (inside 120–180 / 300–450).
+    # Numerical metadata is intentionally omitted — calculator fills it.
     sections = []
     for i in range(6):
         narration = _words(60, seed=f"section{i}word")
@@ -37,8 +38,6 @@ def _valid_payload(*, title: str = "Binary Search") -> dict[str, Any]:
                 "id": f"teach-{i+1}",
                 "title": f"Section {i+1}",
                 "narration": narration + ".",
-                "estimated_duration_sec": round(60 / 140 * 60, 1),
-                "estimated_words": 60,
                 "concept_tags": ["Binary Search"],
             }
         )
@@ -52,9 +51,6 @@ def _valid_payload(*, title: str = "Binary Search") -> dict[str, Any]:
             "Apply binary search to a sorted list",
         ],
         "teaching_sections": sections,
-        "estimated_duration_sec": 154.0,
-        "estimated_word_count": 360,
-        "estimated_scene_count": 20,
         "warnings": [],
     }
 
@@ -69,7 +65,7 @@ class MockOllamaClient:
         self.responses = list(responses or [])
         self.error = error
         self.calls: list[tuple[str, str]] = []
-        self.model = "mock-qwen2.5:3b"
+        self.model = "mock-llama3:latest"
 
     def generate(self, *, system: str, prompt: str) -> str:
         self.calls.append((system, prompt))
@@ -78,6 +74,95 @@ class MockOllamaClient:
         if not self.responses:
             raise AssertionError("MockOllamaClient has no responses left")
         return self.responses.pop(0)
+
+
+def _short_payload(*, title: str = "Linear Search") -> dict[str, Any]:
+    """~100 words → ~43s — below the V1 minimum (triggers expansion)."""
+    sections = []
+    for i in range(4):
+        narration = _words(25, seed=f"short{i}")
+        sections.append(
+            {
+                "id": f"teach-{i+1}",
+                "title": f"Section {i+1}",
+                "narration": narration + ".",
+                "concept_tags": [title],
+            }
+        )
+    return {
+        "title": title,
+        "language": "en",
+        "summary": f"A brief overview of {title}.",
+        "key_concepts": [{"id": "concept-1", "label": title}],
+        "learning_objectives": [f"Explain {title}"],
+        "teaching_sections": sections,
+        "warnings": [],
+    }
+
+
+def test_ollama_expands_short_script_to_v1_band() -> None:
+    short = _short_payload()
+    full = _valid_payload(title="Linear Search")
+    client = MockOllamaClient([json.dumps(short), json.dumps(full)])
+    generator = OllamaContentGenerator(client)
+    script = generator.generate(
+        project_id="11111111-1111-1111-1111-111111111111",
+        content_id="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        source_type=SourceType.TOPIC,
+        title="Linear Search",
+        language="en",
+        sections=[
+            RawContentSection(
+                id="section-1",
+                text="Linear Search",
+                order=1,
+                title="Linear Search",
+            )
+        ],
+        concepts=[ScriptConcept(id="concept-1", label="Linear Search")],
+        target_duration_sec=150,
+    )
+    assert len(client.calls) == 2
+    assert "expand" in client.calls[1][0].lower() or "Expand" in client.calls[1][1]
+    assert script.metadata.get("expanded") is True
+    assert script.estimated_word_count >= 300
+    assert script.estimated_duration_sec >= 120
+    ScriptValidator().validate(script)
+
+
+def test_response_parser_ignores_llm_numerical_metadata() -> None:
+    """Wrong LLM estimated_words must be replaced by narration word count."""
+    payload = _valid_payload()
+    for i, section in enumerate(payload["teaching_sections"]):
+        section["estimated_words"] = 70 if i == 0 else 12
+        section["estimated_duration_sec"] = 5.0
+    payload["estimated_word_count"] = 70
+    payload["estimated_duration_sec"] = 1.0
+    payload["estimated_scene_count"] = 3
+
+    client = MockOllamaClient([json.dumps(payload)])
+    generator = OllamaContentGenerator(client)
+    script = generator.generate(
+        project_id="11111111-1111-1111-1111-111111111111",
+        content_id="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        source_type=SourceType.TOPIC,
+        title="Binary Search",
+        language="en",
+        sections=[
+            RawContentSection(
+                id="section-1",
+                text="Binary search finds items in sorted arrays.",
+                order=1,
+                title="Binary Search",
+            )
+        ],
+        concepts=[ScriptConcept(id="concept-1", label="Binary Search")],
+        target_duration_sec=150,
+    )
+    assert script.teaching_sections[0].estimated_words == 60
+    assert script.estimated_word_count == 360
+    assert script.estimated_duration_sec == round((360 / 140.0) * 60.0, 1)
+    ScriptValidator().validate(script)
 
 
 def test_ollama_generator_implements_protocol() -> None:
@@ -195,6 +280,8 @@ def test_prompt_builder_v1_templates() -> None:
     assert "2–3 minute" in topic_sys or "2-3 minute" in topic_sys.replace("–", "-")
     assert "teaching_sections" in topic_user
     assert "STRICT JSON" in topic_user
+    assert "estimated_words" in topic_user  # mentioned as forbidden
+    assert "Do NOT include any numerical metadata" in topic_user or "do NOT include any numerical metadata" in topic_user
 
 
 def test_ollama_client_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -203,6 +290,7 @@ def test_ollama_client_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(httpx.Client, "post", boom)
     client = OllamaClient(base_url="http://127.0.0.1:9", model="x", timeout_sec=1.0)
+    client._health_checked = True
     with pytest.raises(ExplainXError) as exc:
         client.generate(system="s", prompt="p")
     assert exc.value.code == "OLLAMA_UNAVAILABLE"
@@ -214,6 +302,7 @@ def test_ollama_client_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(httpx.Client, "post", boom)
     client = OllamaClient(base_url="http://127.0.0.1:9", model="x", timeout_sec=1.0)
+    client._health_checked = True
     with pytest.raises(ExplainXError) as exc:
         client.generate(system="s", prompt="p")
     assert exc.value.code == "OLLAMA_TIMEOUT"
@@ -221,12 +310,17 @@ def test_ollama_client_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_ollama_client_empty_response() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/api/tags"):
+            return httpx.Response(
+                200,
+                json={"models": [{"name": "llama3:latest"}]},
+            )
         return httpx.Response(200, json={"response": "   "})
 
     transport = httpx.MockTransport(handler)
     client = OllamaClient(
         base_url="http://ollama.test",
-        model="qwen2.5:3b",
+        model="llama3:latest",
         transport=transport,
     )
     with pytest.raises(ExplainXError) as exc:

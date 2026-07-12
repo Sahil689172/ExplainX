@@ -12,8 +12,8 @@ from pydantic import ValidationError
 from app.core.enums import SourceType
 from app.core.errors import ExplainXError
 from app.core.timeutil import utc_now_iso
-from app.features.script.durations import V1_TARGET_DURATION_SEC, estimate_scene_count
-from app.features.script.metrics import count_words, enrich_script_with_metrics
+from app.features.script.durations import V1_TARGET_DURATION_SEC
+from app.features.script.metrics import ScriptMetricsCalculator, enrich_script_with_metrics
 from app.features.script.schemas import (
     EDUCATIONAL_SCRIPT_SCHEMA_VERSION,
     EducationalScript,
@@ -23,11 +23,32 @@ from app.features.script.schemas import (
 
 _FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE | re.MULTILINE)
 
+# Numerical metadata the LLM must never own — stripped if present.
+_NUMERIC_ROOT_KEYS = (
+    "estimated_duration_sec",
+    "estimated_word_count",
+    "estimated_scene_count",
+    "estimated_words",
+    "total_words",
+    "total_duration",
+    "total_duration_sec",
+    "average_words_per_section",
+)
+_NUMERIC_SECTION_KEYS = (
+    "estimated_duration_sec",
+    "estimated_words",
+    "total_words",
+    "total_duration",
+    "total_duration_sec",
+)
+
 
 class ResponseParser:
     """Validate LLM JSON and assemble an EducationalScript.
 
-    Retries once via ``retry_fn`` when the first parse fails.
+    Numerical metadata from the model is ignored; ScriptMetricsCalculator
+    fills all estimates from narration. Retries once via ``retry_fn`` when
+    the first parse fails.
     """
 
     def parse(
@@ -121,6 +142,10 @@ class ResponseParser:
         fallback_title: str,
         fallback_language: str,
     ) -> EducationalScript:
+        # Never trust LLM numerical metadata.
+        for key in _NUMERIC_ROOT_KEYS:
+            payload.pop(key, None)
+
         title = (payload.get("title") or fallback_title or "Educational Script")[:200]
         language = payload.get("language") or fallback_language or "en"
         teaching_raw = payload.get("teaching_sections") or []
@@ -149,19 +174,6 @@ class ResponseParser:
                 status_code=502,
             )
 
-        word_count = sum(s.estimated_words for s in teaching_sections) or sum(
-            count_words(s.narration) for s in teaching_sections
-        )
-        duration = float(
-            payload.get("estimated_duration_sec")
-            if payload.get("estimated_duration_sec") is not None
-            else round((word_count / 140.0) * 60.0, 1)
-        )
-        scene_count = int(
-            payload.get("estimated_scene_count")
-            if payload.get("estimated_scene_count") is not None
-            else estimate_scene_count(duration)
-        )
         summary = str(payload.get("summary") or "").strip() or (
             f"A 2–3 minute educational explanation of {title}."
         )
@@ -171,6 +183,7 @@ class ResponseParser:
             if str(item).strip()
         ]
 
+        # Placeholder zeros — ScriptMetricsCalculator overwrites from narration.
         assembled = {
             "script_id": payload.get("script_id") or str(uuid.uuid4()),
             "project_id": project_id,
@@ -180,9 +193,9 @@ class ResponseParser:
             "title": title,
             "language": language,
             "target_duration_sec": V1_TARGET_DURATION_SEC,
-            "estimated_duration_sec": duration,
-            "estimated_word_count": int(payload.get("estimated_word_count") or word_count),
-            "estimated_scene_count": scene_count,
+            "estimated_duration_sec": 0.0,
+            "estimated_word_count": 0,
+            "estimated_scene_count": 0,
             "summary": summary,
             "key_concepts": [c.model_dump(mode="json") for c in key_concepts],
             "learning_objectives": objectives,
@@ -214,15 +227,17 @@ class ResponseParser:
                 status_code=502,
             )
         data = dict(item)
+        for key in _NUMERIC_SECTION_KEYS:
+            data.pop(key, None)
         # Tolerate older field name from Phase 3 prompts.
         if "narration" not in data and "narration_text" in data:
             data["narration"] = data.pop("narration_text")
         narration = str(data.get("narration") or "").strip()
         data["narration"] = narration
-        if "estimated_words" not in data or not data.get("estimated_words"):
-            data["estimated_words"] = count_words(narration)
-        if "estimated_duration_sec" not in data or data.get("estimated_duration_sec") is None:
-            data["estimated_duration_sec"] = round((count_words(narration) / 140.0) * 60.0, 1)
+        calculator = ScriptMetricsCalculator()
+        words = calculator.words_for_narration(narration)
+        data["estimated_words"] = words
+        data["estimated_duration_sec"] = calculator.duration_for_words(words)
         if "concept_tags" not in data:
             data["concept_tags"] = list(data.get("concept_ids") or [])
         if "id" not in data or not data["id"]:

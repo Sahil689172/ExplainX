@@ -27,6 +27,29 @@ Read these before changing architecture or contracts:
 - **[uv](https://github.com/astral-sh/uv)** (preferred) for backend deps
 - Windows 10/11 target: Intel i7-1255U class, 16GB RAM (see constitution)
 
+### Ollama (local LLM for EducationalScript)
+
+1. Install [Ollama](https://ollama.com)
+2. Run:
+
+```bat
+ollama pull llama3:latest
+```
+
+3. Start Ollama:
+
+```bat
+ollama serve
+```
+
+4. Configure (repo-root `.env`):
+
+```env
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=llama3:latest
+OLLAMA_TIMEOUT=300
+```
+
 ## Quick start
 
 ### Windows (CMD) — without `uv`

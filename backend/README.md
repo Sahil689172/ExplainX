@@ -18,6 +18,26 @@ python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 Thin wrapper around existing services. Generates a V1 EducationalScript
 (2–3 minute explainer) and writes artifacts under ``data/projects/<id>/artifacts/``.
 
+Word counts and durations are calculated deterministically at **140 WPM**
+after narration is generated (the LLM never supplies numerical metadata).
+
+Phase 3.7 writes a lesson-plan ``artifacts/teaching_outline.json`` (8–12
+sections, word budget only — no narration) before EducationalScript generation.
+
+Phase 3.8 generates narration **one outline section at a time**, persists
+``artifacts/section_outputs/section_XX.json``, then merges into
+``educational_script.json``.
+
+### Prerequisites
+
+1. Install Ollama
+2. Run ``ollama pull llama3:latest``
+3. Start Ollama with ``ollama serve``
+4. Configure ``OLLAMA_MODEL=llama3:latest`` (see repo-root ``.env.example``)
+
+The CLI checks that Ollama is reachable and the configured model exists
+before script generation.
+
 ```bat
 cd /d c:\Users\hp\ExplainX\backend
 

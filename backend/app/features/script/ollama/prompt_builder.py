@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import json
+
 from app.core.enums import SourceType
 from app.features.input.schemas import RawContentSection
 from app.features.script.durations import word_budget
 from app.features.script.ollama import templates
-from app.features.script.schemas import ScriptConcept
+from app.features.script.schemas import EducationalScript, ScriptConcept
 
 
 class PromptBuilder:
@@ -58,6 +60,42 @@ class PromptBuilder:
             json_schema_instructions=templates.JSON_SCHEMA_INSTRUCTIONS,
         )
         return system, user
+
+    def build_expand(
+        self,
+        *,
+        script: EducationalScript,
+        current_duration_sec: float,
+        current_words: int,
+        target_duration_sec: int,
+    ) -> tuple[str, str]:
+        """Prompt to expand a too-short script toward the V1 duration band."""
+        payload = {
+            "title": script.title,
+            "language": script.language,
+            "summary": script.summary,
+            "key_concepts": [c.model_dump(mode="json") for c in script.key_concepts],
+            "learning_objectives": list(script.learning_objectives),
+            "teaching_sections": [
+                {
+                    "id": section.id,
+                    "title": section.title,
+                    "narration": section.narration,
+                    "concept_tags": list(section.concept_tags),
+                }
+                for section in script.teaching_sections
+            ],
+            "warnings": list(script.warnings),
+        }
+        user = templates.EXPAND_USER.format(
+            current_duration_sec=current_duration_sec,
+            current_words=current_words,
+            target_duration_sec=target_duration_sec,
+            word_budget=word_budget(target_duration_sec),
+            script_json=json.dumps(payload, ensure_ascii=False, indent=2)[:14_000],
+            json_schema_instructions=templates.JSON_SCHEMA_INSTRUCTIONS,
+        )
+        return templates.EXPAND_SYSTEM, user
 
     @staticmethod
     def _format_sections(sections: list[RawContentSection]) -> str:

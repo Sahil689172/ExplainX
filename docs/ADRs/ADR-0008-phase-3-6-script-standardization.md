@@ -2,12 +2,17 @@
 
 - Status: Accepted
 - Date: 2026-07-12
+- Updated: 2026-07-12 (deterministic metrics)
 
 ## Context
 
 ExplainX V1 needs one consistent narration product: a high-quality educational
 script for a **2–3 minute animated explainer**. Supporting many duration presets
 (30s/60s/90s/3min/5min) fragmented generation quality and complicated validation.
+
+LLM-generated numerical metadata (`estimated_words`, `estimated_duration_sec`)
+was unreliable and could disagree with narration text, causing false validation
+failures.
 
 ## Decision
 
@@ -17,7 +22,7 @@ script for a **2–3 minute animated explainer**. Supporting many duration prese
 |--------|--------|------------------|
 | Duration | ~150s | 120–180s |
 | Words | 320–420 | 300–450 |
-| Speaking rate | 135–145 WPM | ~140 WPM used for estimates |
+| Speaking rate | 140 WPM | used for all duration estimates |
 | Estimated scenes | 18–25 | derived (~7.5s/scene) |
 
 Multiple duration presets are **retired**. API body fields
@@ -42,12 +47,34 @@ Identity/system fields (`script_id`, `project_id`, `content_id`, `source_type`,
 Beats / legacy `sections` were removed from the public schema in favor of
 `teaching_sections`.
 
-### ScriptMetrics
+### Deterministic metrics (required)
 
-Computed and persisted separately:
+The LLM / generator must **never** invent numerical metadata.
+
+Generate content only:
+
+- `title`, `summary`, `learning_objectives`
+- `key_concepts`
+- section `title`, `narration`, `concept_tags`
+
+After generation, `ScriptMetricsCalculator` computes at **140 WPM**:
+
+- per-section `estimated_words`, `estimated_duration_sec`
+- `total_words` / `estimated_word_count`
+- `total_duration_sec` / `estimated_duration_sec`
+- `estimated_scene_count`
+- `average_words_per_section`
+- `reading_level`
+
+`ScriptValidator` validates **calculated** values only (never LLM guesses).
+
+### ScriptMetrics artifact
+
+Persisted separately:
 
 - `total_words`
-- `estimated_duration_sec`
+- `total_duration_sec`
+- `estimated_duration_sec` (same as total duration)
 - `estimated_scene_count`
 - `average_words_per_section`
 - `reading_level`
@@ -70,14 +97,22 @@ artifacts/script_metrics.json
 - **PDF** — coherent narration from extracted text; ignore references,
   bibliography, acknowledgements, indexes, appendices, repeated headers/footers  
 
-`PlaceholderContentGenerator` and `OllamaContentGenerator` both emit schema 1.1.
+`PlaceholderContentGenerator` and `OllamaContentGenerator` both emit schema 1.1
+and always run metrics enrichment after narration is ready.
+
+If an Ollama draft is under 120s / 300 words, one expansion pass rewrites
+narration (examples, analogies, explanations, transitions) toward ~180s
+while keeping section structure.
+
+Ollama prompt template version: `1.3` (no numerical fields; expansion pass for short drafts).
 
 ### Validation
 
-Reject with `SCRIPT_VALIDATION_ERROR` when:
+Reject with `SCRIPT_VALIDATION_ERROR` when calculated metrics show:
 
-- estimated duration < 120s or > 180s  
+- duration < 120s or > 180s  
 - total words < 300 or > 450  
+- empty section narration  
 
 ### Non-goals
 
@@ -89,10 +124,12 @@ Reject with `SCRIPT_VALIDATION_ERROR` when:
 
 - Clients must consume `teaching_sections` (not beats).  
 - Old `artifacts/v1/script.json` is not auto-migrated; regenerate scripts.  
-- Ollama prompts updated to template version `1.1`.
+- Ollama prompts updated to template version `1.3`.  
+- `script_metrics.json` includes `total_duration_sec`.
 
 ## Docs
 
 - This ADR  
-- Code: `backend/app/features/script/`  
-- Tests: `backend/tests/test_phase36_script_standardization.py`
+- Code: `backend/app/features/script/` (`metrics.py`, `validator.py`, `ollama/`)  
+- Tests: `backend/tests/test_phase36_script_standardization.py`,
+  `backend/tests/test_ollama_integration.py`

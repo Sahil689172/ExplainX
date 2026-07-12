@@ -21,7 +21,7 @@ from app.features.script.durations import (
     resolve_target_duration_sec,
 )
 from app.features.script.generator import PlaceholderContentGenerator, PlaceholderScriptGenerator
-from app.features.script.metrics import ScriptMetricsCalculator, count_words
+from app.features.script.metrics import ScriptMetricsCalculator, count_words, enrich_script_with_metrics
 from app.features.script.processors.pdf_filter import filter_pdf_sections
 from app.features.script.processors.topic_processor import TopicContentProcessor
 from app.features.script.schemas import (
@@ -173,9 +173,45 @@ def test_script_metrics_calculator() -> None:
     )
     metrics = ScriptMetricsCalculator().compute(script)
     assert metrics.total_words == count_words(script.full_text)
+    assert metrics.total_duration_sec == metrics.estimated_duration_sec
     assert metrics.language == "en"
     assert metrics.reading_level in {"beginner", "intermediate", "advanced"}
     assert metrics.average_words_per_section > 0
+    for section in script.teaching_sections:
+        assert section.estimated_words == count_words(section.narration)
+
+
+def test_enrich_overwrites_inconsistent_llm_numbers() -> None:
+    """LLM-style wrong estimated_words must not survive enrichment."""
+    narration = " ".join(f"word{i}" for i in range(20)) + "."
+    script = EducationalScript(
+        script_id="s1",
+        project_id="11111111-1111-1111-1111-111111111111",
+        content_id="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        source_type=SourceType.TOPIC,
+        title="T",
+        language="en",
+        target_duration_sec=150,
+        estimated_duration_sec=999.0,
+        estimated_word_count=70,
+        estimated_scene_count=99,
+        summary="Summary text for the lesson.",
+        teaching_sections=[
+            TeachingSection(
+                id="t1",
+                title="Section",
+                narration=narration,
+                estimated_duration_sec=30.0,
+                estimated_words=70,  # deliberately wrong vs 20 actual words
+                concept_tags=[],
+            )
+        ],
+        created_at=utc_now_iso(),
+    )
+    fixed = enrich_script_with_metrics(script)
+    assert fixed.teaching_sections[0].estimated_words == 20
+    assert fixed.estimated_word_count == 20
+    assert fixed.estimated_duration_sec == ScriptMetricsCalculator().duration_for_words(20)
 
 
 def test_pdf_filter_drops_bibliography() -> None:

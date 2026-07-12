@@ -19,6 +19,11 @@ _UNSPEAKABLE = re.compile(r"(```|<html|<table\b)", re.IGNORECASE)
 
 
 class ScriptValidator:
+    """Validate scripts using deterministically calculated metrics only."""
+
+    def __init__(self, *, calculator: ScriptMetricsCalculator | None = None) -> None:
+        self._calculator = calculator or ScriptMetricsCalculator()
+
     def validate(self, script: EducationalScript, *, raw: RawContent | None = None) -> None:
         if not script.teaching_sections:
             raise ValidationAppError(
@@ -50,40 +55,30 @@ class ScriptValidator:
                     details={"section_id": section.id},
                 )
             words = count_words(section.narration)
-            if section.estimated_words <= 0:
+            if words <= 0:
                 raise ValidationAppError(
-                    "teaching section estimated_words must be positive.",
+                    "teaching section narration must contain at least one word.",
                     code="SCRIPT_VALIDATION_ERROR",
                     details={"section_id": section.id},
                 )
-            # Allow small drift between declared and actual word counts.
-            if abs(section.estimated_words - words) > max(8, int(words * 0.25)):
-                raise ValidationAppError(
-                    "teaching section estimated_words is inconsistent with narration.",
-                    code="SCRIPT_VALIDATION_ERROR",
-                    details={
-                        "section_id": section.id,
-                        "estimated_words": section.estimated_words,
-                        "actual_words": words,
-                    },
-                )
 
-        metrics = ScriptMetricsCalculator().compute(script)
-        if metrics.estimated_duration_sec < V1_MIN_DURATION_SEC:
+        # Always validate calculated values — never trust generator-supplied numbers.
+        metrics = self._calculator.compute(script)
+        if metrics.total_duration_sec < V1_MIN_DURATION_SEC:
             raise ValidationAppError(
                 f"Estimated duration must be at least {V1_MIN_DURATION_SEC} seconds.",
                 code="SCRIPT_VALIDATION_ERROR",
                 details={
-                    "estimated_duration_sec": metrics.estimated_duration_sec,
+                    "estimated_duration_sec": metrics.total_duration_sec,
                     "min": V1_MIN_DURATION_SEC,
                 },
             )
-        if metrics.estimated_duration_sec > V1_MAX_DURATION_SEC:
+        if metrics.total_duration_sec > V1_MAX_DURATION_SEC:
             raise ValidationAppError(
                 f"Estimated duration must be at most {V1_MAX_DURATION_SEC} seconds.",
                 code="SCRIPT_VALIDATION_ERROR",
                 details={
-                    "estimated_duration_sec": metrics.estimated_duration_sec,
+                    "estimated_duration_sec": metrics.total_duration_sec,
                     "max": V1_MAX_DURATION_SEC,
                 },
             )

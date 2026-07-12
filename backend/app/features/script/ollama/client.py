@@ -29,13 +29,14 @@ class OllamaClient:
         *,
         base_url: str,
         model: str,
-        timeout_sec: float = 120.0,
+        timeout_sec: float = 300.0,
         transport: httpx.BaseTransport | None = None,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._model = model
         self._timeout = timeout_sec
         self._transport = transport
+        self._health_checked = False
 
     @classmethod
     def from_settings(
@@ -44,13 +45,17 @@ class OllamaClient:
         *,
         transport: httpx.BaseTransport | None = None,
     ) -> OllamaClient:
-        # Prefer unprefixed env vars as specified for Phase 3.5.
+        # Prefer unprefixed env vars; Settings already loads .env via AliasChoices.
         base_url = os.environ.get("OLLAMA_BASE_URL") or settings.ollama_base_url
         model = os.environ.get("OLLAMA_MODEL") or settings.ollama_model
+        timeout_raw = os.environ.get("OLLAMA_TIMEOUT")
+        timeout_sec = (
+            float(timeout_raw) if timeout_raw is not None else settings.ollama_timeout_sec
+        )
         return cls(
             base_url=base_url,
             model=model,
-            timeout_sec=settings.ollama_timeout_sec,
+            timeout_sec=timeout_sec,
             transport=transport,
         )
 
@@ -62,8 +67,122 @@ class OllamaClient:
     def base_url(self) -> str:
         return self._base_url
 
+    def list_models(self) -> list[str]:
+        """Return installed model names from Ollama ``/api/tags``."""
+        url = f"{self._base_url}/api/tags"
+        try:
+            with httpx.Client(timeout=self._timeout, transport=self._transport) as client:
+                response = client.get(url)
+        except httpx.ConnectError as exc:
+            raise ExplainXError(
+                "Ollama is unavailable (connection failed).",
+                code="OLLAMA_UNAVAILABLE",
+                status_code=503,
+                details={"base_url": self._base_url, "model": self._model},
+                retriable=True,
+            ) from exc
+        except httpx.TimeoutException as exc:
+            raise ExplainXError(
+                "Ollama request timed out.",
+                code="OLLAMA_TIMEOUT",
+                status_code=504,
+                details={
+                    "base_url": self._base_url,
+                    "model": self._model,
+                    "timeout_sec": self._timeout,
+                },
+                retriable=True,
+            ) from exc
+        except httpx.HTTPError as exc:
+            raise ExplainXError(
+                "Ollama request failed.",
+                code="OLLAMA_UNAVAILABLE",
+                status_code=503,
+                details={"base_url": self._base_url, "error": str(exc)},
+                retriable=True,
+            ) from exc
+
+        if response.status_code >= 400:
+            raise ExplainXError(
+                "Ollama tags request failed.",
+                code="OLLAMA_UNAVAILABLE",
+                status_code=503,
+                details={"status_code": response.status_code, "body": response.text[:500]},
+                retriable=True,
+            )
+
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise ExplainXError(
+                "Ollama returned a non-JSON tags envelope.",
+                code="OLLAMA_INVALID_JSON",
+                status_code=502,
+                details={"body": response.text[:500]},
+            ) from exc
+
+        models: list[str] = []
+        for item in data.get("models") or []:
+            if isinstance(item, dict):
+                name = item.get("name") or item.get("model")
+                if isinstance(name, str) and name.strip():
+                    models.append(name.strip())
+        return models
+
+    def model_is_installed(self, installed: list[str] | None = None) -> bool:
+        """Return True when the configured model appears in the installed list."""
+        names = installed if installed is not None else self.list_models()
+        wanted = self._model.strip()
+        if wanted in names:
+            return True
+        # Accept tag-equivalent forms: "llama3" ↔ "llama3:latest"
+        wanted_base, _, wanted_tag = wanted.partition(":")
+        for name in names:
+            base, _, tag = name.partition(":")
+            if base != wanted_base:
+                continue
+            if not wanted_tag or not tag:
+                if (wanted_tag or "latest") == (tag or "latest"):
+                    return True
+            elif tag == wanted_tag:
+                return True
+        return False
+
+    def ensure_ready(self) -> list[str]:
+        """Verify the server is reachable and the configured model is installed.
+
+        Returns the list of installed model names.
+        """
+        installed = self.list_models()
+        if not self.model_is_installed(installed):
+            raise ExplainXError(
+                f"Configured Ollama model '{self._model}' is not installed.",
+                code="OLLAMA_MODEL_MISSING",
+                status_code=503,
+                details={
+                    "base_url": self._base_url,
+                    "model": self._model,
+                    "installed_models": installed,
+                },
+                retriable=False,
+            )
+        self._health_checked = True
+        logger.info(
+            "Ollama health check passed",
+            extra={
+                "event": "ollama_health_ok",
+                "component": "ollama_client",
+                "model": self._model,
+                "installed_count": len(installed),
+            },
+        )
+        return installed
+
     def generate(self, *, system: str, prompt: str) -> str:
         """Call Ollama and return the raw ``response`` text."""
+        if not self._health_checked:
+            self.ensure_ready()
+
         payload: dict[str, Any] = {
             "model": self._model,
             "prompt": prompt,
