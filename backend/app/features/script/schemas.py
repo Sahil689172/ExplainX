@@ -1,4 +1,4 @@
-"""EducationalScript artifact — Phase 3 Content Intelligence output."""
+"""EducationalScript artifact — Phase 3.6 standardized V1 narration format."""
 
 from __future__ import annotations
 
@@ -7,43 +7,15 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.enums import SourceType
+from app.features.script.durations import V1_TARGET_DURATION_SEC
 
-EDUCATIONAL_SCRIPT_SCHEMA_VERSION = "1.0"
+EDUCATIONAL_SCRIPT_SCHEMA_VERSION = "1.1"
 
 ScriptStatus = Literal["placeholder", "draft", "ready"]
 
 
-class ScriptBeat(BaseModel):
-    """TTS-friendly narration unit (maps to constitution NarrationScript beats)."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    id: str
-    order: int = Field(ge=1)
-    text: str = Field(min_length=1, max_length=2000)
-    section_id: str
-    scene_hint: str | None = Field(default=None, max_length=64)
-    approx_sec: float = Field(ge=0.0)
-    concept_ids: list[str] = Field(default_factory=list)
-
-
-class ScriptSection(BaseModel):
-    """Educational narration section with ordered beats."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    id: str
-    order: int = Field(ge=1)
-    title: str = Field(min_length=1, max_length=200)
-    narration_text: str = Field(min_length=1, max_length=50_000)
-    estimated_duration_sec: float = Field(ge=0.0)
-    beat_ids: list[str] = Field(default_factory=list)
-    concept_ids: list[str] = Field(default_factory=list)
-    source_section_ids: list[str] = Field(default_factory=list)
-
-
 class ScriptConcept(BaseModel):
-    """Concept preserved from source / plan for downstream scene planning."""
+    """Concept preserved for downstream scene planning."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -51,12 +23,23 @@ class ScriptConcept(BaseModel):
     label: str = Field(min_length=1, max_length=200)
 
 
-class EducationalScript(BaseModel):
-    """Common educational narration script for every input type.
+class TeachingSection(BaseModel):
+    """One teachable narration block inside the 2–3 minute explainer."""
 
-    Produced from topic / PDF / custom script via ContentIntelligenceService.
-    ``PlaceholderContentGenerator`` may later be replaced by
-    ``OllamaContentGenerator`` without changing this schema.
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    title: str = Field(min_length=1, max_length=200)
+    narration: str = Field(min_length=1, max_length=50_000)
+    estimated_duration_sec: float = Field(ge=0.0)
+    estimated_words: int = Field(ge=0)
+    concept_tags: list[str] = Field(default_factory=list)
+
+
+class EducationalScript(BaseModel):
+    """V1 high-quality educational narration for a 2–3 minute explainer.
+
+    Target band: 120–180 seconds, ~320–420 words, ~18–25 estimated scenes.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -66,14 +49,18 @@ class EducationalScript(BaseModel):
     content_id: str
     source_type: SourceType
     status: ScriptStatus = "placeholder"
+
     title: str = Field(min_length=1, max_length=200)
     language: str = Field(min_length=2, max_length=16)
-    full_text: str = Field(min_length=1)
-    sections: list[ScriptSection] = Field(min_length=1)
-    beats: list[ScriptBeat] = Field(min_length=1)
-    key_concepts: list[ScriptConcept] = Field(default_factory=list)
+    target_duration_sec: int = Field(default=V1_TARGET_DURATION_SEC, ge=1)
     estimated_duration_sec: float = Field(ge=0.0)
-    target_duration_sec: int | None = Field(default=None, ge=1)
+    estimated_word_count: int = Field(ge=0)
+    estimated_scene_count: int = Field(ge=0)
+    summary: str = Field(min_length=1, max_length=2000)
+    key_concepts: list[ScriptConcept] = Field(default_factory=list)
+    learning_objectives: list[str] = Field(default_factory=list)
+    teaching_sections: list[TeachingSection] = Field(min_length=1)
+
     warnings: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
     created_at: str
@@ -87,17 +74,39 @@ class EducationalScript(BaseModel):
             raise ValueError("language must be at least 2 characters")
         return cleaned
 
+    @property
+    def full_text(self) -> str:
+        """Concatenated narration for TTS / legacy consumers."""
+        return "\n\n".join(section.narration for section in self.teaching_sections)
+
+
+class ScriptMetrics(BaseModel):
+    """Derived metrics for a standardized EducationalScript."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    total_words: int = Field(ge=0)
+    estimated_duration_sec: float = Field(ge=0.0)
+    estimated_scene_count: int = Field(ge=0)
+    average_words_per_section: float = Field(ge=0.0)
+    reading_level: str = Field(min_length=1, max_length=64)
+    language: str = Field(min_length=2, max_length=16)
+
 
 class GenerateScriptRequest(BaseModel):
-    """Optional body for POST /projects/{id}/script (Phase 3)."""
+    """Optional body for POST /projects/{id}/script (API-compatible; V1 ignores presets)."""
 
     model_config = ConfigDict(extra="forbid")
 
     target_duration: str | None = Field(
         default=None,
-        description="One of: 30s, 60s, 90s, 3min, 5min",
+        description="Ignored in V1 — ExplainX always targets a 2–3 minute explainer.",
     )
     target_duration_sec: int | None = Field(
         default=None,
-        description="Explicit seconds; must be 30, 60, 90, 180, or 300",
+        description="Ignored in V1 — canonical target is 150 seconds (120–180 accepted).",
     )
+
+
+# Backward-compatible aliases removed from the public schema surface.
+# Older beat/section models are intentionally retired in Phase 3.6.

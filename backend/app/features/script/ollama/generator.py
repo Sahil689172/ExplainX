@@ -6,7 +6,11 @@ from app.core.config import Settings
 from app.core.enums import SourceType
 from app.core.logging import get_logger
 from app.features.input.schemas import RawContentSection
-from app.features.script.durations import label_for_seconds, word_budget
+from app.features.script.durations import (
+    V1_TARGET_DURATION_SEC,
+    label_for_seconds,
+    word_budget,
+)
 from app.features.script.ollama.client import OllamaClient, OllamaClientProtocol
 from app.features.script.ollama.prompt_builder import PromptBuilder
 from app.features.script.ollama.response_parser import ResponseParser
@@ -61,7 +65,7 @@ class OllamaContentGenerator:
             language=language,
             sections=sections,
             concepts=concepts,
-            target_duration_sec=target_duration_sec,
+            target_duration_sec=V1_TARGET_DURATION_SEC,
         )
 
         first = self._client.generate(system=system, prompt=user)
@@ -77,7 +81,7 @@ class OllamaContentGenerator:
             project_id=project_id,
             content_id=content_id,
             source_type=source_type,
-            target_duration_sec=target_duration_sec,
+            target_duration_sec=V1_TARGET_DURATION_SEC,
             fallback_title=title,
             fallback_language=language,
             retry_fn=_retry,
@@ -85,13 +89,14 @@ class OllamaContentGenerator:
 
         out_warnings = list(warnings or []) + list(script.warnings)
         meta = {
-            "generator": "ollama_content_v1",
+            "generator": "ollama_content_v1_1",
             "llm": True,
             "ollama_model": self._model_name,
             "prompt_template_version": PROMPT_TEMPLATE_VERSION,
-            "target_duration": label_for_seconds(target_duration_sec),
-            "target_duration_sec": target_duration_sec,
-            "word_budget": word_budget(target_duration_sec),
+            "target_duration": label_for_seconds(V1_TARGET_DURATION_SEC),
+            "target_duration_sec": V1_TARGET_DURATION_SEC,
+            "word_budget": word_budget(V1_TARGET_DURATION_SEC),
+            "requested_target_duration_sec": target_duration_sec,
             **(metadata or {}),
             **(script.metadata or {}),
         }
@@ -100,7 +105,7 @@ class OllamaContentGenerator:
             update={
                 "warnings": out_warnings,
                 "metadata": meta,
-                "target_duration_sec": target_duration_sec,
+                "target_duration_sec": V1_TARGET_DURATION_SEC,
             }
         )
 

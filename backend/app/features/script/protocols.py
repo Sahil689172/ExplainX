@@ -60,5 +60,5 @@ class ScriptGenerator(Protocol):
         raw: RawContent,
         *,
         plan: PresentationPlan | None = None,
-        target_duration_sec: int = 60,
+        target_duration_sec: int = 150,
     ) -> EducationalScript: ...

@@ -1,8 +1,8 @@
-"""Versioned Ollama prompt templates for EducationalScript generation (Phase 3.5)."""
+"""Versioned Ollama prompt templates — Phase 3.6 V1 educational script."""
 
 from __future__ import annotations
 
-PROMPT_TEMPLATE_VERSION = "1.0"
+PROMPT_TEMPLATE_VERSION = "1.1"
 
 JSON_SCHEMA_INSTRUCTIONS = """
 Return STRICT JSON only.
@@ -11,62 +11,50 @@ No explanations.
 No code fences.
 No trailing commentary.
 
-The JSON MUST match this shape exactly (field names and types):
+The JSON MUST match this shape exactly:
 {
   "title": string,
   "language": string,
-  "full_text": string,
-  "sections": [
+  "summary": string,
+  "key_concepts": [ { "id": string, "label": string } ],
+  "learning_objectives": [ string ],
+  "teaching_sections": [
     {
       "id": string,
-      "order": integer starting at 1,
       "title": string,
-      "narration_text": string,
+      "narration": string,
       "estimated_duration_sec": number,
-      "beat_ids": [string],
-      "concept_ids": [string],
-      "source_section_ids": [string]
+      "estimated_words": integer,
+      "concept_tags": [ string ]
     }
-  ],
-  "beats": [
-    {
-      "id": string,
-      "order": integer starting at 1,
-      "text": string,
-      "section_id": string,
-      "scene_hint": string or null,
-      "approx_sec": number,
-      "concept_ids": [string]
-    }
-  ],
-  "key_concepts": [
-    { "id": string, "label": string }
   ],
   "estimated_duration_sec": number,
-  "warnings": [string]
+  "estimated_word_count": integer,
+  "estimated_scene_count": integer,
+  "warnings": [ string ]
 }
 
-Rules:
-- Every beat.section_id must reference a section.id.
-- Every section.beat_ids must list that section's beat ids exactly.
-- orders must be contiguous starting at 1.
-- Beat text must be speakable narration (no markdown, HTML, or code fences).
-- estimated_duration_sec should be close to the target duration.
+V1 constraints (must satisfy):
+- Target duration about 150 seconds (valid band 120–180).
+- Total narration words about 320–420 (valid band 300–450).
+- Speaking pace about 135–145 words per minute.
+- estimated_scene_count between 18 and 25.
+- Narration must be speakable (no markdown, HTML, or code fences).
 """.strip()
 
 TOPIC_SYSTEM = """
-You are an expert educational narrator for ExplainX.
-Given a topic, expand concepts accurately into clear spoken teaching narration.
-Respect the target duration (word budget).
-Do not invent unrelated subjects.
+You are an expert educational narrator for ExplainX V1.
+Generate a complete 2–3 minute educational explanation of the topic.
+Expand concepts accurately for an animated explainer video.
+Aim for roughly 350 spoken words at about 140 words per minute.
 """.strip()
 
 TOPIC_USER = """
 Input type: topic
 Title: {title}
 Language: {language}
-Target duration seconds: {target_duration_sec}
-Approximate word budget: {word_budget}
+Canonical target duration seconds: {target_duration_sec}
+Word budget: {word_budget} (stay near 320–420 total words)
 
 Topic / section material (text only):
 {sections_text}
@@ -78,19 +66,19 @@ Known concepts (optional):
 """.strip()
 
 SCRIPT_SYSTEM = """
-You are an expert educational editor for ExplainX.
-Preserve the author's intent and wording where possible.
+You are an expert educational editor for ExplainX V1.
+Preserve the author's intent and meaning.
 Improve clarity and teaching flow only where needed.
 Do not rewrite unnecessarily.
-Respect the target duration.
+Expand only if required to reach a complete 2–3 minute lesson (about 320–420 words).
 """.strip()
 
 SCRIPT_USER = """
 Input type: custom_script
 Title: {title}
 Language: {language}
-Target duration seconds: {target_duration_sec}
-Approximate word budget: {word_budget}
+Canonical target duration seconds: {target_duration_sec}
+Word budget: {word_budget} (stay near 320–420 total words)
 
 Author script sections (text only — preserve intent):
 {sections_text}
@@ -102,20 +90,21 @@ Known concepts (optional):
 """.strip()
 
 PDF_SYSTEM = """
-You are an expert educational narrator for ExplainX.
+You are an expert educational narrator for ExplainX V1.
 Use ONLY the extracted document text provided.
-Do not invent facts not supported by the text.
-Produce coherent educational narration.
-Remove repetitive or irrelevant content.
-Respect the target duration.
+Generate a coherent 2–3 minute educational narration.
+Ignore references, bibliography, acknowledgements, indexes, appendices,
+and repeated headers or footers.
+Do not invent facts unsupported by the text.
+Aim for about 320–420 spoken words.
 """.strip()
 
 PDF_USER = """
 Input type: pdf_extracted_text
 Title: {title}
 Language: {language}
-Target duration seconds: {target_duration_sec}
-Approximate word budget: {word_budget}
+Canonical target duration seconds: {target_duration_sec}
+Word budget: {word_budget} (stay near 320–420 total words)
 
 Extracted document text only (no file metadata):
 {sections_text}
@@ -127,8 +116,9 @@ Known concepts (optional):
 """.strip()
 
 REPAIR_USER = """
-Your previous response was not valid EducationalScript JSON.
+Your previous response was not valid EducationalScript JSON for ExplainX V1.
 Return ONLY corrected STRICT JSON matching the required schema.
+Ensure total words are 300–450 and estimated duration is 120–180 seconds.
 No markdown. No explanations. No code fences.
 
 Previous response:

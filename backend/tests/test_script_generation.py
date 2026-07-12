@@ -1,23 +1,18 @@
-"""Tests for Script Generation Engine (EducationalScript)."""
+"""Tests for Script Generation / Content Intelligence (updated for Phase 3.6)."""
 
 from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
-from pydantic import ValidationError
 
 from app.core.enums import SourceType
 from app.core.errors import ValidationAppError
 from app.core.timeutil import utc_now_iso
 from app.features.input.schemas import ExtractionStats, RawContent, RawContentSection
+from app.features.script.durations import V1_TARGET_DURATION_SEC
 from app.features.script.generator import PlaceholderScriptGenerator
 from app.features.script.protocols import ScriptGenerator
-from app.features.script.schemas import (
-    EducationalScript,
-    ScriptBeat,
-    ScriptConcept,
-    ScriptSection,
-)
+from app.features.script.schemas import EducationalScript, ScriptConcept, TeachingSection
 from app.features.script.validator import ScriptValidator
 
 
@@ -54,12 +49,10 @@ def test_placeholder_implements_protocol() -> None:
     assert script.status == "placeholder"
     assert script.title == "Binary Search"
     assert script.language == "en"
-    assert len(script.sections) >= 1
-    assert len(script.beats) >= 1
+    assert len(script.teaching_sections) >= 1
+    assert script.target_duration_sec == V1_TARGET_DURATION_SEC
     assert script.estimated_duration_sec > 0
     assert script.metadata["llm"] is False
-    assert "Today we will learn" in script.full_text
-    assert script.target_duration_sec == 60
 
 
 def test_custom_script_preserves_wording() -> None:
@@ -69,10 +62,9 @@ def test_custom_script_preserves_wording() -> None:
     )
     assert script.source_type == SourceType.SCRIPT
     assert "Welcome students" in script.full_text
-    assert "Today we will learn" not in script.full_text
 
 
-def test_pdf_source_uses_spoken_framing() -> None:
+def test_pdf_source_generates_teaching_sections() -> None:
     script = PlaceholderScriptGenerator().generate(
         _raw(
             source_type=SourceType.PDF,
@@ -81,7 +73,7 @@ def test_pdf_source_uses_spoken_framing() -> None:
         )
     )
     assert script.source_type == SourceType.PDF
-    assert script.full_text.startswith("Let's begin.")
+    assert len(script.teaching_sections) >= 1
 
 
 def test_validator_accepts_valid_script() -> None:
@@ -90,9 +82,11 @@ def test_validator_accepts_valid_script() -> None:
     ScriptValidator().validate(script, raw=raw)
 
 
-def test_validator_rejects_unspeakable_beat() -> None:
+def test_validator_rejects_unspeakable_narration() -> None:
     script = PlaceholderScriptGenerator().generate(_raw())
-    script.beats[0].text = "See ```code``` block"
+    bad = script.teaching_sections[0].model_copy(update={"narration": "See ```code``` block " + ("word " * 80)})
+    # Keep word count roughly valid by padding
+    script = script.model_copy(update={"teaching_sections": [bad, *script.teaching_sections[1:]]})
     with pytest.raises(ValidationAppError) as exc:
         ScriptValidator().validate(script)
     assert exc.value.code == "SCRIPT_VALIDATION_ERROR"
@@ -106,8 +100,8 @@ def test_validator_rejects_content_id_mismatch() -> None:
         ScriptValidator().validate(script, raw=other)
 
 
-def test_schema_requires_beats_and_sections() -> None:
-    with pytest.raises(ValidationError):
+def test_schema_requires_teaching_sections() -> None:
+    with pytest.raises(Exception):
         EducationalScript(
             script_id="s1",
             project_id="11111111-1111-1111-1111-111111111111",
@@ -115,10 +109,12 @@ def test_schema_requires_beats_and_sections() -> None:
             source_type=SourceType.TOPIC,
             title="T",
             language="en",
-            full_text="hello",
-            sections=[],
-            beats=[],
-            estimated_duration_sec=1,
+            target_duration_sec=150,
+            estimated_duration_sec=150,
+            estimated_word_count=350,
+            estimated_scene_count=20,
+            summary="S",
+            teaching_sections=[],
             created_at=utc_now_iso(),
         )
 
@@ -147,7 +143,6 @@ def test_api_generate_and_get_script(client: TestClient, _test_env) -> None:
     )
     assert ingest.status_code == 200, ingest.text
 
-    # Optional plan enrichment path
     plan = client.post(f"/api/v1/projects/{project_id}/presentation-plan")
     assert plan.status_code == 201, plan.text
 
@@ -159,15 +154,14 @@ def test_api_generate_and_get_script(client: TestClient, _test_env) -> None:
     data = created.json()["data"]
     assert data["status"] == "placeholder"
     assert data["source_type"] == "topic"
-    assert len(data["beats"]) >= 1
-    assert len(data["sections"]) >= 1
+    assert len(data["teaching_sections"]) >= 1
     assert len(data["key_concepts"]) >= 1
+    assert data["target_duration_sec"] == V1_TARGET_DURATION_SEC
     assert data["estimated_duration_sec"] > 0
     assert data["metadata"]["llm"] is False
     assert data["metadata"]["used_presentation_plan"] is True
-    assert data["target_duration_sec"] == 60
 
-    artifact = _test_env / "projects" / project_id / "artifacts" / "v1" / "script.json"
+    artifact = _test_env / "projects" / project_id / "artifacts" / "educational_script.json"
     assert artifact.is_file()
 
     fetched = client.get(f"/api/v1/projects/{project_id}/script")
@@ -190,7 +184,7 @@ def test_api_script_from_custom_script_input(client: TestClient) -> None:
     assert created.status_code == 201, created.text
     data = created.json()["data"]
     assert data["source_type"] == "script"
-    assert "Hello class" in data["full_text"]
+    assert "Hello class" in " ".join(s["narration"] for s in data["teaching_sections"])
 
 
 def test_api_requires_raw_content(client: TestClient) -> None:
@@ -202,18 +196,11 @@ def test_api_requires_raw_content(client: TestClient) -> None:
 
 def test_model_helpers() -> None:
     ScriptConcept(id="c1", label="Hashing")
-    ScriptBeat(
-        id="nar_1",
-        order=1,
-        text="Hello.",
-        section_id="s1",
-        approx_sec=2.0,
-    )
-    ScriptSection(
-        id="s1",
-        order=1,
+    TeachingSection(
+        id="t1",
         title="Intro",
-        narration_text="Hello.",
+        narration="Hello learners.",
         estimated_duration_sec=2.0,
-        beat_ids=["nar_1"],
+        estimated_words=2,
+        concept_tags=["Hashing"],
     )

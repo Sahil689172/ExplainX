@@ -9,6 +9,7 @@ from app.core.errors import ValidationAppError
 from app.features.input.pdf_extract import extract_pdf_markdown_sections, inspect_pdf
 from app.features.input.schemas import RawContent, RawContentSection
 from app.features.presentation.schemas import PresentationPlan
+from app.features.script.processors.pdf_filter import filter_pdf_sections
 from app.features.script.generator import PlaceholderContentGenerator
 from app.features.script.processors.common import (
     improve_readability,
@@ -21,7 +22,7 @@ from app.features.script.schemas import EducationalScript
 
 
 class PDFContentProcessor:
-    """Extract with PyMuPDF4LLM, then generate spoken narration."""
+    """Extract with PyMuPDF4LLM, filter noise, then generate spoken narration."""
 
     source_type = SourceType.PDF
 
@@ -48,7 +49,6 @@ class PDFContentProcessor:
             if extracted.page_count:
                 warnings.append(f"pdf_page_count={extracted.page_count}")
         else:
-            # Fall back to already-normalized RawContent (still unified schema).
             sections = [
                 s.model_copy(update={"text": improve_readability(s.text)})
                 for s in (raw.sections or [])
@@ -71,19 +71,30 @@ class PDFContentProcessor:
                 )
             warnings.append("pdf_path_missing_used_raw_content")
 
+        before = len(sections)
+        sections = filter_pdf_sections(sections)
+        dropped = before - len(sections)
+        if dropped:
+            warnings.append(
+                f"filtered_{dropped}_non_teaching_pdf_sections "
+                "(references/bibliography/headers/etc.)"
+            )
+        if not sections:
+            raise ValidationAppError(
+                "PDF produced no teachable text after filtering non-content sections.",
+                code="PARSER_EMPTY_CONTENT",
+                details={"project_id": raw.project_id},
+            )
+
         framed: list[RawContentSection] = []
         for index, section in enumerate(sections, start=1):
             body = improve_readability(section.text)
-            if index == 1:
-                narration = f"Let's begin. {body}"
-            else:
-                narration = f"Moving on. {body}"
             framed.append(
                 section.model_copy(
                     update={
-                        "text": narration,
+                        "text": body,
                         "order": index,
-                        "title": section.title or f"Page {index}",
+                        "title": section.title or f"Section {index}",
                     }
                 )
             )
@@ -99,7 +110,7 @@ class PDFContentProcessor:
             target_duration_sec=target_duration_sec,
             warnings=warnings,
             metadata={
-                "processor": "pdf_content_v1",
+                "processor": "pdf_content_v1_1",
                 "extractor": "pymupdf4llm",
                 "used_presentation_plan": plan is not None,
                 "plan_id": plan.plan_id if plan else None,

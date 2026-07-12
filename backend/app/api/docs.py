@@ -18,7 +18,7 @@ API_TAGS_METADATA = [
     },
     {
         "name": "content-intelligence",
-        "description": "Phase 3.5 Content Intelligence — any input → EducationalScript (Ollama)",
+        "description": "Phase 3.6 Content Intelligence — V1 2–3 min EducationalScript",
     },
     {
         "name": "script-generation",

@@ -80,8 +80,8 @@ async def system_modules(
             status="ready",
             available=True,
             detail=(
-                "Phase 3.5 EducationalScript via processors + "
-                "OllamaContentGenerator (Placeholder in tests)"
+                "Phase 3.6 V1 EducationalScript (2–3 min) via processors + "
+                "Ollama/Placeholder generators"
             ),
         ),
         ModuleStatusItem(

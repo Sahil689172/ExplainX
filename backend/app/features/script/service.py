@@ -25,8 +25,9 @@ from app.features.presentation.schemas import PresentationPlan
 from app.features.presentation.store import PresentationPlanStore
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
-from app.features.script.durations import resolve_target_duration_sec
+from app.features.script.durations import V1_TARGET_DURATION_SEC, resolve_target_duration_sec
 from app.features.script.factory import create_content_generator
+from app.features.script.metrics import ScriptMetricsCalculator, enrich_script_with_metrics
 from app.features.script.processors.pdf_processor import PDFContentProcessor
 from app.features.script.processors.script_processor import ScriptContentProcessor
 from app.features.script.processors.topic_processor import TopicContentProcessor
@@ -41,16 +42,8 @@ logger = get_logger(__name__)
 class ContentIntelligenceService:
     """Generate one EducationalScript from topic / PDF / custom script.
 
-    Architecture::
-
-        RawContent (+ optional source PDF)
-            → input-specific ContentProcessor
-                  TopicContentProcessor | PDFContentProcessor | ScriptContentProcessor
-            → ContentGenerator (OllamaContentGenerator by default; Placeholder in tests)
-            → EducationalScript
-
-    Inject ``generator=...`` to override without changing processors, routes,
-    validator, or store.
+    Phase 3.6 standardizes on a single V1 format: a 2–3 minute explainer
+    (120–180s, ~320–420 words). Optional duration request fields are ignored.
     """
 
     def __init__(
@@ -69,6 +62,7 @@ class ContentIntelligenceService:
         self._raw_store = InputArtifactStore(self._fs)
         self._plan_store = PresentationPlanStore(self._fs)
         self._script_store = ScriptArtifactStore(self._fs)
+        self._metrics = ScriptMetricsCalculator()
         self._generator = generator or create_content_generator(settings)
         self._validator = validator or ScriptValidator()
         self._processors: dict[SourceType, ContentProcessor] = processors or {
@@ -89,6 +83,7 @@ class ContentIntelligenceService:
         raw = self._raw_store.read_raw_content(project_id)
         self._validate_raw_input(raw)
 
+        # V1: always the canonical 2–3 minute target (request fields ignored).
         duration = resolve_target_duration_sec(
             label=target_duration,
             seconds=target_duration_sec,
@@ -110,8 +105,12 @@ class ContentIntelligenceService:
             plan=plan,
             pdf_path=pdf_path,
         )
+        script = enrich_script_with_metrics(
+            script.model_copy(update={"target_duration_sec": V1_TARGET_DURATION_SEC})
+        )
+        metrics = self._metrics.compute(script)
         self._validator.validate(script, raw=raw)
-        self._script_store.write(project_id, script)
+        self._script_store.write(project_id, script, metrics=metrics)
 
         try:
             project.current_phase = ProjectPhase.CONTENT.value
@@ -130,7 +129,9 @@ class ContentIntelligenceService:
                 "script_id": script.script_id,
                 "source_type": script.source_type.value,
                 "status": script.status,
-                "target_duration_sec": duration,
+                "target_duration_sec": V1_TARGET_DURATION_SEC,
+                "estimated_duration_sec": script.estimated_duration_sec,
+                "estimated_word_count": script.estimated_word_count,
             },
         )
         return script

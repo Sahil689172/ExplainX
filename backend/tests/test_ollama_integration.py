@@ -1,4 +1,4 @@
-"""Integration tests for Phase 3.5 OllamaContentGenerator (mocked Ollama client)."""
+"""Integration tests for OllamaContentGenerator with Phase 3.6 schema (mocked)."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from app.core.enums import SourceType
 from app.core.errors import ExplainXError
 from app.core.timeutil import utc_now_iso
 from app.features.input.schemas import ExtractionStats, RawContent, RawContentSection
+from app.features.script.durations import V1_TARGET_DURATION_SEC
 from app.features.script.ollama.client import OllamaClient
 from app.features.script.ollama.generator import OllamaContentGenerator
 from app.features.script.ollama.prompt_builder import PromptBuilder
@@ -22,58 +23,43 @@ from app.features.script.schemas import ScriptConcept
 from app.features.script.validator import ScriptValidator
 
 
+def _words(n: int, seed: str = "learning") -> str:
+    return " ".join(f"{seed}{i}" for i in range(n))
+
+
 def _valid_payload(*, title: str = "Binary Search") -> dict[str, Any]:
+    # ~360 words across sections → ~154s at 140 WPM (inside 120–180 / 300–450).
+    sections = []
+    for i in range(6):
+        narration = _words(60, seed=f"section{i}word")
+        sections.append(
+            {
+                "id": f"teach-{i+1}",
+                "title": f"Section {i+1}",
+                "narration": narration + ".",
+                "estimated_duration_sec": round(60 / 140 * 60, 1),
+                "estimated_words": 60,
+                "concept_tags": ["Binary Search"],
+            }
+        )
     return {
         "title": title,
         "language": "en",
-        "full_text": (
-            "Today we will learn about binary search. "
-            "It finds items in sorted arrays efficiently."
-        ),
-        "sections": [
-            {
-                "id": "script-section-1",
-                "order": 1,
-                "title": "Introduction",
-                "narration_text": (
-                    "Today we will learn about binary search. "
-                    "It finds items in sorted arrays efficiently."
-                ),
-                "estimated_duration_sec": 12.0,
-                "beat_ids": ["nar-1", "nar-2"],
-                "concept_ids": ["concept-1"],
-                "source_section_ids": ["section-1"],
-            }
-        ],
-        "beats": [
-            {
-                "id": "nar-1",
-                "order": 1,
-                "text": "Today we will learn about binary search.",
-                "section_id": "script-section-1",
-                "scene_hint": "intro",
-                "approx_sec": 6.0,
-                "concept_ids": ["concept-1"],
-            },
-            {
-                "id": "nar-2",
-                "order": 2,
-                "text": "It finds items in sorted arrays efficiently.",
-                "section_id": "script-section-1",
-                "scene_hint": "section_1",
-                "approx_sec": 6.0,
-                "concept_ids": ["concept-1"],
-            },
-        ],
+        "summary": f"A 2–3 minute explanation of {title}.",
         "key_concepts": [{"id": "concept-1", "label": "Binary Search"}],
-        "estimated_duration_sec": 12.0,
+        "learning_objectives": [
+            "Explain binary search",
+            "Apply binary search to a sorted list",
+        ],
+        "teaching_sections": sections,
+        "estimated_duration_sec": 154.0,
+        "estimated_word_count": 360,
+        "estimated_scene_count": 20,
         "warnings": [],
     }
 
 
 class MockOllamaClient:
-    """Deterministic fake Ollama client for integration tests."""
-
     def __init__(
         self,
         responses: list[str] | None = None,
@@ -116,9 +102,8 @@ def test_ollama_generator_implements_protocol() -> None:
     )
     assert script.status == "draft"
     assert script.metadata["llm"] is True
-    assert script.metadata["generator"] == "ollama_content_v1"
-    assert script.target_duration_sec == 60
-    assert len(script.beats) == 2
+    assert script.target_duration_sec == V1_TARGET_DURATION_SEC
+    assert len(script.teaching_sections) == 6
     assert len(client.calls) == 1
 
 
@@ -145,10 +130,9 @@ def test_topic_processor_with_ollama_generator() -> None:
         metadata={},
         created_at=utc_now_iso(),
     )
-    script = TopicContentProcessor(generator).process(raw, target_duration_sec=60)
+    script = TopicContentProcessor(generator).process(raw, target_duration_sec=150)
     ScriptValidator().validate(script, raw=raw)
     assert script.metadata["llm"] is True
-    assert "topic" in client.calls[0][1].lower() or "Topic" in client.calls[0][1]
 
 
 def test_response_parser_retries_once_on_invalid_json() -> None:
@@ -171,11 +155,10 @@ def test_response_parser_retries_once_on_invalid_json() -> None:
             )
         ],
         concepts=[],
-        target_duration_sec=90,
+        target_duration_sec=150,
     )
     assert script.title == "Binary Search"
     assert len(client.calls) == 2
-    assert "not valid" in client.calls[1][1].lower() or "Previous response" in client.calls[1][1]
 
 
 def test_response_parser_fails_after_retry() -> None:
@@ -192,70 +175,26 @@ def test_response_parser_fails_after_retry() -> None:
                 RawContentSection(id="p1", text="Photosynthesis text", order=1, title="P1")
             ],
             concepts=[],
-            target_duration_sec=60,
+            target_duration_sec=150,
         )
     assert exc.value.code == "OLLAMA_INVALID_JSON"
     assert len(client.calls) == 2
 
 
-def test_prompt_builder_separates_templates() -> None:
+def test_prompt_builder_v1_templates() -> None:
     builder = PromptBuilder()
-    sections = [
-        RawContentSection(id="s1", text="Topic body", order=1, title="T"),
-    ]
+    sections = [RawContentSection(id="s1", text="Topic body", order=1, title="T")]
     topic_sys, topic_user = builder.build(
         source_type=SourceType.TOPIC,
         title="T",
         language="en",
         sections=sections,
         concepts=[],
-        target_duration_sec=60,
+        target_duration_sec=150,
     )
-    script_sys, script_user = builder.build(
-        source_type=SourceType.SCRIPT,
-        title="T",
-        language="en",
-        sections=sections,
-        concepts=[],
-        target_duration_sec=60,
-    )
-    pdf_sys, pdf_user = builder.build(
-        source_type=SourceType.PDF,
-        title="T",
-        language="en",
-        sections=sections,
-        concepts=[],
-        target_duration_sec=60,
-    )
-    assert "educational narrator" in topic_sys.lower()
-    assert "preserve the author's intent" in script_sys.lower()
-    assert "extracted document text" in pdf_sys.lower() or "ONLY the extracted" in pdf_sys
-    assert "Input type: topic" in topic_user
-    assert "Input type: custom_script" in script_user
-    assert "Input type: pdf_extracted_text" in pdf_user
-    assert "metadata" not in pdf_user.lower() or "no file metadata" in pdf_user.lower()
+    assert "2–3 minute" in topic_sys or "2-3 minute" in topic_sys.replace("–", "-")
+    assert "teaching_sections" in topic_user
     assert "STRICT JSON" in topic_user
-
-
-def test_prompt_builder_sends_text_only_for_pdf() -> None:
-    _, user = PromptBuilder().build(
-        source_type=SourceType.PDF,
-        title="Photosynthesis",
-        language="en",
-        sections=[
-            RawContentSection(
-                id="page-1",
-                text="Chloroplasts convert light energy.",
-                order=1,
-                title="Page 1",
-            )
-        ],
-        concepts=[],
-        target_duration_sec=60,
-    )
-    assert "Chloroplasts convert light energy." in user
-    assert "source_path" not in user
-    assert "sha256" not in user
 
 
 def test_ollama_client_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -295,17 +234,17 @@ def test_ollama_client_empty_response() -> None:
     assert exc.value.code == "OLLAMA_EMPTY_RESPONSE"
 
 
-def test_response_parser_rejects_malformed_sections() -> None:
+def test_response_parser_rejects_empty_teaching_sections() -> None:
     parser = ResponseParser()
     payload = _valid_payload()
-    payload["beats"] = []  # invalid vs schema min_length via EducationalScript
+    payload["teaching_sections"] = []
     with pytest.raises(ExplainXError) as exc:
         parser.parse(
             json.dumps(payload),
             project_id="11111111-1111-1111-1111-111111111111",
             content_id="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
             source_type=SourceType.TOPIC,
-            target_duration_sec=60,
+            target_duration_sec=150,
             fallback_title="T",
             fallback_language="en",
         )

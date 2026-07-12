@@ -1,4 +1,4 @@
-"""Validate EducationalScript invariants before persistence."""
+"""Validate EducationalScript invariants and V1 duration/word bands."""
 
 from __future__ import annotations
 
@@ -6,6 +6,13 @@ import re
 
 from app.core.errors import ValidationAppError
 from app.features.input.schemas import RawContent
+from app.features.script.durations import (
+    V1_MAX_DURATION_SEC,
+    V1_MAX_WORDS,
+    V1_MIN_DURATION_SEC,
+    V1_MIN_WORDS,
+)
+from app.features.script.metrics import ScriptMetricsCalculator, count_words
 from app.features.script.schemas import EducationalScript
 
 _UNSPEAKABLE = re.compile(r"(```|<html|<table\b)", re.IGNORECASE)
@@ -13,90 +20,84 @@ _UNSPEAKABLE = re.compile(r"(```|<html|<table\b)", re.IGNORECASE)
 
 class ScriptValidator:
     def validate(self, script: EducationalScript, *, raw: RawContent | None = None) -> None:
-        if not script.sections:
+        if not script.teaching_sections:
             raise ValidationAppError(
-                "EducationalScript must include at least one section.",
+                "EducationalScript must include at least one teaching section.",
                 code="SCRIPT_VALIDATION_ERROR",
-                details={"field": "sections"},
-            )
-        if not script.beats:
-            raise ValidationAppError(
-                "EducationalScript must include at least one beat.",
-                code="SCRIPT_VALIDATION_ERROR",
-                details={"field": "beats"},
+                details={"field": "teaching_sections"},
             )
 
-        section_orders = [s.order for s in script.sections]
-        if sorted(section_orders) != list(range(1, len(section_orders) + 1)):
+        if not script.summary.strip():
             raise ValidationAppError(
-                "sections.order must be contiguous starting at 1.",
+                "EducationalScript.summary is required.",
                 code="SCRIPT_VALIDATION_ERROR",
-                details={"orders": section_orders},
+                details={"field": "summary"},
             )
 
-        beat_orders = [b.order for b in script.beats]
-        if sorted(beat_orders) != list(range(1, len(beat_orders) + 1)):
+        section_ids = [s.id for s in script.teaching_sections]
+        if len(set(section_ids)) != len(section_ids):
             raise ValidationAppError(
-                "beats.order must be contiguous starting at 1.",
+                "teaching_sections.id values must be unique.",
                 code="SCRIPT_VALIDATION_ERROR",
-                details={"orders": beat_orders},
+                details={"field": "teaching_sections.id"},
             )
 
-        beat_ids = {b.id for b in script.beats}
-        if len(beat_ids) != len(script.beats):
+        for section in script.teaching_sections:
+            if _UNSPEAKABLE.search(section.narration):
+                raise ValidationAppError(
+                    "teaching section narration contains unspeakable formatting.",
+                    code="SCRIPT_VALIDATION_ERROR",
+                    details={"section_id": section.id},
+                )
+            words = count_words(section.narration)
+            if section.estimated_words <= 0:
+                raise ValidationAppError(
+                    "teaching section estimated_words must be positive.",
+                    code="SCRIPT_VALIDATION_ERROR",
+                    details={"section_id": section.id},
+                )
+            # Allow small drift between declared and actual word counts.
+            if abs(section.estimated_words - words) > max(8, int(words * 0.25)):
+                raise ValidationAppError(
+                    "teaching section estimated_words is inconsistent with narration.",
+                    code="SCRIPT_VALIDATION_ERROR",
+                    details={
+                        "section_id": section.id,
+                        "estimated_words": section.estimated_words,
+                        "actual_words": words,
+                    },
+                )
+
+        metrics = ScriptMetricsCalculator().compute(script)
+        if metrics.estimated_duration_sec < V1_MIN_DURATION_SEC:
             raise ValidationAppError(
-                "beat ids must be unique.",
+                f"Estimated duration must be at least {V1_MIN_DURATION_SEC} seconds.",
                 code="SCRIPT_VALIDATION_ERROR",
-                details={"field": "beats.id"},
+                details={
+                    "estimated_duration_sec": metrics.estimated_duration_sec,
+                    "min": V1_MIN_DURATION_SEC,
+                },
             )
-
-        section_ids = {s.id for s in script.sections}
-        concept_ids = {c.id for c in script.key_concepts}
-
-        for beat in script.beats:
-            if beat.section_id not in section_ids:
-                raise ValidationAppError(
-                    "beat references unknown section_id.",
-                    code="SCRIPT_VALIDATION_ERROR",
-                    details={"beat_id": beat.id, "section_id": beat.section_id},
-                )
-            unknown = [i for i in beat.concept_ids if i not in concept_ids]
-            if unknown:
-                raise ValidationAppError(
-                    "beat references unknown concept ids.",
-                    code="SCRIPT_VALIDATION_ERROR",
-                    details={"beat_id": beat.id, "concept_ids": unknown},
-                )
-            if _UNSPEAKABLE.search(beat.text):
-                raise ValidationAppError(
-                    "beat text contains unspeakable formatting.",
-                    code="SCRIPT_VALIDATION_ERROR",
-                    details={"beat_id": beat.id},
-                )
-
-        for section in script.sections:
-            missing_beats = [i for i in section.beat_ids if i not in beat_ids]
-            if missing_beats:
-                raise ValidationAppError(
-                    "section references unknown beat ids.",
-                    code="SCRIPT_VALIDATION_ERROR",
-                    details={"section_id": section.id, "beat_ids": missing_beats},
-                )
-            unknown = [i for i in section.concept_ids if i not in concept_ids]
-            if unknown:
-                raise ValidationAppError(
-                    "section references unknown concept ids.",
-                    code="SCRIPT_VALIDATION_ERROR",
-                    details={"section_id": section.id, "concept_ids": unknown},
-                )
-
-        assigned = [b.id for b in script.beats]
-        referenced = [bid for s in script.sections for bid in s.beat_ids]
-        if sorted(assigned) != sorted(referenced):
+        if metrics.estimated_duration_sec > V1_MAX_DURATION_SEC:
             raise ValidationAppError(
-                "every beat must be referenced by exactly its section beat_ids.",
+                f"Estimated duration must be at most {V1_MAX_DURATION_SEC} seconds.",
                 code="SCRIPT_VALIDATION_ERROR",
-                details={"beats": assigned, "referenced": referenced},
+                details={
+                    "estimated_duration_sec": metrics.estimated_duration_sec,
+                    "max": V1_MAX_DURATION_SEC,
+                },
+            )
+        if metrics.total_words < V1_MIN_WORDS:
+            raise ValidationAppError(
+                f"Total words must be at least {V1_MIN_WORDS}.",
+                code="SCRIPT_VALIDATION_ERROR",
+                details={"total_words": metrics.total_words, "min": V1_MIN_WORDS},
+            )
+        if metrics.total_words > V1_MAX_WORDS:
+            raise ValidationAppError(
+                f"Total words must be at most {V1_MAX_WORDS}.",
+                code="SCRIPT_VALIDATION_ERROR",
+                details={"total_words": metrics.total_words, "max": V1_MAX_WORDS},
             )
 
         if raw is not None and script.content_id != raw.content_id:
