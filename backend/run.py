@@ -6,11 +6,13 @@ Usage (from the ``backend/`` directory, with the repo-root ``.venv`` active)::
     python run.py topic "Binary search for beginners"
     python run.py script path/to/script.txt
     python run.py pdf path/to/document.pdf
+    python run.py audio <project_id>
 
-Optional flags::
+Optional flags (topic/script/pdf)::
 
     --project-id <uuid>   Reuse an existing project
     --title "My Title"    Override the project title
+    --reuse-project       Reuse a project with the same title if one exists
 
 Exit codes::
 

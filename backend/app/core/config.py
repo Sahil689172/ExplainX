@@ -116,6 +116,24 @@ class Settings(BaseSettings):
         description="Max narration generation attempts when topic verification fails.",
     )
 
+    # Piper TTS (Phase 4 MVP speech generation).
+    piper_executable: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "PIPER_EXECUTABLE",
+            "EXPLAINX_PIPER_EXECUTABLE",
+        ),
+        description="Path to the Piper TTS executable.",
+    )
+    piper_model: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "PIPER_MODEL",
+            "EXPLAINX_PIPER_MODEL",
+        ),
+        description="Path to the Piper .onnx voice model.",
+    )
+
     @field_validator("log_level")
     @classmethod
     def normalize_log_level(cls, value: str) -> str:

@@ -17,6 +17,7 @@ from app.core.logging import get_logger, setup_logging
 from app.core.paths import ensure_runtime_directories
 from app.db import session as db_session
 from app.db.bootstrap import init_database
+from app.features.audio.service import AudioService
 from app.features.input.pdf_extract import (
     PDF_MAX_BYTES,
     SCRIPT_MAX_LEN,
@@ -429,7 +430,27 @@ def build_parser() -> argparse.ArgumentParser:
     pdf.add_argument("path", help="Path to .pdf file (≤25 MB, ≤30 pages)")
     add_common(pdf)
 
+    audio = sub.add_parser(
+        "audio",
+        help="Generate speech audio.wav from existing narration (Piper)",
+    )
+    audio.add_argument("project_id", help="Project UUID with a narration artifact")
+
     return parser
+
+
+def run_audio(project_id: str, *, settings: Settings | None = None) -> Path:
+    """Generate artifacts/audio.wav for an existing project narration."""
+    cfg = bootstrap(settings=settings)
+    session = _session()
+    try:
+        print("Generating speech...", flush=True)
+        path = AudioService(session, cfg).generate(project_id.strip())
+        print("Saved", flush=True)
+        print("audio.wav", flush=True)
+        return path
+    finally:
+        session.close()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -461,6 +482,8 @@ def main(argv: list[str] | None = None) -> int:
                 title=args.title,
                 reuse_project=args.reuse_project,
             )
+        elif args.command == "audio":
+            run_audio(args.project_id)
         else:
             parser.error(f"Unknown command: {args.command}")
         return EXIT_OK
