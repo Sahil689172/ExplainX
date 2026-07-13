@@ -435,17 +435,27 @@ def build_parser() -> argparse.ArgumentParser:
         help="Generate speech audio.wav from existing narration (Piper)",
     )
     audio.add_argument("project_id", help="Project UUID with a narration artifact")
+    audio.add_argument(
+        "--lang",
+        default=None,
+        help="Voice language (en, hi, te). Defaults to script language, then DEFAULT_LANGUAGE.",
+    )
 
     return parser
 
 
-def run_audio(project_id: str, *, settings: Settings | None = None) -> Path:
+def run_audio(
+    project_id: str,
+    *,
+    lang: str | None = None,
+    settings: Settings | None = None,
+) -> Path:
     """Generate artifacts/audio.wav for an existing project narration."""
     cfg = bootstrap(settings=settings)
     session = _session()
     try:
         print("Generating speech...", flush=True)
-        path = AudioService(session, cfg).generate(project_id.strip())
+        path = AudioService(session, cfg).generate(project_id.strip(), lang=lang)
         print("Saved", flush=True)
         print("audio.wav", flush=True)
         return path
@@ -483,7 +493,7 @@ def main(argv: list[str] | None = None) -> int:
                 reuse_project=args.reuse_project,
             )
         elif args.command == "audio":
-            run_audio(args.project_id)
+            run_audio(args.project_id, lang=args.lang)
         else:
             parser.error(f"Unknown command: {args.command}")
         return EXIT_OK

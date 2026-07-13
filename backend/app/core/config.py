@@ -125,13 +125,21 @@ class Settings(BaseSettings):
         ),
         description="Path to the Piper TTS executable.",
     )
-    piper_model: str = Field(
-        default="",
+    piper_voices_dir: str = Field(
+        default="data/models/piper",
         validation_alias=AliasChoices(
-            "PIPER_MODEL",
-            "EXPLAINX_PIPER_MODEL",
+            "PIPER_VOICES_DIR",
+            "EXPLAINX_PIPER_VOICES_DIR",
         ),
-        description="Path to the Piper .onnx voice model.",
+        description="Directory of per-language Piper voice folders (en/, hi/, te/).",
+    )
+    default_language: str = Field(
+        default="en",
+        validation_alias=AliasChoices(
+            "DEFAULT_LANGUAGE",
+            "EXPLAINX_DEFAULT_LANGUAGE",
+        ),
+        description="Fallback language when --lang and script language are missing.",
     )
 
     @field_validator("log_level")
