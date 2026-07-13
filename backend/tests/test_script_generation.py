@@ -158,14 +158,15 @@ def test_api_generate_and_get_script(client: TestClient, _test_env) -> None:
     assert len(data["key_concepts"]) >= 1
     assert data["target_duration_sec"] == V1_TARGET_DURATION_SEC
     assert data["estimated_duration_sec"] > 0
-    assert data["metadata"].get("single_script_generation") is True
-    assert data["metadata"].get("section_generation") is False
+    assert data["metadata"].get("narration_pipeline") is True
+    assert data["metadata"].get("single_script_generation") is False
     assert data["metadata"].get("quality_assured") is True
 
     artifact = _test_env / "projects" / project_id / "artifacts" / "educational_script.json"
     assert artifact.is_file()
     assert (_test_env / "projects" / project_id / "artifacts" / "approved_script.json").is_file()
     assert (_test_env / "projects" / project_id / "artifacts" / "teaching_outline.json").is_file()
+    assert (_test_env / "projects" / project_id / "artifacts" / "narration.json").is_file()
     assert (_test_env / "projects" / project_id / "artifacts" / "quality_report.json").is_file()
     assert (_test_env / "projects" / project_id / "artifacts" / "repair_log.json").is_file()
 
@@ -176,10 +177,18 @@ def test_api_generate_and_get_script(client: TestClient, _test_env) -> None:
 
 def test_api_script_from_custom_script_input(client: TestClient) -> None:
     project_id = _create_project(client, "Custom Script Project")
+    # Author text must meet MVP duration (≥60s ≈ 140 words); wording is preserved.
+    body = (
+        "Hello class. We will study sorting algorithms today. "
+        "We compare simple approaches first, then discuss why order matters. "
+        "For example, inserting numbers into a list shows how swaps reveal structure. "
+        "Next we connect comparisons to everyday ranking tasks. "
+        "Finally we recap the main idea so learners leave with a clear takeaway. "
+    )
     ingest = client.put(
         f"/api/v1/projects/{project_id}/source/script",
         json={
-            "script": "Hello class. We will study sorting algorithms today.",
+            "script": (body * 8).strip(),
             "title": "Sorting",
             "replace": True,
         },
@@ -191,6 +200,7 @@ def test_api_script_from_custom_script_input(client: TestClient) -> None:
     assert data["source_type"] == "script"
     assert data["status"] == "ready"
     assert data["metadata"].get("quality_assured") is True
+    assert "Hello class" in " ".join(s["narration"] for s in data["teaching_sections"])
     assert len(data["teaching_sections"]) >= 1
     assert data["estimated_word_count"] > 0
 

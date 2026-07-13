@@ -1,6 +1,7 @@
 """Phase 3.5 Ollama integration for EducationalScript generation."""
 
 __all__ = [
+    "MODEL_NOT_INSTALLED",
     "OllamaClient",
     "OllamaClientProtocol",
     "OllamaContentGenerator",
@@ -10,6 +11,10 @@ __all__ = [
 
 
 def __getattr__(name: str):
+    if name == "MODEL_NOT_INSTALLED":
+        from app.features.script.ollama.client import MODEL_NOT_INSTALLED
+
+        return MODEL_NOT_INSTALLED
     if name == "OllamaClient":
         from app.features.script.ollama.client import OllamaClient
 

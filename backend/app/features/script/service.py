@@ -21,26 +21,31 @@ from app.features.input.pdf_extract import (
 )
 from app.features.input.schemas import RawContent
 from app.features.input.store import InputArtifactStore
-from app.features.outline.service import TeachingOutlineService
+from app.features.narration import templates as narration_templates
+from app.features.narration.service import NarrationGenerationService
+from app.features.outline.schemas import TeachingOutline
+from app.features.outline.store import OutlineArtifactStore
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
+from app.features.quality.schemas import QualityFinding
 from app.features.quality.service import QualityAssuranceService
+from app.features.scene_builder.builder import SceneBuilder
 from app.features.script.durations import V1_TARGET_DURATION_SEC, resolve_target_duration_sec
 from app.features.script.metrics import ScriptMetricsCalculator, enrich_script_with_metrics
 from app.features.script.schemas import EducationalScript
 from app.features.script.store import ScriptArtifactStore
-from app.features.single_script.service import SingleScriptGenerationService
 from app.shared.pipeline_timing import pipeline_timing_scope, timed_step
 
 logger = get_logger(__name__)
 
 
 class ContentIntelligenceService:
-    """Generate, assemble, and quality-assure EducationalScript.
+    """Generate and quality-assure EducationalScript.
 
     Pipeline:
-    RawContent → TeachingOutline → SingleScriptGeneration → EducationalScript
-      → ScriptMetricsCalculator → QualityAssuranceService → Approved EducationalScript.
+    RawContent → Narration (1 LLM call for topic/PDF; none for script)
+      → NarrationValidator → SceneBuilder → EducationalScript
+      → derived TeachingOutline → QualityAssurance → Approved.
 
     Public HTTP APIs are unchanged.
     """
@@ -50,8 +55,8 @@ class ContentIntelligenceService:
         session: Session,
         settings: Settings,
         *,
-        outline_service: TeachingOutlineService | None = None,
-        single_script_service: SingleScriptGenerationService | None = None,
+        narration_service: NarrationGenerationService | None = None,
+        scene_builder: SceneBuilder | None = None,
         quality_service: QualityAssuranceService | None = None,
     ) -> None:
         self._session = session
@@ -59,11 +64,14 @@ class ContentIntelligenceService:
         self._repo = ProjectRepository(session)
         self._fs = ProjectFilesystem(settings)
         self._raw_store = InputArtifactStore(self._fs)
+        self._outline_store = OutlineArtifactStore(self._fs)
         self._script_store = ScriptArtifactStore(self._fs)
         self._metrics = ScriptMetricsCalculator()
-        self._outline_service = outline_service or TeachingOutlineService(session, settings)
-        self._quality_service = quality_service or QualityAssuranceService(session, settings)
-        self._single_script_service = single_script_service or SingleScriptGenerationService(
+        self._narration_service = narration_service or NarrationGenerationService(
+            session, settings
+        )
+        self._scene_builder = scene_builder or SceneBuilder()
+        self._quality_service = quality_service or QualityAssuranceService(
             session, settings
         )
 
@@ -93,21 +101,22 @@ class ContentIntelligenceService:
         raw = self._raw_store.read_raw_content(project_id)
         self._validate_raw_input(raw)
 
-        _ = resolve_target_duration_sec(
+        duration = resolve_target_duration_sec(
             label=target_duration,
             seconds=target_duration_sec,
         )
 
-        outline = self._outline_service.generate_outline(
+        narration = self._narration_service.generate(
             project_id,
-            target_duration=target_duration,
-            target_duration_sec=target_duration_sec,
+            raw=raw,
+            target_duration_sec=duration,
         )
 
-        script = self._single_script_service.generate_from_outline(
-            project_id,
-            outline=outline,
-        )
+        with timed_step("SceneBuilder"):
+            script = self._scene_builder.build(narration, raw=raw)
+            outline = self._scene_builder.derive_outline(script, narration=narration)
+            self._outline_store.write(project_id, outline)
+
         script = enrich_script_with_metrics(
             script.model_copy(
                 update={
@@ -117,12 +126,59 @@ class ContentIntelligenceService:
                         "teaching_outline_id": outline.outline_id,
                         "outline_section_count": len(outline.sections),
                         "outline_total_target_words": outline.total_target_words,
-                        "single_script_generation": True,
+                        "narration_pipeline": True,
+                        "narration_id": narration.narration_id,
+                        "single_script_generation": False,
                         "section_generation": False,
                     },
                 }
             )
         )
+
+        def _rebuild(
+            _current: EducationalScript,
+            findings: list[QualityFinding],
+            attempt: int,
+        ) -> tuple[EducationalScript, TeachingOutline | None]:
+            codes = {f.code for f in findings}
+            if "TOO_SHORT" in codes or "EMPTY_SECTION" in codes:
+                hint = narration_templates.REPAIR_EXPAND
+            else:
+                hint = narration_templates.REPAIR_SHORTEN
+            _ = attempt
+            # Custom scripts must not be rewritten by the LLM.
+            if raw.source_type == SourceType.SCRIPT:
+                raise ValidationAppError(
+                    "Author script failed quality checks; narration rewrite is disabled for scripts.",
+                    code="SCRIPT_QUALITY_FAILED",
+                    details={"project_id": project_id, "source_type": "script"},
+                )
+            new_narration = self._narration_service.generate(
+                project_id,
+                raw=raw,
+                target_duration_sec=duration,
+                repair_hint=hint,
+            )
+            rebuilt = self._scene_builder.build(new_narration, raw=raw)
+            new_outline = self._scene_builder.derive_outline(
+                rebuilt, narration=new_narration
+            )
+            self._outline_store.write(project_id, new_outline)
+            rebuilt = rebuilt.model_copy(
+                update={
+                    "target_duration_sec": V1_TARGET_DURATION_SEC,
+                    "metadata": {
+                        **(rebuilt.metadata or {}),
+                        "teaching_outline_id": new_outline.outline_id,
+                        "narration_pipeline": True,
+                        "narration_id": new_narration.narration_id,
+                        "narration_repair_attempt": attempt,
+                        "single_script_generation": False,
+                        "section_generation": False,
+                    },
+                }
+            )
+            return rebuilt, new_outline
 
         with timed_step("QualityAssurance"):
             approved = self._quality_service.assure(
@@ -130,6 +186,7 @@ class ContentIntelligenceService:
                 script,
                 raw=raw,
                 outline=outline,
+                script_rebuilder=_rebuild,
             )
         metrics = self._metrics.compute(approved)
         self._script_store.write(project_id, approved, metrics=metrics)
@@ -154,8 +211,7 @@ class ContentIntelligenceService:
                 "target_duration_sec": V1_TARGET_DURATION_SEC,
                 "estimated_duration_sec": approved.estimated_duration_sec,
                 "estimated_word_count": approved.estimated_word_count,
-                "single_script_generation": True,
-                "section_generation": False,
+                "narration_pipeline": True,
                 "quality_assured": True,
             },
         )

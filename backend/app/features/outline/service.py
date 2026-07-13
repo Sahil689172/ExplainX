@@ -1,4 +1,9 @@
-"""TeachingOutlineService — RawContent → TeachingOutline (Phase 3.7)."""
+"""TeachingOutlineService — RawContent → TeachingOutline (legacy / optional).
+
+The live ContentIntelligence path no longer calls LLM outline generation.
+Outlines on the hot path are derived deterministically by SceneBuilder.
+This service remains for tests and manual outline rebuilds.
+"""
 
 from __future__ import annotations
 

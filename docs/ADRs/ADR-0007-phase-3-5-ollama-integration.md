@@ -60,11 +60,12 @@ Server overwrites identity fields (`project_id`, `content_id`, `source_type`,
 | Variable | Default | Notes |
 |----------|---------|-------|
 | `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | preferred unprefixed |
-| `OLLAMA_MODEL` | `qwen2.5:3b` | preferred unprefixed |
-| `EXPLAINX_OLLAMA_TIMEOUT_SEC` | `120` | |
+| `OLLAMA_MODEL` | `qwen2.5:3b` | preferred unprefixed; must be installed |
+| `OLLAMA_TIMEOUT` | `600` | seconds (`EXPLAINX_OLLAMA_TIMEOUT_SEC` also accepted) |
+| `OLLAMA_TEMPERATURE` | `0.2` | passed to Ollama `options.temperature` |
 | `EXPLAINX_OLLAMA_ENABLED` | `true` | false → Placeholder |
 
-Also accepted: `EXPLAINX_OLLAMA_BASE_URL`, `EXPLAINX_OLLAMA_MODEL`.
+Also accepted: `EXPLAINX_OLLAMA_BASE_URL`, `EXPLAINX_OLLAMA_MODEL`, `EXPLAINX_OLLAMA_TEMPERATURE`.
 
 In `EXPLAINX_ENV=testing`, the factory forces Placeholder so CI never hits Ollama.
 
@@ -76,6 +77,7 @@ In `EXPLAINX_ENV=testing`, the factory forces Placeholder so CI never hits Ollam
 | `OLLAMA_TIMEOUT` | request timeout |
 | `OLLAMA_EMPTY_RESPONSE` | blank model output |
 | `OLLAMA_INVALID_JSON` | malformed JSON or schema mismatch (after one retry) |
+| `MODEL_NOT_INSTALLED` | configured `OLLAMA_MODEL` not in `ollama list` / `/api/tags` |
 
 ### Non-goals
 

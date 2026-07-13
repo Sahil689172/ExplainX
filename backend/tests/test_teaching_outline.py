@@ -161,7 +161,7 @@ def test_apply_word_budget_restores_exact_total() -> None:
 
 def test_ollama_outline_generator_with_mock() -> None:
     class MockClient:
-        model = "mock-llama3:latest"
+        model = "mock-model:test"
 
         def generate(self, *, system: str, prompt: str) -> str:
             sections = []
@@ -235,9 +235,13 @@ def test_script_generation_also_writes_outline(
     artifacts = _test_env / "projects" / project_id / "artifacts"
     assert (artifacts / "teaching_outline.json").is_file()
     assert (artifacts / "educational_script.json").is_file()
+    assert (artifacts / "narration.json").is_file()
     outline = TeachingOutline.model_validate_json(
         (artifacts / "teaching_outline.json").read_text(encoding="utf-8")
     )
-    assert outline.total_target_words == compute_total_word_budget(V1_TARGET_DURATION_SEC)
+    assert outline.metadata.get("derived_from_script") is True
+    assert outline.metadata.get("llm") is False
+    assert OUTLINE_SECTION_MIN <= len(outline.sections) <= OUTLINE_SECTION_MAX
     script_meta = created.json()["data"]["metadata"]
     assert script_meta.get("teaching_outline_id") == outline.outline_id
+    assert script_meta.get("narration_pipeline") is True

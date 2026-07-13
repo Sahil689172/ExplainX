@@ -1,4 +1,4 @@
-"""Regression: quality / generation packages must not circular-import."""
+"""Regression: quality and generation packages must not circular-import."""
 
 from __future__ import annotations
 
@@ -14,6 +14,21 @@ def test_quality_repair_has_no_section_generation_import() -> None:
     assert repair_mod.ScriptRepairService is not None
 
 
+def test_narration_service_has_no_quality_import() -> None:
+    import app.features.narration.service as narration_svc
+
+    source = Path(narration_svc.__file__).read_text(encoding="utf-8")
+    assert "app.features.quality" not in source
+
+
+def test_scene_builder_has_no_quality_or_ollama_import() -> None:
+    import app.features.scene_builder.builder as builder_mod
+
+    source = Path(builder_mod.__file__).read_text(encoding="utf-8")
+    assert "app.features.quality" not in source
+    assert "ollama" not in source
+
+
 def test_section_generation_service_has_no_quality_import() -> None:
     import app.features.section_generation.service as section_svc
 
@@ -21,59 +36,41 @@ def test_section_generation_service_has_no_quality_import() -> None:
     assert "app.features.quality" not in source
 
 
-def test_single_script_service_has_no_quality_import() -> None:
-    import app.features.single_script.service as single_svc
-
-    source = Path(single_svc.__file__).read_text(encoding="utf-8")
-    assert "app.features.quality" not in source
-
-
 def test_cross_import_order_both_directions() -> None:
-    """Import in either order must succeed (the original cycle failed here)."""
+    from app.features.narration import service as narration_a
     from app.features.quality import repair as repair_a
-    from app.features.section_generation import service as section_a
-    from app.features.single_script import service as single_a
+    from app.features.scene_builder import builder as builder_a
 
     assert repair_a.ScriptRepairService is not None
-    assert section_a.SectionGenerationService is not None
-    assert single_a.SingleScriptGenerationService is not None
-
-    from app.features.quality.repair import ScriptRepairService
-    from app.features.section_generation.service import SectionGenerationService
-    from app.features.single_script.service import SingleScriptGenerationService
-
-    assert SectionGenerationService is section_a.SectionGenerationService
-    assert SingleScriptGenerationService is single_a.SingleScriptGenerationService
-    assert ScriptRepairService is repair_a.ScriptRepairService
+    assert narration_a.NarrationGenerationService is not None
+    assert builder_a.SceneBuilder is not None
 
 
-def test_content_intelligence_wires_single_script_and_qa() -> None:
+def test_content_intelligence_wires_narration_and_qa() -> None:
     from app.core.config import get_settings
     from app.db import session as db_session
+    from app.features.narration.service import NarrationGenerationService
     from app.features.quality.service import QualityAssuranceService
     from app.features.script.service import ContentIntelligenceService
-    from app.features.single_script.service import SingleScriptGenerationService
 
     db_session.get_engine()
     assert db_session.SessionLocal is not None
     with db_session.SessionLocal() as session:
         service = ContentIntelligenceService(session, get_settings())
-        assert isinstance(
-            service._single_script_service, SingleScriptGenerationService
-        )
+        assert isinstance(service._narration_service, NarrationGenerationService)
         assert isinstance(service._quality_service, QualityAssuranceService)
 
 
 def test_application_starts() -> None:
+    from app.features.narration.service import NarrationGenerationService
     from app.features.quality.service import QualityAssuranceService
     from app.features.script.service import ContentIntelligenceService
-    from app.features.section_generation.service import SectionGenerationService
-    from app.features.single_script.service import SingleScriptGenerationService
+    from app.features.scene_builder.builder import SceneBuilder
     from app.main import create_app
 
     app = create_app()
     assert app.title
     assert QualityAssuranceService is not None
-    assert SectionGenerationService is not None
-    assert SingleScriptGenerationService is not None
+    assert NarrationGenerationService is not None
+    assert SceneBuilder is not None
     assert ContentIntelligenceService is not None

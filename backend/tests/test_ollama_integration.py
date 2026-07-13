@@ -65,10 +65,11 @@ class MockOllamaClient:
         self.responses = list(responses or [])
         self.error = error
         self.calls: list[tuple[str, str]] = []
-        self.model = "mock-llama3:latest"
+        self.model = "mock-model:test"
 
-    def generate(self, *, system: str, prompt: str) -> str:
+    def generate(self, *, system: str, prompt: str, json_format: bool = True) -> str:
         self.calls.append((system, prompt))
+        _ = json_format
         if self.error is not None:
             raise self.error
         if not self.responses:
@@ -313,14 +314,14 @@ def test_ollama_client_empty_response() -> None:
         if request.url.path.endswith("/api/tags"):
             return httpx.Response(
                 200,
-                json={"models": [{"name": "llama3:latest"}]},
+                json={"models": [{"name": "cfg-model:latest"}]},
             )
         return httpx.Response(200, json={"response": "   "})
 
     transport = httpx.MockTransport(handler)
     client = OllamaClient(
         base_url="http://ollama.test",
-        model="llama3:latest",
+        model="cfg-model:latest",
         transport=transport,
     )
     with pytest.raises(ExplainXError) as exc:

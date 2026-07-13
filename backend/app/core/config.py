@@ -62,17 +62,27 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("OLLAMA_BASE_URL", "EXPLAINX_OLLAMA_BASE_URL"),
     )
     ollama_model: str = Field(
-        default="llama3:latest",
+        default="qwen2.5:3b",
         validation_alias=AliasChoices("OLLAMA_MODEL", "EXPLAINX_OLLAMA_MODEL"),
+        description="Ollama model tag; must be installed locally (ollama pull …).",
     )
     ollama_timeout_sec: float = Field(
-        default=300.0,
+        default=600.0,
         ge=5.0,
-        le=600.0,
+        le=3600.0,
         validation_alias=AliasChoices(
             "OLLAMA_TIMEOUT",
             "EXPLAINX_OLLAMA_TIMEOUT",
             "EXPLAINX_OLLAMA_TIMEOUT_SEC",
+        ),
+    )
+    ollama_temperature: float = Field(
+        default=0.2,
+        ge=0.0,
+        le=2.0,
+        validation_alias=AliasChoices(
+            "OLLAMA_TEMPERATURE",
+            "EXPLAINX_OLLAMA_TEMPERATURE",
         ),
     )
     ollama_enabled: bool = Field(

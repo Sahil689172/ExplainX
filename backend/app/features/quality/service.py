@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
@@ -19,7 +21,9 @@ from app.features.quality.schemas import (
     FinalStatus,
     QualityFinding,
     QualityReport,
+    RepairAction,
     RepairLog,
+    RepairLogEntry,
     ValidationStatus,
 )
 from app.features.quality.store import QualityArtifactStore
@@ -45,11 +49,18 @@ _HARD_CODES = {
     "MISSING_OUTLINE_SECTIONS",
 }
 
-# Only these findings drive ScriptRepairService in MVP.
+# Only these findings drive repair in MVP.
 _REPAIRABLE_CODES = {
     "TOO_SHORT",
     "EMPTY_SECTION",
 }
+
+# Optional full-script rebuild (e.g. regenerate narration + SceneBuilder).
+# Returns (script, optional refreshed outline).
+ScriptRebuilder = Callable[
+    [EducationalScript, list[QualityFinding], int],
+    tuple[EducationalScript, TeachingOutline | None],
+]
 
 
 class QualityAssuranceService:
@@ -159,23 +170,30 @@ class QualityAssuranceService:
         *,
         raw: RawContent | None = None,
         outline: TeachingOutline | None = None,
+        script_rebuilder: ScriptRebuilder | None = None,
     ) -> EducationalScript:
-        """Run QA; repair up to 2 times; return approved script or raise."""
+        """Run QA; repair up to 2 times; return approved script or raise.
+
+        When ``script_rebuilder`` is provided (narration pipeline), repair
+        regenerates the whole EducationalScript from new narration + SceneBuilder
+        instead of per-section LLM edits.
+        """
         validate_project_id(project_id)
         current = enrich_script_with_metrics(script)
+        current_outline = outline
         repair_entries = []
         attempts = 0
 
         while True:
             findings, errors, warnings, empty, missing = self._inspector.inspect(
-                current, outline=outline
+                current, outline=current_outline
             )
             actionable = [
                 f
                 for f in findings
                 if f.repair_action is not None
-                and f.section_id
                 and f.code in _REPAIRABLE_CODES
+                and (script_rebuilder is not None or f.section_id)
             ]
             unrecoverable = any(f.code == "MISSING_OUTLINE_SECTIONS" for f in findings)
             has_hard_issue = any(f.code in _HARD_CODES for f in findings)
@@ -187,7 +205,7 @@ class QualityAssuranceService:
                 except ValidationAppError as exc:
                     errors = list(errors) + [exc.message]
                     findings, errors2, warnings2, empty, missing = self._inspector.inspect(
-                        current, outline=outline
+                        current, outline=current_outline
                     )
                     errors = list(dict.fromkeys(errors + errors2 + [exc.message]))
                     warnings = list(dict.fromkeys(warnings + warnings2))
@@ -195,8 +213,8 @@ class QualityAssuranceService:
                         f
                         for f in findings
                         if f.repair_action is not None
-                        and f.section_id
                         and f.code in _REPAIRABLE_CODES
+                        and (script_rebuilder is not None or f.section_id)
                     ]
                     has_hard_issue = True
                 else:
@@ -215,7 +233,7 @@ class QualityAssuranceService:
                     report = self._build_report(
                         project_id=project_id,
                         script=approved,
-                        outline=outline,
+                        outline=current_outline,
                         repair_attempts=attempts,
                         final_status="approved",
                         validation_status="pass",
@@ -252,7 +270,7 @@ class QualityAssuranceService:
                 report = self._build_report(
                     project_id=project_id,
                     script=current,
-                    outline=outline,
+                    outline=current_outline,
                     repair_attempts=attempts,
                     final_status="rejected",
                     validation_status="fail",
@@ -288,53 +306,71 @@ class QualityAssuranceService:
                 )
 
             attempts += 1
-            requests = self._repair.build_requests(
-                current,
-                actionable,
-                outline=outline,
-                attempt=attempts,
-            )
-            if not requests:
-                report = self._build_report(
-                    project_id=project_id,
-                    script=current,
-                    outline=outline,
-                    repair_attempts=attempts,
-                    final_status="rejected",
-                    validation_status="fail",
-                    findings=findings,
-                    errors=errors or ["No actionable repair requests."],
-                    warnings=warnings,
-                    empty_sections=empty,
-                    missing_sections=missing,
-                )
-                self._store.write_report(project_id, report)
-                raise ValidationAppError(
-                    "EducationalScript failed quality assurance (no repair actions).",
-                    code="SCRIPT_QUALITY_FAILED",
-                    details={
-                        "project_id": project_id,
-                        "errors": report.errors,
-                        "repair_attempts": attempts,
-                    },
-                )
-
             logger.info(
-                "Repairing EducationalScript sections",
+                "Repairing EducationalScript",
                 extra={
                     "event": "script_quality_repair",
                     "project_id": project_id,
                     "attempt": attempts,
-                    "section_count": len(requests),
+                    "mode": "narration_rebuild" if script_rebuilder else "section",
                 },
             )
             with timed_step(f"Repair {attempts}"):
-                current, new_entries = self._repair.repair(
-                    current, requests, attempt=attempts
-                )
-            repair_entries.extend(new_entries)
-            # Always recalculate after every repair.
-            current = enrich_script_with_metrics(current)
+                if script_rebuilder is not None:
+                    rebuilt, refreshed_outline = script_rebuilder(
+                        current, actionable, attempts
+                    )
+                    current = enrich_script_with_metrics(rebuilt)
+                    if refreshed_outline is not None:
+                        current_outline = refreshed_outline
+                    repair_entries.append(
+                        RepairLogEntry(
+                            attempt=attempts,
+                            section_id="narration",
+                            action=RepairAction.EXPAND,
+                            before_words=count_words(
+                                " ".join(s.narration for s in script.teaching_sections)
+                            ),
+                            after_words=current.estimated_word_count,
+                            notes="Regenerated continuous narration and rebuilt scenes.",
+                        )
+                    )
+                else:
+                    requests = self._repair.build_requests(
+                        current,
+                        actionable,
+                        outline=current_outline,
+                        attempt=attempts,
+                    )
+                    if not requests:
+                        report = self._build_report(
+                            project_id=project_id,
+                            script=current,
+                            outline=current_outline,
+                            repair_attempts=attempts,
+                            final_status="rejected",
+                            validation_status="fail",
+                            findings=findings,
+                            errors=errors or ["No actionable repair requests."],
+                            warnings=warnings,
+                            empty_sections=empty,
+                            missing_sections=missing,
+                        )
+                        self._store.write_report(project_id, report)
+                        raise ValidationAppError(
+                            "EducationalScript failed quality assurance (no repair actions).",
+                            code="SCRIPT_QUALITY_FAILED",
+                            details={
+                                "project_id": project_id,
+                                "errors": report.errors,
+                                "repair_attempts": attempts,
+                            },
+                        )
+                    current, new_entries = self._repair.repair(
+                        current, requests, attempt=attempts
+                    )
+                    repair_entries.extend(new_entries)
+                    current = enrich_script_with_metrics(current)
 
     def _build_report(
         self,

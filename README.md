@@ -30,10 +30,10 @@ Read these before changing architecture or contracts:
 ### Ollama (local LLM for EducationalScript)
 
 1. Install [Ollama](https://ollama.com)
-2. Run:
+2. Pull a model (any tag Ollama supports):
 
 ```bat
-ollama pull llama3:latest
+ollama pull qwen2.5:3b
 ```
 
 3. Start Ollama:
@@ -46,10 +46,34 @@ ollama serve
 
 ```env
 OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_MODEL=llama3:latest
-OLLAMA_TIMEOUT=300
+OLLAMA_MODEL=qwen2.5:3b
+OLLAMA_TIMEOUT=600
+OLLAMA_TEMPERATURE=0.2
 ```
 
+### Switching Models
+
+Set `OLLAMA_MODEL` in the repo-root `.env` (or the environment). No code changes required.
+
+```env
+OLLAMA_MODEL=qwen2.5:3b
+```
+
+```env
+OLLAMA_MODEL=llama3:latest
+```
+
+```env
+OLLAMA_MODEL=gemma3:4b
+```
+
+Then pull the model if needed:
+
+```bat
+ollama pull %OLLAMA_MODEL%
+```
+
+The CLI validates that the configured model is installed before generation.
 ## Quick start
 
 ### Windows (CMD) — without `uv`

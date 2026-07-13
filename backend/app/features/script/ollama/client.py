@@ -14,12 +14,28 @@ from app.shared.pipeline_timing import timed_step
 
 logger = get_logger(__name__)
 
+# Error when settings.ollama_model is not among installed Ollama tags.
+MODEL_NOT_INSTALLED = "MODEL_NOT_INSTALLED"
+
 
 @runtime_checkable
 class OllamaClientProtocol(Protocol):
     """Port for Ollama text generation (mockable in tests)."""
 
-    def generate(self, *, system: str, prompt: str) -> str: ...
+    def generate(
+        self,
+        *,
+        system: str,
+        prompt: str,
+        json_format: bool = True,
+    ) -> str: ...
+
+
+def _print_banner(lines: list[str]) -> None:
+    print("----------------------------------------", flush=True)
+    for line in lines:
+        print(line, flush=True)
+    print("----------------------------------------", flush=True)
 
 
 class OllamaClient:
@@ -30,12 +46,14 @@ class OllamaClient:
         *,
         base_url: str,
         model: str,
-        timeout_sec: float = 300.0,
+        timeout_sec: float = 600.0,
+        temperature: float = 0.2,
         transport: httpx.BaseTransport | None = None,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._model = model
         self._timeout = timeout_sec
+        self._temperature = temperature
         self._transport = transport
         self._health_checked = False
 
@@ -53,10 +71,15 @@ class OllamaClient:
         timeout_sec = (
             float(timeout_raw) if timeout_raw is not None else settings.ollama_timeout_sec
         )
+        temp_raw = os.environ.get("OLLAMA_TEMPERATURE")
+        temperature = (
+            float(temp_raw) if temp_raw is not None else settings.ollama_temperature
+        )
         return cls(
             base_url=base_url,
             model=model,
             timeout_sec=timeout_sec,
+            temperature=temperature,
             transport=transport,
         )
 
@@ -67,6 +90,14 @@ class OllamaClient:
     @property
     def base_url(self) -> str:
         return self._base_url
+
+    @property
+    def timeout_sec(self) -> float:
+        return self._timeout
+
+    @property
+    def temperature(self) -> float:
+        return self._temperature
 
     def list_models(self) -> list[str]:
         """Return installed model names from Ollama ``/api/tags``."""
@@ -136,7 +167,7 @@ class OllamaClient:
         wanted = self._model.strip()
         if wanted in names:
             return True
-        # Accept tag-equivalent forms: "llama3" ↔ "llama3:latest"
+        # Accept tag-equivalent forms: "name" ↔ "name:latest"
         wanted_base, _, wanted_tag = wanted.partition(":")
         for name in names:
             base, _, tag = name.partition(":")
@@ -149,6 +180,34 @@ class OllamaClient:
                 return True
         return False
 
+    def log_connection(self) -> None:
+        """Print configured Ollama endpoint and model (CLI / ops visibility)."""
+        _print_banner(
+            [
+                "[ollama]",
+                f"Base URL : {self._base_url}",
+                f"Model    : {self._model}",
+            ]
+        )
+
+    def log_generation_params(self) -> None:
+        """Print model / temperature / timeout before each generate call."""
+        timeout_display = (
+            int(self._timeout) if self._timeout == int(self._timeout) else self._timeout
+        )
+        _print_banner(
+            [
+                "Model:",
+                self._model,
+                "",
+                "Temperature:",
+                str(self._temperature),
+                "",
+                "Timeout:",
+                f"{timeout_display} sec",
+            ]
+        )
+
     def ensure_ready(self) -> list[str]:
         """Verify the server is reachable and the configured model is installed.
 
@@ -158,7 +217,7 @@ class OllamaClient:
         if not self.model_is_installed(installed):
             raise ExplainXError(
                 f"Configured Ollama model '{self._model}' is not installed.",
-                code="OLLAMA_MODEL_MISSING",
+                code=MODEL_NOT_INSTALLED,
                 status_code=503,
                 details={
                     "base_url": self._base_url,
@@ -179,25 +238,46 @@ class OllamaClient:
         )
         return installed
 
-    def generate(self, *, system: str, prompt: str) -> str:
-        """Call Ollama and return the raw ``response`` text."""
-        with timed_step("Ollama"):
-            return self._generate_impl(system=system, prompt=prompt)
+    def generate(
+        self,
+        *,
+        system: str,
+        prompt: str,
+        json_format: bool = True,
+    ) -> str:
+        """Call Ollama and return the raw ``response`` text.
 
-    def _generate_impl(self, *, system: str, prompt: str) -> str:
+        ``json_format=True`` sets Ollama ``format: json`` (structured stages).
+        ``json_format=False`` requests plain text (continuous narration).
+        """
+        with timed_step("Ollama"):
+            return self._generate_impl(
+                system=system, prompt=prompt, json_format=json_format
+            )
+
+    def _generate_impl(
+        self,
+        *,
+        system: str,
+        prompt: str,
+        json_format: bool = True,
+    ) -> str:
         if not self._health_checked:
             self.ensure_ready()
+
+        self.log_generation_params()
 
         payload: dict[str, Any] = {
             "model": self._model,
             "prompt": prompt,
             "system": system,
             "stream": False,
-            "format": "json",
             "options": {
-                "temperature": 0.2,
+                "temperature": self._temperature,
             },
         }
+        if json_format:
+            payload["format"] = "json"
         url = f"{self._base_url}/api/generate"
         try:
             with httpx.Client(timeout=self._timeout, transport=self._transport) as client:
@@ -280,6 +360,8 @@ class OllamaClient:
                 "event": "ollama_generate",
                 "component": "ollama_client",
                 "model": self._model,
+                "temperature": self._temperature,
+                "timeout_sec": self._timeout,
                 "eval_count": data.get("eval_count"),
             },
         )

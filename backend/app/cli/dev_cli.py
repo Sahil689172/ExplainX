@@ -29,7 +29,7 @@ from app.features.input.service import InputService
 from app.features.projects.filesystem import ProjectFilesystem
 from app.features.projects.schemas import ProjectCreateRequest
 from app.features.projects.service import ProjectService
-from app.features.script.ollama.client import OllamaClient
+from app.features.script.ollama.client import MODEL_NOT_INSTALLED, OllamaClient
 from app.features.script.schemas import EducationalScript
 from app.features.script.service import ContentIntelligenceService
 from app.features.script.store import ScriptArtifactStore
@@ -174,14 +174,13 @@ def _print_missing_model(model: str, installed: list[str]) -> None:
     _log("--------------------------------------------------")
     _log("")
     _log("Configured model:")
-    _log("")
     _log(model)
     _log("")
     _log("Installed models:")
     _log("")
     if installed:
         for name in installed:
-            _log(name)
+            _log(f"- {name}")
     else:
         _log("(none)")
     _log("")
@@ -200,13 +199,11 @@ def verify_ollama(settings: Settings) -> None:
         return
 
     client = OllamaClient.from_settings(settings)
-    _log(
-        f"[ollama] Checking {client.base_url} for model {client.model} …"
-    )
+    client.log_connection()
     try:
         client.ensure_ready()
     except ExplainXError as exc:
-        if exc.code == "OLLAMA_MODEL_MISSING":
+        if exc.code == MODEL_NOT_INSTALLED:
             installed = list((exc.details or {}).get("installed_models") or [])
             _print_missing_model(client.model, installed)
         raise
@@ -219,7 +216,6 @@ def generate_script(
     project_id: str,
 ) -> EducationalScript:
     _log("[3/4] Generating EducationalScript (V1 2–3 min) …")
-    verify_ollama(settings)
     script = ContentIntelligenceService(session, settings).generate_script(project_id)
     _log("      EducationalScript generated.")
     return script
@@ -316,6 +312,7 @@ def run_pipeline(
 ) -> EducationalScript:
     """Execute topic|script|pdf → EducationalScript via existing services."""
     cfg = bootstrap(settings=settings)
+    verify_ollama(cfg)
     session = _session()
     try:
         if mode == "topic":
@@ -446,7 +443,7 @@ def main(argv: list[str] | None = None) -> int:
         _log(f"Validation error: {exc}")
         return EXIT_USAGE
     except ExplainXError as exc:
-        if exc.code != "OLLAMA_MODEL_MISSING":
+        if exc.code != MODEL_NOT_INSTALLED:
             _log(f"Error [{exc.code}]: {exc.message}")
             if exc.details:
                 _log(f"Details: {exc.details}")

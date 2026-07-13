@@ -92,7 +92,7 @@ def test_ollama_single_script_one_call() -> None:
     outline = _outline()
 
     class MockClient:
-        model = "mock-llama3:latest"
+        model = "mock-model:test"
 
         def generate(self, *, system: str, prompt: str) -> str:
             calls.append((system, prompt))
@@ -153,7 +153,7 @@ def test_single_script_service_timed(
     assert script.metadata.get("single_script_generation") is True
 
 
-def test_script_api_uses_single_script_generation(
+def test_script_api_uses_narration_pipeline(
     client: TestClient, _test_env: Path, capsys
 ) -> None:
     project_id = _create_project(client, "Single Script API Project")
@@ -166,20 +166,21 @@ def test_script_api_uses_single_script_generation(
     created = client.post(f"/api/v1/projects/{project_id}/script")
     assert created.status_code == 201, created.text
     data = created.json()["data"]
-    assert data["metadata"].get("single_script_generation") is True
-    assert data["metadata"].get("section_generation") is False
+    assert data["metadata"].get("narration_pipeline") is True
+    assert data["metadata"].get("single_script_generation") is False
     assert data["metadata"].get("quality_assured") is True
     assert data["status"] == "ready"
 
     artifacts = _test_env / "projects" / project_id / "artifacts"
     assert (artifacts / "teaching_outline.json").is_file()
     assert (artifacts / "educational_script.json").is_file()
+    assert (artifacts / "narration.json").is_file()
     assert (artifacts / "quality_report.json").is_file()
     assert (artifacts / "approved_script.json").is_file()
     assert (artifacts / "repair_log.json").is_file()
 
     out = capsys.readouterr().out
-    assert "[Outline]" in out
-    assert "[SingleScript]" in out
+    assert "[Narration]" in out
+    assert "[SceneBuilder]" in out
     assert "[QualityAssurance]" in out
     assert "TOTAL:" in out

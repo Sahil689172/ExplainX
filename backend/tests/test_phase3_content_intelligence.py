@@ -38,8 +38,8 @@ def test_api_generate_with_ignored_duration_preset(client: TestClient, _test_env
     assert created.status_code == 201, created.text
     data = created.json()["data"]
     assert data["target_duration_sec"] == V1_TARGET_DURATION_SEC
-    assert data["metadata"].get("single_script_generation") is True
-    assert data["metadata"].get("section_generation") is False
+    assert data["metadata"].get("narration_pipeline") is True
+    assert data["metadata"].get("single_script_generation") is False
     assert data["metadata"].get("quality_assured") is True
     assert data["status"] == "ready"
     assert len(data["teaching_sections"]) >= 1
@@ -67,10 +67,17 @@ def test_api_rejects_nothing_for_legacy_duration_field(client: TestClient) -> No
 
 def test_api_script_from_custom_script(client: TestClient) -> None:
     project_id = _create_project(client, "Custom Script Phase3")
+    body = (
+        "Hello class. We will study sorting algorithms today. "
+        "We compare simple approaches first, then discuss why order matters. "
+        "For example, inserting numbers into a list shows how swaps reveal structure. "
+        "Next we connect comparisons to everyday ranking tasks. "
+        "Finally we recap the main idea so learners leave with a clear takeaway. "
+    )
     ingest = client.put(
         f"/api/v1/projects/{project_id}/source/script",
         json={
-            "script": "Hello class. We will study sorting algorithms today.",
+            "script": (body * 8).strip(),
             "title": "Sorting",
             "replace": True,
         },

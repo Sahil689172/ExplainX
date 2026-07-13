@@ -125,7 +125,7 @@ def test_ollama_section_generator_one_call_per_section() -> None:
     calls: list[tuple[str, str]] = []
 
     class MockClient:
-        model = "mock-llama3:latest"
+        model = "mock-model:test"
 
         def generate(self, *, system: str, prompt: str) -> str:
             calls.append((system, prompt))
@@ -196,10 +196,10 @@ def test_section_generation_service_persists_outputs(
     assert script.estimated_word_count > 0
 
 
-def test_script_api_uses_single_script_generation(
+def test_script_api_uses_narration_pipeline(
     client: TestClient, _test_env: Path
 ) -> None:
-    """Full script API path uses single-pass generation (not per-section outputs)."""
+    """Full script API path uses narration + SceneBuilder (not per-section LLM)."""
     project_id = _create_project(client, "Section Gen API Project")
     ingest = client.put(
         f"/api/v1/projects/{project_id}/source/topic",
@@ -210,13 +210,14 @@ def test_script_api_uses_single_script_generation(
     created = client.post(f"/api/v1/projects/{project_id}/script")
     assert created.status_code == 201, created.text
     data = created.json()["data"]
-    assert data["metadata"].get("single_script_generation") is True
-    assert data["metadata"].get("section_generation") is False
+    assert data["metadata"].get("narration_pipeline") is True
+    assert data["metadata"].get("single_script_generation") is False
 
     artifacts = _test_env / "projects" / project_id / "artifacts"
     assert (artifacts / "teaching_outline.json").is_file()
     assert (artifacts / "educational_script.json").is_file()
     assert (artifacts / "approved_script.json").is_file()
+    assert (artifacts / "narration.json").is_file()
     assert not (artifacts / "section_outputs").exists() or not list(
         (artifacts / "section_outputs").glob("section_*.json")
     )
