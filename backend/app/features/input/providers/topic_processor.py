@@ -31,7 +31,7 @@ class TopicProcessor(BaseInputProcessor):
             )
 
         sections = [
-            RawContentSection(id="section-1", text=topic, order=1, title="Topic"),
+            RawContentSection(id="section-1", text=topic, order=1, title=topic[:200]),
         ]
         return self._build(
             project_id=ctx.project_id,

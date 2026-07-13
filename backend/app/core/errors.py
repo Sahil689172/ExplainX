@@ -50,3 +50,21 @@ class ConflictError(ExplainXError):
         details: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(message, code=code, status_code=409, details=details)
+
+
+class OffTopicGenerationError(ExplainXError):
+    """Narration failed deterministic topic verification after retries."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            message,
+            code="OFF_TOPIC_GENERATION",
+            status_code=422,
+            details=details,
+            retriable=False,
+        )

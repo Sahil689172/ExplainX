@@ -94,6 +94,28 @@ class Settings(BaseSettings):
     script_min_duration_sec: int = Field(default=60, ge=1, le=3600)
     script_max_duration_sec: int = Field(default=300, ge=1, le=7200)
 
+    # Narration topic verification (deterministic NLP before QA).
+    topic_relevance_threshold: float = Field(
+        default=0.45,
+        ge=0.0,
+        le=1.0,
+        validation_alias=AliasChoices(
+            "EXPLAINX_TOPIC_RELEVANCE_THRESHOLD",
+            "TOPIC_RELEVANCE_THRESHOLD",
+        ),
+        description="Minimum topic_relevance_score for narration to proceed to QA.",
+    )
+    topic_verification_max_attempts: int = Field(
+        default=3,
+        ge=1,
+        le=5,
+        validation_alias=AliasChoices(
+            "EXPLAINX_TOPIC_VERIFICATION_MAX_ATTEMPTS",
+            "TOPIC_VERIFICATION_MAX_ATTEMPTS",
+        ),
+        description="Max narration generation attempts when topic verification fails.",
+    )
+
     @field_validator("log_level")
     @classmethod
     def normalize_log_level(cls, value: str) -> str:

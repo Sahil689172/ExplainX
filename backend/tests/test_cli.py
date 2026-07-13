@@ -100,6 +100,29 @@ def test_cli_missing_script_file(_test_env: Path, tmp_path: Path) -> None:
     assert code == EXIT_USAGE
 
 
+def test_cli_duplicate_topic_creates_separate_projects(_test_env: Path) -> None:
+    assert main(["topic", "Hashing for beginners"]) == EXIT_OK
+    assert main(["topic", "Hashing for beginners"]) == EXIT_OK
+    projects = list((_test_env / "projects").iterdir())
+    assert len(projects) == 2
+    ids = {p.name for p in projects}
+    assert len(ids) == 2
+    for root in projects:
+        assert (root / "artifacts" / "educational_script.json").is_file()
+        assert (root / "artifacts" / "v1" / "raw_content.json").is_file()
+
+
+def test_cli_reuse_project_by_title(_test_env: Path) -> None:
+    assert main(["topic", "Hashing for beginners"]) == EXIT_OK
+    first_id = next(p.name for p in (_test_env / "projects").iterdir())
+    assert (
+        main(["topic", "Hashing for beginners", "--reuse-project"]) == EXIT_OK
+    )
+    projects = list((_test_env / "projects").iterdir())
+    assert len(projects) == 1
+    assert projects[0].name == first_id
+
+
 def test_cli_load_existing_project(_test_env: Path) -> None:
     assert main(["topic", "First topic about graphs"]) == EXIT_OK
     project_id = next(p.name for p in (_test_env / "projects").iterdir())

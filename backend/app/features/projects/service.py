@@ -95,13 +95,21 @@ class ProjectService:
 
         self._session.refresh(project)
         logger.info(
-            "Project Created",
+            "Created new project",
             extra={
                 "event": "project_created",
                 "project_id": project_id,
+                "title": project.title,
                 "component": "project_service",
             },
         )
+        return self._serializer.to_detail(project)
+
+    def find_by_title(self, title: str) -> ProjectDetail | None:
+        """Look up a project by title (most recent match). Titles are not unique."""
+        project = self._repo.find_by_title(title)
+        if project is None:
+            return None
         return self._serializer.to_detail(project)
 
     def list_projects(
@@ -283,7 +291,6 @@ class ProjectService:
         validate_project_id(project_id)
         source = self._require(project_id)
         new_title = (payload.title if payload and payload.title else f"{source.title} (Copy)").strip()
-        self._validator.ensure_unique_title(new_title)
         new_id = str(uuid.uuid4())
         now = utc_now_iso()
         try:
@@ -407,7 +414,7 @@ class ProjectService:
 
             project_data = payload.get("project") or payload
             imported_title = title or str(project_data.get("title") or "Imported Project")
-            self._validator.ensure_unique_title(imported_title)
+            # Duplicate titles are allowed; UUID remains the unique key.
             theme_id = str(project_data.get("theme_id") or "notebooklm")
             source_lang = str(project_data.get("source_language_code") or "en")
             target_lang = str(project_data.get("target_language_code") or "en")

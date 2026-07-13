@@ -12,9 +12,10 @@ from app.features.input.schemas import RawContent
 from app.features.narration import templates
 from app.features.narration.normalize import normalize_author_script, strip_llm_wrappers
 from app.features.narration.schemas import NarrationDocument
+from app.features.narration.topic_resolve import resolve_requested_topic
 from app.features.script.durations import word_budget
 from app.features.script.ollama.client import OllamaClient, OllamaClientProtocol
-from app.features.script.processors.common import resolve_language, resolve_title
+from app.features.script.processors.common import resolve_language
 from app.shared.prompt_format import format_prompt
 
 logger = get_logger(__name__)
@@ -44,7 +45,7 @@ class OllamaNarrationGenerator:
         target_duration_sec: int,
         repair_hint: str | None = None,
     ) -> NarrationDocument:
-        title = resolve_title(raw, None)
+        topic = resolve_requested_topic(raw)
         language = resolve_language(raw, None)
         budget = word_budget(target_duration_sec)
 
@@ -56,7 +57,7 @@ class OllamaNarrationGenerator:
                 content_id=raw.content_id,
                 source_type=raw.source_type,
                 status="ready",
-                title=title,
+                title=topic,
                 language=language,
                 text=text,
                 target_duration_sec=target_duration_sec,
@@ -74,6 +75,7 @@ class OllamaNarrationGenerator:
             system = templates.PDF_SYSTEM
             user = format_prompt(
                 templates.PDF_USER,
+                topic=topic,
                 target_duration_sec=target_duration_sec,
                 word_budget=budget,
                 document_text=self._document_text(raw),
@@ -83,7 +85,7 @@ class OllamaNarrationGenerator:
             system = templates.TOPIC_SYSTEM
             user = format_prompt(
                 templates.TOPIC_USER,
-                topic=title,
+                topic=topic,
                 target_duration_sec=target_duration_sec,
                 word_budget=budget,
                 repair_block=repair_block or "(none)",
@@ -104,6 +106,7 @@ class OllamaNarrationGenerator:
                 "project_id": raw.project_id,
                 "source_type": raw.source_type.value,
                 "model": self._model_name,
+                "requested_topic": topic,
             },
         )
         return NarrationDocument(
@@ -112,7 +115,7 @@ class OllamaNarrationGenerator:
             content_id=raw.content_id,
             source_type=raw.source_type,
             status="draft",
-            title=title,
+            title=topic,
             language=language,
             text=text,
             target_duration_sec=target_duration_sec,
@@ -124,6 +127,7 @@ class OllamaNarrationGenerator:
                 "prompt_template_version": templates.PROMPT_TEMPLATE_VERSION,
                 "word_budget": budget,
                 "repair_hint": repair_hint,
+                "requested_topic": topic,
             },
             created_at=utc_now_iso(),
         )

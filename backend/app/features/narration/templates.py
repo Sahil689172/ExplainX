@@ -2,51 +2,67 @@
 
 from __future__ import annotations
 
-PROMPT_TEMPLATE_VERSION = "1.0"
+PROMPT_TEMPLATE_VERSION = "2.1"
 
 TOPIC_SYSTEM = """
-You are an expert educational narrator for ExplainX.
-You teach with clear, natural spoken language for an animated explainer video.
-Return narration text only — no markdown, no bullet points, no JSON, no titles as headings.
+You are ExplainX, an expert educational narrator.
 """.strip()
 
 TOPIC_USER = """
-Explain "{topic}" as if teaching a complete beginner.
+Your task is to explain ONLY the topic below.
+
+If you do not know the topic, respond exactly with:
+
+ERROR_UNKNOWN_TOPIC
+
+TOPIC:
+{topic}
 
 Requirements:
-- Natural spoken narration.
-- About {target_duration_sec} seconds when spoken (~{word_budget} words at 140 words per minute).
-- Educational and accurate.
-- Start with an engaging hook.
-- Build concepts gradually.
-- Include one or more concrete examples.
-- End with a concise recap.
+- Explain only this topic.
+- Use natural spoken language.
+- Teach a beginner.
+- 320–380 words.
+- Begin with a strong hook.
+- Explain concepts step by step.
+- Include at least one simple real-world example.
+- End with a brief recap.
+- Return plain text only.
 - No markdown.
-- No bullet points.
 - No JSON.
-- Return narration text only.
+- No bullet points.
 
 {repair_block}
 """.strip()
 
 PDF_SYSTEM = """
-You are an expert educational narrator for ExplainX.
-Turn source documents into clear spoken lessons.
-Return narration text only — no markdown, no bullet points, no JSON.
+You are ExplainX, an expert educational narrator.
 """.strip()
 
 PDF_USER = """
-Explain the following document as an educational lesson.
+Your task is to explain ONLY the document topic below using the source text.
+
+If you do not know the topic, respond exactly with:
+
+ERROR_UNKNOWN_TOPIC
+
+TOPIC:
+{topic}
 
 Requirements:
-- Preserve important concepts from the source.
-- Skip repetitive or boilerplate text.
-- Speak naturally for a complete beginner when possible.
-- About {target_duration_sec} seconds when spoken (~{word_budget} words).
+- Explain only this topic.
+- Preserve important concepts from the source; skip boilerplate.
+- Use natural spoken language.
+- Teach a beginner.
+- 320–380 words.
+- Begin with a strong hook.
+- Explain concepts step by step.
+- Include at least one simple real-world example.
+- End with a brief recap.
+- Return plain text only.
 - No markdown.
-- No bullet points.
 - No JSON.
-- Return narration text only.
+- No bullet points.
 
 Source document:
 {document_text}
@@ -55,11 +71,30 @@ Source document:
 """.strip()
 
 REPAIR_EXPAND = """
-Previous narration was too short for the target duration.
-Write a fuller lesson with more explanation and examples while staying speakable.
+Previous narration was too short.
+Write a fuller lesson (aim for 320–380 words) with more explanation and examples.
+Do not change the topic.
 """.strip()
 
 REPAIR_SHORTEN = """
-Previous narration was too long for the target duration.
-Tighten the lesson while keeping the hook, core ideas, one example, and a short recap.
+Previous narration was too long.
+Tighten to about 320–380 words while keeping the hook, core ideas, one example, and a short recap.
+Do not change the topic.
 """.strip()
+
+OFF_TOPIC_RETRY = """
+The previous response did not explain the requested topic.
+
+Explain ONLY:
+
+TOPIC:
+{topic}
+
+If you cannot explain this topic, respond exactly:
+
+ERROR_UNKNOWN_TOPIC
+""".strip()
+
+# Kept for NarrationGenerationService attempt branching (same text; no default-prompt retry).
+OFF_TOPIC_RETRY_ATTEMPT_2 = OFF_TOPIC_RETRY
+OFF_TOPIC_RETRY_ATTEMPT_3 = OFF_TOPIC_RETRY

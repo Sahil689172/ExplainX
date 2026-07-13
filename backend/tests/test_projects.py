@@ -54,11 +54,28 @@ def test_create_project(client: TestClient, _test_env: Path) -> None:
     assert (root / "temp").is_dir()
 
 
-def test_duplicate_title_rejected(client: TestClient) -> None:
-    assert client.post("/api/v1/projects", json=_create_payload()).status_code == 201
-    response = client.post("/api/v1/projects", json=_create_payload())
-    assert response.status_code == 409
-    assert response.json()["error"]["code"] == "DUPLICATE_PROJECT"
+def test_duplicate_titles_allowed(client: TestClient, _test_env: Path) -> None:
+    first = client.post("/api/v1/projects", json=_create_payload(title="Hashing"))
+    second = client.post("/api/v1/projects", json=_create_payload(title="Hashing"))
+    assert first.status_code == 201
+    assert second.status_code == 201
+    id_a = first.json()["data"]["project_id"]
+    id_b = second.json()["data"]["project_id"]
+    assert id_a != id_b
+    assert first.json()["data"]["title"] == "Hashing"
+    assert second.json()["data"]["title"] == "Hashing"
+    assert (_test_env / "projects" / id_a / "project.json").is_file()
+    assert (_test_env / "projects" / id_b / "project.json").is_file()
+    # Artifacts / trees are isolated by UUID.
+    assert id_a != id_b
+    assert (_test_env / "projects" / id_a).resolve() != (
+        _test_env / "projects" / id_b
+    ).resolve()
+
+
+def test_blank_title_still_rejected(client: TestClient) -> None:
+    response = client.post("/api/v1/projects", json=_create_payload(title="   "))
+    assert response.status_code == 422
 
 
 def test_unknown_theme_rejected(client: TestClient) -> None:

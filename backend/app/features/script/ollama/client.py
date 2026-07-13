@@ -267,6 +267,17 @@ class OllamaClient:
 
         self.log_generation_params()
 
+        # TEMP DEBUG: full rendered prompt exactly as sent to Ollama (no truncation).
+        print("================ PROMPT START ================", flush=True)
+        print(self._model, flush=True)
+        print("", flush=True)
+        print("System:", flush=True)
+        print(system, flush=True)
+        print("", flush=True)
+        print("Prompt:", flush=True)
+        print(prompt, flush=True)
+        print("================ PROMPT END ==================", flush=True)
+
         payload: dict[str, Any] = {
             "model": self._model,
             "prompt": prompt,
@@ -353,6 +364,11 @@ class OllamaClient:
                 status_code=502,
                 details={"model": self._model},
             )
+
+        # TEMP DEBUG: raw Ollama response body field (no truncation).
+        print("================ RESPONSE START ================", flush=True)
+        print(text, flush=True)
+        print("================ RESPONSE END ==================", flush=True)
 
         logger.info(
             "Ollama generate completed",

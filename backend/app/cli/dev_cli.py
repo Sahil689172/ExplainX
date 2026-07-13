@@ -93,14 +93,22 @@ def create_or_load_project(
     title: str,
     source_topic: str | None,
     project_id: str | None,
+    reuse_project: bool = False,
 ) -> str:
-    """Create a new project or verify an existing one exists."""
+    """Create a new project, or optionally reuse one with the same title."""
     projects = ProjectService(session, settings)
     if project_id:
         _log(f"[1/4] Loading project {project_id} …")
         detail = projects.get(project_id)
         _log(f"      Loaded: {detail.title}")
         return detail.project_id
+
+    if reuse_project:
+        existing = projects.find_by_title(title)
+        if existing is not None:
+            _log(f"[1/4] Reusing project with title {title!r} …")
+            _log(f"      project_id={existing.project_id}")
+            return existing.project_id
 
     _log("[1/4] Creating project …")
     payload = ProjectCreateRequest(
@@ -112,7 +120,9 @@ def create_or_load_project(
         target_language_code="en",
     )
     detail = projects.create(payload)
-    _log(f"      Created project_id={detail.project_id}")
+    _log("Created new project")
+    _log(f"Title: {detail.title}")
+    _log(f"Project ID: {detail.project_id}")
     return detail.project_id
 
 
@@ -308,6 +318,7 @@ def run_pipeline(
     value: str,
     project_id: str | None = None,
     title: str | None = None,
+    reuse_project: bool = False,
     settings: Settings | None = None,
 ) -> EducationalScript:
     """Execute topic|script|pdf → EducationalScript via existing services."""
@@ -325,6 +336,7 @@ def run_pipeline(
                 title=resolved_title,
                 source_topic=topic,
                 project_id=project_id,
+                reuse_project=reuse_project,
             )
             ingest_topic(session, cfg, pid, topic)
         elif mode == "script":
@@ -340,6 +352,7 @@ def run_pipeline(
                 title=resolved_title,
                 source_topic=resolved_title,
                 project_id=project_id,
+                reuse_project=reuse_project,
             )
             ingest_script_file(
                 session,
@@ -361,6 +374,7 @@ def run_pipeline(
                 title=resolved_title,
                 source_topic=None,
                 project_id=project_id,
+                reuse_project=reuse_project,
             )
             ingest_pdf_file(session, cfg, pid, pdf_path)
         else:
@@ -394,6 +408,14 @@ def build_parser() -> argparse.ArgumentParser:
             default=None,
             help="Optional project title (defaults from topic/filename).",
         )
+        p.add_argument(
+            "--reuse-project",
+            action="store_true",
+            help=(
+                "If a project with the same title already exists, reuse it. "
+                "Default is always to create a new project (duplicate titles allowed)."
+            ),
+        )
 
     topic = sub.add_parser("topic", help="Generate script from a topic string")
     topic.add_argument("topic", help="Teaching topic (3–500 characters)")
@@ -421,6 +443,7 @@ def main(argv: list[str] | None = None) -> int:
                 value=args.topic,
                 project_id=args.project_id,
                 title=args.title,
+                reuse_project=args.reuse_project,
             )
         elif args.command == "script":
             run_pipeline(
@@ -428,6 +451,7 @@ def main(argv: list[str] | None = None) -> int:
                 value=args.path,
                 project_id=args.project_id,
                 title=args.title,
+                reuse_project=args.reuse_project,
             )
         elif args.command == "pdf":
             run_pipeline(
@@ -435,6 +459,7 @@ def main(argv: list[str] | None = None) -> int:
                 value=args.path,
                 project_id=args.project_id,
                 title=args.title,
+                reuse_project=args.reuse_project,
             )
         else:
             parser.error(f"Unknown command: {args.command}")

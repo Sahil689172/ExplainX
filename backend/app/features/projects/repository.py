@@ -26,6 +26,26 @@ class ProjectRepository:
             stmt = stmt.where(Project.deleted_at.is_(None))
         return self._session.scalars(stmt).first()
 
+    def find_by_title(self, title: str) -> Project | None:
+        """Return the most recently updated non-deleted project with this title.
+
+        Title match is case-insensitive. Titles are not unique.
+        """
+        cleaned = title.strip()
+        if not cleaned:
+            return None
+        stmt = (
+            select(Project)
+            .options(joinedload(Project.settings))
+            .where(
+                func.lower(Project.title) == cleaned.lower(),
+                Project.deleted_at.is_(None),
+            )
+            .order_by(Project.updated_at.desc())
+            .limit(1)
+        )
+        return self._session.scalars(stmt).first()
+
     def list(
         self,
         *,
