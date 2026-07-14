@@ -15,7 +15,6 @@ from app.features.projects.filesystem import ProjectFilesystem, validate_project
 from app.features.projects.repository import ProjectRepository
 from app.features.quality.store import QualityArtifactStore
 from app.features.translation.indictrans import (
-    DEFAULT_MODEL_ID,
     TranslationFailedError,
     translate_english_to,
 )
@@ -103,14 +102,10 @@ class TranslationService:
             self._log_result(language=code, cache="HIT", elapsed_sec=None, saved=None)
             return text
 
-        model_id = (
-            getattr(self._settings, "indictrans_model", None) or DEFAULT_MODEL_ID
-        )
         started = time.perf_counter()
         translated = translate_english_to(
             english,
             target_lang=code,
-            model_id=str(model_id),
         )
         elapsed = time.perf_counter() - started
         if not translated.strip():

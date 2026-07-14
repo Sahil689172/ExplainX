@@ -28,10 +28,7 @@ dev = [
     "mypy>=1.13.0",
 ]
 translation = [
-    "torch>=2.1.0",
-    "transformers>=4.38.0",
-    "sentencepiece>=0.2.0",
-    "protobuf>=4.25.0",
+    "deep-translator>=1.11.4",
 ]
 
 [build-system]
