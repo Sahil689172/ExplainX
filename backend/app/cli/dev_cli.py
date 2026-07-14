@@ -432,13 +432,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     audio = sub.add_parser(
         "audio",
-        help="Generate speech audio.wav from existing narration (Piper)",
+        help="Translate (if needed) then generate speech audio.wav (Piper)",
     )
     audio.add_argument("project_id", help="Project UUID with a narration artifact")
     audio.add_argument(
         "--lang",
         default=None,
-        help="Voice language (en, hi, te). Defaults to script language, then DEFAULT_LANGUAGE.",
+        help=(
+            "Language for speech (en, hi, te). "
+            "hi/te run IndicTrans2 then Piper; en skips translation."
+        ),
     )
 
     return parser
