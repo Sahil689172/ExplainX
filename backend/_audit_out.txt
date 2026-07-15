@@ -27,7 +27,7 @@ INFO  [alembic.runtime.migration] Running upgrade 20260711_001 -> 20260713_002, 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 =========================== short test summary info ===========================
 FAILED tests/test_circular_imports.py::test_scene_builder_has_no_quality_or_ollama_import
-1 failed, 69 passed, 1 warning in 12.33s
+1 failed, 69 passed, 1 warning in 16.34s
 
 
 EXIT:1

@@ -1,4 +1,4 @@
-"""TranslationService — English narration → hi/te with on-disk cache."""
+"""TranslationService — English narration → hi with on-disk + in-memory Argos cache."""
 
 from __future__ import annotations
 
@@ -14,18 +14,20 @@ from app.features.narration.store import NarrationArtifactStore
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
 from app.features.quality.store import QualityArtifactStore
-from app.features.translation.indictrans import (
+from app.features.translation.argos import (
     TranslationFailedError,
-    translate_english_to,
+    get_argos_engine,
 )
 
 logger = get_logger(__name__)
 
-SUPPORTED_LANGS = ("en", "hi", "te")
+SUPPORTED_LANGS = ("en", "hi")
+
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 class TranslationService:
-    """MVP offline translation with artifacts/translations/{lang}.txt caching."""
+    """Offline Argos translation with artifacts/translations/{lang}.txt caching."""
 
     def __init__(self, session: Session, settings: Settings) -> None:
         self._session = session
@@ -34,6 +36,17 @@ class TranslationService:
         self._fs = ProjectFilesystem(settings)
         self._narration_store = NarrationArtifactStore(self._fs)
         self._quality_store = QualityArtifactStore(self._fs)
+
+        models_dir = self._resolve_argos_models_dir()
+        # Load installed languages + translation objects once per process.
+        self._argos = get_argos_engine(models_dir=models_dir)
+
+    def _resolve_argos_models_dir(self) -> Path:
+        configured = getattr(self._settings, "argos_models_dir", None) or "data/models/argos"
+        path = Path(str(configured))
+        if not path.is_absolute():
+            path = _REPO_ROOT / path
+        return path.resolve()
 
     def translations_dir(self, project_id: str) -> Path:
         return self._fs.project_root(project_id) / "artifacts" / "translations"
@@ -63,8 +76,8 @@ class TranslationService:
     def ensure_translated(self, project_id: str, lang: str) -> str:
         """Return text for ``lang``, translating from English when needed.
 
-        Always maintains ``artifacts/translations/en.txt``. Reuses ``hi.txt`` /
-        ``te.txt`` when present (cache HIT).
+        Always maintains ``artifacts/translations/en.txt``. Reuses ``hi.txt``
+        when present (artifact cache HIT).
         """
         validate_project_id(project_id)
         if self._repo.get(project_id) is None:
@@ -93,20 +106,17 @@ class TranslationService:
             en_path.write_text(english, encoding="utf-8")
 
         if code == "en":
-            self._log_result(language="en", cache="HIT", elapsed_sec=None, saved=None)
+            self._log_argos(source="en", target="en", elapsed_sec=0.0)
             return english
 
         target_path = self.translation_path(project_id, code)
         if target_path.is_file() and target_path.stat().st_size > 0:
             text = target_path.read_text(encoding="utf-8").strip()
-            self._log_result(language=code, cache="HIT", elapsed_sec=None, saved=None)
+            self._log_argos(source="en", target=code, elapsed_sec=0.0)
             return text
 
         started = time.perf_counter()
-        translated = translate_english_to(
-            english,
-            target_lang=code,
-        )
+        translated = self._argos.translate(english, target_lang=code)
         elapsed = time.perf_counter() - started
         if not translated.strip():
             raise TranslationFailedError(
@@ -115,13 +125,7 @@ class TranslationService:
             )
 
         target_path.write_text(translated, encoding="utf-8")
-        rel = f"translations/{code}.txt"
-        self._log_result(
-            language=code,
-            cache="MISS",
-            elapsed_sec=elapsed,
-            saved=rel,
-        )
+        self._log_argos(source="en", target=code, elapsed_sec=elapsed)
         logger.info(
             "Translation saved",
             extra={
@@ -130,23 +134,15 @@ class TranslationService:
                 "language": code,
                 "path": str(target_path),
                 "elapsed_sec": round(elapsed, 3),
+                "provider": "Argos",
             },
         )
         return translated
 
     @staticmethod
-    def _log_result(
-        *,
-        language: str,
-        cache: str,
-        elapsed_sec: float | None,
-        saved: str | None,
-    ) -> None:
+    def _log_argos(*, source: str, target: str, elapsed_sec: float) -> None:
         print("[Translation]", flush=True)
-        print(f"Language : {language}", flush=True)
-        print(f"Cache : {cache}", flush=True)
-        if cache == "MISS" and elapsed_sec is not None:
-            print(f"Translation Time : {elapsed_sec:.1f} sec", flush=True)
-        if saved:
-            print("Saved :", flush=True)
-            print(saved, flush=True)
+        print("Provider : Argos", flush=True)
+        print(f"Source : {source}", flush=True)
+        print(f"Target : {target}", flush=True)
+        print(f"Time : {elapsed_sec:.2f} sec", flush=True)

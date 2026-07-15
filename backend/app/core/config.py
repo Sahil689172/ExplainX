@@ -142,14 +142,14 @@ class Settings(BaseSettings):
         description="Fallback language when --lang and script language are missing.",
     )
 
-    # IndicTrans2 offline translation (Phase 4.5).
-    indictrans_model: str = Field(
-        default="ai4bharat/indictrans2-en-indic-dist-200M",
+    # Argos Translate offline packages (Phase 4.5).
+    argos_models_dir: str = Field(
+        default="data/models/argos",
         validation_alias=AliasChoices(
-            "INDICTRANS_MODEL",
-            "EXPLAINX_INDICTRANS_MODEL",
+            "ARGOS_MODELS_DIR",
+            "EXPLAINX_ARGOS_MODELS_DIR",
         ),
-        description="Hugging Face model id for IndicTrans2 EN→Indic translation.",
+        description="Directory of local *.argosmodel packages (en→hi, etc.).",
     )
 
     @field_validator("log_level")

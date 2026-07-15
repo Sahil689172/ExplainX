@@ -439,8 +439,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--lang",
         default=None,
         help=(
-            "Language for speech (en, hi, te). "
-            "hi/te run IndicTrans2 then Piper; en skips translation."
+            "Language for speech (en, hi). "
+            "hi runs Argos Translate then Piper; en skips translation."
         ),
     )
 

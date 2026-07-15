@@ -1,4 +1,4 @@
-"""Offline translation (IndicTrans2) — English narration → Hindi / Telugu."""
+"""Offline translation (Argos Translate) — English narration → Hindi."""
 
 from app.features.translation.service import TranslationService
 
