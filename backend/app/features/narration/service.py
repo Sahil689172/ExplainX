@@ -20,6 +20,7 @@ from app.features.narration.topic_verification import (
     TopicVerificationResult,
     TopicVerificationService,
 )
+from app.features.narration.timing import narration_timing_scope, time_stage
 from app.features.narration.validator import NarrationValidator
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
@@ -81,64 +82,79 @@ class NarrationGenerationService:
         last_result: TopicVerificationResult | None = None
         narration: NarrationDocument | None = None
 
-        with timed_step("Narration"):
-            for attempt in range(1, max_attempts + 1):
-                attempt_hint = self._compose_repair_hint(
-                    topic=topic,
-                    base_hint=repair_hint,
-                    attempt=attempt,
-                    skip_topic_check=skip_topic_check,
-                )
-                narration = self._generator.generate(
-                    content,
-                    target_duration_sec=duration,
-                    repair_hint=attempt_hint,
-                )
-
-                if skip_topic_check:
-                    break
-
-                last_result = self._topic_verifier.verify(topic, narration.text)
-                self._topic_verifier.log_result(last_result)
-                logger.info(
-                    "Topic verification %s",
-                    "PASS" if last_result.passed else "FAIL",
-                    extra={
-                        "event": "topic_verification",
-                        "project_id": project_id,
-                        "requested_topic": topic,
-                        "topic_relevance_score": last_result.topic_relevance_score,
-                        "attempt": attempt,
-                        "passed": last_result.passed,
-                        "keywords": last_result.detected_keywords,
-                    },
-                )
-
-                if last_result.passed:
-                    meta = dict(narration.metadata or {})
-                    meta["topic_relevance_score"] = last_result.topic_relevance_score
-                    meta["topic_verification_attempt"] = attempt
-                    meta["topic_verification"] = "PASS"
-                    narration = narration.model_copy(update={"metadata": meta})
-                    break
-
-                if attempt >= max_attempts:
-                    raise OffTopicGenerationError(
-                        "Generated narration is not about the requested topic.",
-                        details={
-                            "requested_topic": topic,
-                            "topic_relevance_score": last_result.topic_relevance_score,
-                            "attempt_count": attempt,
-                            "threshold": self._topic_verifier.threshold,
-                            "detected_keywords": last_result.detected_keywords,
-                            "keyword_coverage": last_result.keyword_coverage,
-                            "cosine_similarity": last_result.cosine_similarity,
-                        },
+        with narration_timing_scope():
+            with timed_step("Narration"):
+                for attempt in range(1, max_attempts + 1):
+                    attempt_hint = self._compose_repair_hint(
+                        topic=topic,
+                        base_hint=repair_hint,
+                        attempt=attempt,
+                        skip_topic_check=skip_topic_check,
+                    )
+                    narration = self._generator.generate(
+                        content,
+                        target_duration_sec=duration,
+                        repair_hint=attempt_hint,
                     )
 
-            assert narration is not None
-            self._validator.validate(narration)
-            self._store.write(project_id, narration)
+                    if skip_topic_check:
+                        break
+
+                    with time_stage("validation_sec", accumulate=True):
+                        last_result = self._topic_verifier.verify(
+                            topic,
+                            narration.text,
+                            language=narration.language or "en",
+                        )
+                        self._topic_verifier.log_result(last_result)
+                        logger.info(
+                            "Topic verification %s",
+                            "SKIPPED"
+                            if last_result.skipped
+                            else ("PASS" if last_result.passed else "FAIL"),
+                            extra={
+                                "event": "topic_verification",
+                                "project_id": project_id,
+                                "requested_topic": topic,
+                                "topic_relevance_score": last_result.topic_relevance_score,
+                                "attempt": attempt,
+                                "passed": last_result.passed,
+                                "skipped": last_result.skipped,
+                                "language": last_result.language,
+                                "keywords": last_result.detected_keywords,
+                            },
+                        )
+
+                    if last_result.passed:
+                        meta = dict(narration.metadata or {})
+                        meta["topic_relevance_score"] = last_result.topic_relevance_score
+                        meta["topic_verification_attempt"] = attempt
+                        meta["topic_verification"] = (
+                            "SKIPPED" if last_result.skipped else "PASS"
+                        )
+                        meta["topic_verification_language"] = last_result.language
+                        narration = narration.model_copy(update={"metadata": meta})
+                        break
+
+                    if attempt >= max_attempts:
+                        raise OffTopicGenerationError(
+                            "Generated narration is not about the requested topic.",
+                            details={
+                                "requested_topic": topic,
+                                "topic_relevance_score": last_result.topic_relevance_score,
+                                "attempt_count": attempt,
+                                "threshold": self._topic_verifier.threshold,
+                                "detected_keywords": last_result.detected_keywords,
+                                "keyword_coverage": last_result.keyword_coverage,
+                                "cosine_similarity": last_result.cosine_similarity,
+                            },
+                        )
+
+                assert narration is not None
+                with time_stage("validation_sec", accumulate=True):
+                    self._validator.validate(narration)
+                with time_stage("artifact_write_sec"):
+                    self._store.write(project_id, narration)
 
         logger.info(
             "Narration ready",

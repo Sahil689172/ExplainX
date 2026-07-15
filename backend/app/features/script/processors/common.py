@@ -28,11 +28,12 @@ def resolve_title(raw: RawContent, plan: PresentationPlan | None) -> str:
 
 
 def resolve_language(raw: RawContent, plan: PresentationPlan | None) -> str:
-    if plan and plan.language:
-        return plan.language
-    hint = raw.metadata.get("language_hint")
-    if isinstance(hint, str) and len(hint.strip()) >= 2:
-        return hint.strip().lower()[:16]
+    """Educational script language is always English (canonical).
+
+    Requested output language lives on the project (``target_language_code``)
+    and is applied at translation / audio time — never here.
+    """
+    _ = (raw, plan)
     return "en"
 
 

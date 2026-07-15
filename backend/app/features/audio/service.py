@@ -1,4 +1,4 @@
-"""AudioService — load narration, translate if needed, synthesize with Piper."""
+"""AudioService — translate (if needed) then synthesize with Piper."""
 
 from __future__ import annotations
 
@@ -16,10 +16,14 @@ from app.features.audio.piper import (
     resolve_voices_dir,
     synthesize_wav,
 )
-from app.features.narration.store import NarrationArtifactStore
+from app.features.audio.text_cleaner import clean_speech_text
+from app.features.audio.voices import preferred_voice_stem
+from app.features.narration.languages import (
+    language_label,
+    normalize_output_language,
+)
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
-from app.features.script.store import ScriptArtifactStore
 from app.features.translation.service import TranslationService
 
 logger = get_logger(__name__)
@@ -28,33 +32,30 @@ _REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 class AudioService:
-    """MVP speech generation: narration → (optional translate) → artifacts/audio.wav."""
+    """Speech generation: English script → optional translation → Piper WAV."""
 
     def __init__(self, session: Session, settings: Settings) -> None:
         self._session = session
         self._settings = settings
         self._repo = ProjectRepository(session)
         self._fs = ProjectFilesystem(settings)
-        self._narration_store = NarrationArtifactStore(self._fs)
-        self._script_store = ScriptArtifactStore(self._fs)
         self._translation = TranslationService(session, settings)
 
     def resolve_language(self, project_id: str, lang: str | None = None) -> str:
-        """Resolve language: CLI --lang → EducationalScript.language → DEFAULT_LANGUAGE."""
+        """Resolve output language: CLI override → project target → default."""
         if lang and lang.strip():
-            return lang.strip().lower()[:2]
+            return normalize_output_language(lang)
 
-        if self._script_store.has_script(project_id):
-            script_lang = (self._script_store.read(project_id).language or "").strip()
-            if script_lang:
-                if "-" in script_lang:
-                    script_lang = script_lang.split("-", 1)[0]
-                return script_lang.lower()[:2]
+        project = self._repo.get(project_id)
+        if project is not None:
+            target = (getattr(project, "target_language_code", None) or "").strip()
+            if target:
+                return normalize_output_language(target)
 
-        return (self._settings.default_language or "en").strip().lower()[:2]
+        return normalize_output_language(self._settings.default_language or "en")
 
     def generate(self, project_id: str, *, lang: str | None = None) -> Path:
-        """Load narration, translate if needed, write ``artifacts/audio.wav``."""
+        """Ensure narration for the requested language, then write ``audio_<lang>.wav``."""
         validate_project_id(project_id)
         if self._repo.get(project_id) is None:
             raise NotFoundError(
@@ -63,24 +64,38 @@ class AudioService:
                 details={"project_id": project_id},
             )
 
-        # Ensure narration exists (also used as English fallback by TranslationService).
-        self._narration_store.read(project_id)
-
         language = self.resolve_language(project_id, lang)
         speaking_text = self._translation.ensure_translated(project_id, language)
+        speaking_text = clean_speech_text(speaking_text)
+        if not speaking_text.strip():
+            raise NotFoundError(
+                "Narration text for speech synthesis is empty.",
+                code="NARRATION_NOT_FOUND",
+                details={"project_id": project_id, "language": language},
+            )
 
         voices_dir = resolve_voices_dir(
             self._settings.piper_voices_dir,
             repo_root=_REPO_ROOT,
         )
-        voice = discover_voice(voices_dir, language)
-        log_audio_selection(language=voice.language, voice=voice.name)
+        preferred = preferred_voice_stem(language)
+        voice = discover_voice(
+            voices_dir,
+            language,
+            preferred_stem=preferred,
+        )
+        log_audio_selection(
+            language=language_label(language),
+            voice=voice.name,
+        )
 
         executable = resolve_piper_executable(
             self._settings.piper_executable,
             repo_root=_REPO_ROOT,
         )
-        output_wav = self._fs.project_root(project_id) / "artifacts" / "audio.wav"
+        output_wav = (
+            self._fs.project_root(project_id) / "artifacts" / f"audio_{language}.wav"
+        )
         path = synthesize_wav(
             speaking_text,
             executable=executable,

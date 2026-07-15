@@ -90,7 +90,6 @@ _STOPWORDS = frozenset(
 )
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+(?:'[a-z]+)?", re.IGNORECASE)
-_UNKNOWN_TOPIC_MARKERS = frozenset({"error_unknown_topic", "error unknowntopic"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,6 +104,8 @@ class TopicVerificationResult:
     cosine_similarity: float
     phrase_match: bool
     reason: str = ""
+    language: str = "en"
+    skipped: bool = False
 
 
 def _normalize_token(token: str) -> str:
@@ -186,10 +187,35 @@ class TopicVerificationService:
             raise ValueError("threshold must be between 0 and 1")
         self.threshold = threshold
 
-    def verify(self, requested_topic: str, narration: str) -> TopicVerificationResult:
+    def verify(
+        self,
+        requested_topic: str,
+        narration: str,
+        *,
+        language: str = "en",
+    ) -> TopicVerificationResult:
         topic = (requested_topic or "").strip()
         text = (narration or "").strip()
         keywords = extract_topic_keywords(topic)
+        lang = (language or "en").strip().lower()
+        if "-" in lang:
+            lang = lang.split("-", 1)[0]
+        lang = lang[:2] if len(lang) >= 2 else "en"
+
+        # MVP: English keyword relevance does not apply to native multilingual output.
+        if lang != "en":
+            return TopicVerificationResult(
+                requested_topic=topic,
+                detected_keywords=list(keywords),
+                topic_relevance_score=1.0,
+                passed=True,
+                keyword_coverage=1.0,
+                cosine_similarity=1.0,
+                phrase_match=False,
+                reason="skipped_non_english",
+                language=lang,
+                skipped=True,
+            )
 
         compact = re.sub(r"\s+", " ", text).strip().lower()
         if not topic or not text:
@@ -202,18 +228,7 @@ class TopicVerificationService:
                 phrase=False,
                 passed=False,
                 reason="empty_topic_or_narration",
-            )
-
-        if compact in _UNKNOWN_TOPIC_MARKERS or compact.startswith("error_unknown_topic"):
-            return self._result(
-                topic,
-                keywords,
-                score=0.0,
-                coverage=0.0,
-                cosine=0.0,
-                phrase=False,
-                passed=False,
-                reason="error_unknown_topic",
+                language=lang,
             )
 
         topic_norm = re.sub(r"\s+", " ", topic.lower()).strip()
@@ -263,6 +278,7 @@ class TopicVerificationService:
             phrase=phrase_match,
             passed=passed,
             reason=reason,
+            language=lang,
         )
 
     @staticmethod
@@ -276,6 +292,8 @@ class TopicVerificationService:
         phrase: bool,
         passed: bool,
         reason: str,
+        language: str = "en",
+        skipped: bool = False,
     ) -> TopicVerificationResult:
         return TopicVerificationResult(
             requested_topic=topic,
@@ -286,10 +304,21 @@ class TopicVerificationService:
             cosine_similarity=round(cosine, 4),
             phrase_match=phrase,
             reason=reason,
+            language=language,
+            skipped=skipped,
         )
 
     def log_result(self, result: TopicVerificationResult) -> None:
         """Print verification summary (and suitable for CI capture)."""
+        if result.skipped:
+            print("[Topic Validation]", flush=True)
+            print("Skipped", flush=True)
+            print("Reason:", flush=True)
+            print("Non-English narration", flush=True)
+            print("Language:", flush=True)
+            print(result.language, flush=True)
+            return
+
         status = "PASS" if result.passed else "FAIL"
         print("Requested Topic:")
         print(result.requested_topic)

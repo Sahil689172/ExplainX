@@ -65,7 +65,7 @@ BUILTIN_THEME_IDS: tuple[str, ...] = (
     "dark",
 )
 
-BUILTIN_LANGUAGE_CODES: tuple[str, ...] = ("en", "hi", "es", "fr", "de")
+BUILTIN_LANGUAGE_CODES: tuple[str, ...] = ("en", "hi", "te", "es", "fr", "de")
 
 PROJECT_SUBDIRS: tuple[str, ...] = (
     "source",

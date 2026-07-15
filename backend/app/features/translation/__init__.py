@@ -1,4 +1,4 @@
-"""Offline translation (Argos Translate) — English narration → Hindi."""
+"""Offline translation (provider-based) — English narration → target language."""
 
 from app.features.translation.service import TranslationService
 

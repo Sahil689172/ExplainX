@@ -68,6 +68,22 @@ def test_binary_search_correct_passes() -> None:
     assert "search" in result.detected_keywords
 
 
+def test_non_english_skips_keyword_relevance() -> None:
+    hindi = (
+        "प्रकाश संश्लेषण एक प्रक्रिया है जिसमें पौधे सूर्य के प्रकाश का उपयोग करके "
+        "अपना भोजन बनाते हैं। इसमें जल और कार्बन डाइऑक्साइड शामिल होते हैं।"
+    )
+    result = TopicVerificationService(threshold=0.45).verify(
+        "Photosynthesis",
+        hindi,
+        language="hi",
+    )
+    TopicVerificationService().log_result(result)
+    assert result.skipped is True
+    assert result.passed is True
+    assert result.language == "hi"
+
+
 def test_resolve_requested_topic_ignores_generic_section_title() -> None:
     raw = RawContent(
         content_id="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",

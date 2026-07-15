@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import os
+import time
 from typing import Any, Protocol, runtime_checkable
 
 import httpx
@@ -10,6 +12,7 @@ import httpx
 from app.core.config import Settings
 from app.core.errors import ExplainXError
 from app.core.logging import get_logger
+from app.features.narration.timing import get_narration_timer
 from app.shared.pipeline_timing import timed_step
 
 logger = get_logger(__name__)
@@ -290,9 +293,54 @@ class OllamaClient:
         if json_format:
             payload["format"] = "json"
         url = f"{self._base_url}/api/generate"
+        timer = get_narration_timer()
+        http_start = time.perf_counter()
         try:
             with httpx.Client(timeout=self._timeout, transport=self._transport) as client:
-                response = client.post(url, json=payload)
+                with client.stream("POST", url, json=payload) as response:
+                    headers_at = time.perf_counter()
+                    if timer is not None:
+                        timer.http_request_sec = headers_at - http_start
+
+                    if response.status_code >= 500:
+                        body_preview = response.read().decode("utf-8", errors="replace")
+                        raise ExplainXError(
+                            "Ollama server error.",
+                            code="OLLAMA_UNAVAILABLE",
+                            status_code=503,
+                            details={
+                                "status_code": response.status_code,
+                                "body": body_preview[:500],
+                            },
+                            retriable=True,
+                        )
+                    if response.status_code >= 400:
+                        body_preview = response.read().decode("utf-8", errors="replace")
+                        raise ExplainXError(
+                            "Ollama rejected the generate request.",
+                            code="OLLAMA_UNAVAILABLE",
+                            status_code=502,
+                            details={
+                                "status_code": response.status_code,
+                                "body": body_preview[:500],
+                            },
+                            retriable=False,
+                        )
+
+                    first_byte_at: float | None = None
+                    body_parts: list[bytes] = []
+                    for chunk in response.iter_bytes():
+                        if chunk:
+                            if first_byte_at is None:
+                                first_byte_at = time.perf_counter()
+                            body_parts.append(chunk)
+                    full_at = time.perf_counter()
+                    raw_body = b"".join(body_parts)
+
+                    if timer is not None:
+                        first_at = first_byte_at or headers_at
+                        timer.first_token_sec = first_at - http_start
+                        timer.generation_sec = full_at - first_at
         except httpx.ConnectError as exc:
             raise ExplainXError(
                 "Ollama is unavailable (connection failed).",
@@ -322,31 +370,14 @@ class OllamaClient:
                 retriable=True,
             ) from exc
 
-        if response.status_code >= 500:
-            raise ExplainXError(
-                "Ollama server error.",
-                code="OLLAMA_UNAVAILABLE",
-                status_code=503,
-                details={"status_code": response.status_code, "body": response.text[:500]},
-                retriable=True,
-            )
-        if response.status_code >= 400:
-            raise ExplainXError(
-                "Ollama rejected the generate request.",
-                code="OLLAMA_UNAVAILABLE",
-                status_code=502,
-                details={"status_code": response.status_code, "body": response.text[:500]},
-                retriable=False,
-            )
-
         try:
-            data = response.json()
+            data = json.loads(raw_body.decode("utf-8"))
         except ValueError as exc:
             raise ExplainXError(
                 "Ollama returned a non-JSON envelope.",
                 code="OLLAMA_INVALID_JSON",
                 status_code=502,
-                details={"body": response.text[:500]},
+                details={"body": raw_body.decode("utf-8", errors="replace")[:500]},
             ) from exc
 
         text = data.get("response")
@@ -364,6 +395,9 @@ class OllamaClient:
                 status_code=502,
                 details={"model": self._model},
             )
+
+        if timer is not None:
+            timer.set_response_size(text)
 
         # TEMP DEBUG: raw Ollama response body field (no truncation).
         print("================ RESPONSE START ================", flush=True)

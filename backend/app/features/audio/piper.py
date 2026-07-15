@@ -129,8 +129,13 @@ def _config_for_model(model_path: Path) -> Path | None:
     return None
 
 
-def discover_voice(voices_dir: Path, language: str) -> PiperVoice:
-    """Find the first ``*.onnx`` (and matching ``*.onnx.json``) under a language folder."""
+def discover_voice(
+    voices_dir: Path,
+    language: str,
+    *,
+    preferred_stem: str | None = None,
+) -> PiperVoice:
+    """Find a Piper voice under a language folder (prefer ``preferred_stem``)."""
     lang = (language or "").strip().lower()
     if len(lang) > 2 and "-" in lang:
         lang = lang.split("-", 1)[0]
@@ -174,6 +179,13 @@ def discover_voice(voices_dir: Path, language: str) -> PiperVoice:
         )
 
     model_path = onnx_files[0]
+    if preferred_stem:
+        preferred = preferred_stem.strip()
+        for candidate in onnx_files:
+            if candidate.stem == preferred or preferred in candidate.stem:
+                model_path = candidate
+                break
+
     config_path = _config_for_model(model_path)
 
     return PiperVoice(
@@ -285,7 +297,7 @@ def synthesize_wav(
 
     if not output_wav.is_file() or output_wav.stat().st_size <= 0:
         raise ExplainXError(
-            "Piper did not produce a valid audio.wav file.",
+            "Piper did not produce a valid WAV file.",
             code="PIPER_OUTPUT_MISSING",
             details={"path": str(output_wav)},
         )

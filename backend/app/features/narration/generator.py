@@ -10,9 +10,9 @@ from app.features.input.schemas import RawContent
 from app.features.narration.normalize import normalize_author_script
 from app.features.narration.protocols import NarrationGenerator
 from app.features.narration.schemas import NarrationDocument
+from app.features.narration.languages import CANONICAL_SCRIPT_LANGUAGE, log_script_language
 from app.features.narration.topic_resolve import resolve_requested_topic
 from app.features.script.durations import V1_WPM, word_budget
-from app.features.script.processors.common import resolve_language
 
 
 def _pad_to_words(text: str, *, target_words: int) -> str:
@@ -50,7 +50,8 @@ class PlaceholderNarrationGenerator:
         repair_hint: str | None = None,
     ) -> NarrationDocument:
         title = resolve_requested_topic(raw)
-        language = resolve_language(raw, None)
+        language = CANONICAL_SCRIPT_LANGUAGE
+        log_script_language(generated=language)
         budget = word_budget(target_duration_sec)
         hint = (repair_hint or "").lower()
         if "shorten" in hint or "too long" in hint:

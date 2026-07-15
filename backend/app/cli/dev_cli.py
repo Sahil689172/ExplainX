@@ -27,6 +27,10 @@ from app.features.input.pdf_extract import (
 )
 from app.features.input.schemas import ScriptSourceRequest, TopicSourceRequest
 from app.features.input.service import InputService
+from app.features.narration.languages import (
+    SUPPORTED_NARRATION_LANGUAGES,
+    normalize_narration_language,
+)
 from app.features.projects.filesystem import ProjectFilesystem
 from app.features.projects.schemas import ProjectCreateRequest
 from app.features.projects.service import ProjectService
@@ -95,8 +99,10 @@ def create_or_load_project(
     source_topic: str | None,
     project_id: str | None,
     reuse_project: bool = False,
+    language: str = "en",
 ) -> str:
     """Create a new project, or optionally reuse one with the same title."""
+    output_lang = normalize_narration_language(language)
     projects = ProjectService(session, settings)
     if project_id:
         _log(f"[1/4] Loading project {project_id} …")
@@ -117,13 +123,15 @@ def create_or_load_project(
         source_type=source_type,
         source_topic=source_topic,
         theme_id="notebooklm",
+        # Canonical script language is always English; --lang is output language.
         source_language_code="en",
-        target_language_code="en",
+        target_language_code=output_lang,
     )
     detail = projects.create(payload)
     _log("Created new project")
     _log(f"Title: {detail.title}")
     _log(f"Project ID: {detail.project_id}")
+    _log(f"Requested output language: {output_lang}")
     return detail.project_id
 
 
@@ -132,7 +140,11 @@ def ingest_topic(
     settings: Settings,
     project_id: str,
     topic: str,
+    *,
+    language: str = "en",
 ) -> None:
+    # Script generation is always English; output language lives on the project.
+    _ = normalize_narration_language(language)
     _log("[2/4] Ingesting topic source …")
     InputService(session, settings).ingest_topic(
         project_id,
@@ -148,7 +160,9 @@ def ingest_script_file(
     script_path: Path,
     *,
     title: str | None,
+    language: str = "en",
 ) -> None:
+    _ = normalize_narration_language(language)
     _log(f"[2/4] Ingesting script from {script_path} …")
     text = script_path.read_text(encoding="utf-8")
     InputService(session, settings).ingest_script(
@@ -168,7 +182,10 @@ def ingest_pdf_file(
     settings: Settings,
     project_id: str,
     pdf_path: Path,
+    *,
+    language: str = "en",
 ) -> None:
+    _ = normalize_narration_language(language)
     _log(f"[2/4] Ingesting PDF from {pdf_path} …")
     data = pdf_path.read_bytes()
     InputService(session, settings).ingest_pdf(
@@ -320,10 +337,12 @@ def run_pipeline(
     project_id: str | None = None,
     title: str | None = None,
     reuse_project: bool = False,
+    language: str = "en",
     settings: Settings | None = None,
 ) -> EducationalScript:
     """Execute topic|script|pdf → EducationalScript via existing services."""
     cfg = bootstrap(settings=settings)
+    lang = normalize_narration_language(language)
     verify_ollama(cfg)
     session = _session()
     try:
@@ -338,8 +357,9 @@ def run_pipeline(
                 source_topic=topic,
                 project_id=project_id,
                 reuse_project=reuse_project,
+                language=lang,
             )
-            ingest_topic(session, cfg, pid, topic)
+            ingest_topic(session, cfg, pid, topic, language=lang)
         elif mode == "script":
             script_path = validate_script_path(value)
             resolved_title = _truncate_title(
@@ -354,6 +374,7 @@ def run_pipeline(
                 source_topic=resolved_title,
                 project_id=project_id,
                 reuse_project=reuse_project,
+                language=lang,
             )
             ingest_script_file(
                 session,
@@ -361,6 +382,7 @@ def run_pipeline(
                 pid,
                 script_path,
                 title=resolved_title,
+                language=lang,
             )
         elif mode == "pdf":
             pdf_path = validate_pdf_path(value)
@@ -376,8 +398,9 @@ def run_pipeline(
                 source_topic=None,
                 project_id=project_id,
                 reuse_project=reuse_project,
+                language=lang,
             )
-            ingest_pdf_file(session, cfg, pid, pdf_path)
+            ingest_pdf_file(session, cfg, pid, pdf_path, language=lang)
         else:
             raise ValidationAppErrorLike(f"Unknown mode: {mode}")
 
@@ -417,6 +440,16 @@ def build_parser() -> argparse.ArgumentParser:
                 "Default is always to create a new project (duplicate titles allowed)."
             ),
         )
+        p.add_argument(
+            "--lang",
+            default="en",
+            choices=list(SUPPORTED_NARRATION_LANGUAGES),
+            help=(
+                "Requested output language (en, hi, te). Default: en. "
+                "Script generation is always English; language is used for "
+                "translation + Piper during audio."
+            ),
+        )
 
     topic = sub.add_parser("topic", help="Generate script from a topic string")
     topic.add_argument("topic", help="Teaching topic (3–500 characters)")
@@ -432,16 +465,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     audio = sub.add_parser(
         "audio",
-        help="Translate (if needed) then generate speech audio.wav (Piper)",
+        help="Generate speech audio_<lang>.wav (translate if needed, then Piper)",
     )
     audio.add_argument("project_id", help="Project UUID with a narration artifact")
     audio.add_argument(
         "--lang",
         default=None,
-        help=(
-            "Language for speech (en, hi). "
-            "hi runs Argos Translate then Piper; en skips translation."
-        ),
+        choices=list(SUPPORTED_NARRATION_LANGUAGES),
+        help="Optional output-language override. Default: project target_language_code.",
     )
 
     return parser
@@ -453,14 +484,14 @@ def run_audio(
     lang: str | None = None,
     settings: Settings | None = None,
 ) -> Path:
-    """Generate artifacts/audio.wav for an existing project narration."""
+    """Generate artifacts/audio_<lang>.wav for an existing project."""
     cfg = bootstrap(settings=settings)
     session = _session()
     try:
         print("Generating speech...", flush=True)
         path = AudioService(session, cfg).generate(project_id.strip(), lang=lang)
         print("Saved", flush=True)
-        print("audio.wav", flush=True)
+        print(path.name, flush=True)
         return path
     finally:
         session.close()
@@ -478,6 +509,7 @@ def main(argv: list[str] | None = None) -> int:
                 project_id=args.project_id,
                 title=args.title,
                 reuse_project=args.reuse_project,
+                language=args.lang,
             )
         elif args.command == "script":
             run_pipeline(
@@ -486,6 +518,7 @@ def main(argv: list[str] | None = None) -> int:
                 project_id=args.project_id,
                 title=args.title,
                 reuse_project=args.reuse_project,
+                language=args.lang,
             )
         elif args.command == "pdf":
             run_pipeline(
@@ -494,6 +527,7 @@ def main(argv: list[str] | None = None) -> int:
                 project_id=args.project_id,
                 title=args.title,
                 reuse_project=args.reuse_project,
+                language=args.lang,
             )
         elif args.command == "audio":
             run_audio(args.project_id, lang=args.lang)

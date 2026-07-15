@@ -112,6 +112,7 @@ def test_api_uses_narration_pipeline(client: TestClient, _test_env: Path, capsys
     artifacts = _test_env / "projects" / project_id / "artifacts"
     assert (artifacts / "narration.json").is_file()
     assert (artifacts / "narration.txt").is_file()
+    assert (artifacts / "narration_en.txt").is_file()
     assert (artifacts / "teaching_outline.json").is_file()
     assert (artifacts / "educational_script.json").is_file()
     assert (artifacts / "approved_script.json").is_file()

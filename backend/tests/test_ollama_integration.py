@@ -289,7 +289,7 @@ def test_ollama_client_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
     def boom(*_args: Any, **_kwargs: Any) -> Any:
         raise httpx.ConnectError("refused")
 
-    monkeypatch.setattr(httpx.Client, "post", boom)
+    monkeypatch.setattr(httpx.Client, "stream", boom)
     client = OllamaClient(base_url="http://127.0.0.1:9", model="x", timeout_sec=1.0)
     client._health_checked = True
     with pytest.raises(ExplainXError) as exc:
@@ -301,7 +301,7 @@ def test_ollama_client_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     def boom(*_args: Any, **_kwargs: Any) -> Any:
         raise httpx.ReadTimeout("slow")
 
-    monkeypatch.setattr(httpx.Client, "post", boom)
+    monkeypatch.setattr(httpx.Client, "stream", boom)
     client = OllamaClient(base_url="http://127.0.0.1:9", model="x", timeout_sec=1.0)
     client._health_checked = True
     with pytest.raises(ExplainXError) as exc:

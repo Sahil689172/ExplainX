@@ -1,4 +1,4 @@
-"""Tests for Argos translation service (mocked engine; no real packages)."""
+"""Tests for Argos translation service (mocked provider; no real packages)."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from app.core.timeutil import utc_now_iso
 from app.features.narration.schemas import NarrationDocument
 from app.features.narration.store import NarrationArtifactStore
 from app.features.projects.filesystem import ProjectFilesystem
-from app.features.translation.argos import reset_argos_engine
+from app.features.translation.providers.argos import reset_argos_provider
 from app.features.translation.service import TranslationService
 
 
@@ -50,40 +50,50 @@ def _seed_narration(tmp_path: Path, project_id: str, text: str) -> None:
 
 @pytest.fixture(autouse=True)
 def _reset_engine() -> None:
-    reset_argos_engine()
+    reset_argos_provider()
     yield
-    reset_argos_engine()
+    reset_argos_provider()
 
 
 def test_en_skips_translation(tmp_path: Path) -> None:
     project_id = "11111111-1111-1111-1111-111111111111"
     _seed_narration(tmp_path, project_id, "Plants make food using sunlight.")
 
-    mock_engine = MagicMock()
+    mock_provider = MagicMock()
+    mock_provider.name = "Argos"
+    mock_provider.supports.return_value = True
     with patch(
-        "app.features.translation.service.get_argos_engine",
-        return_value=mock_engine,
+        "app.features.translation.service.create_translation_provider",
+        return_value=mock_provider,
     ):
         service = TranslationService(MagicMock(), _settings(tmp_path))
         service._repo.get = MagicMock(return_value=object())  # type: ignore[method-assign]
         text = service.ensure_translated(project_id, "en")
 
-    mock_engine.translate.assert_not_called()
+    mock_provider.translate.assert_not_called()
     assert text.startswith("Plants make food")
-    en_path = tmp_path / "projects" / project_id / "artifacts" / "translations" / "en.txt"
+    en_path = (
+        tmp_path / "projects" / project_id / "artifacts" / "narration_en.txt"
+    )
     assert en_path.is_file()
 
 
-def test_hi_cache_miss_then_hit(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_hi_cache_miss_then_hit(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     project_id = "11111111-1111-1111-1111-111111111111"
     _seed_narration(tmp_path, project_id, "Plants make food using sunlight.")
 
-    mock_engine = MagicMock()
-    mock_engine.translate.return_value = "पौधे सूर्य के प्रकाश का उपयोग करके भोजन बनाते हैं।"
+    mock_provider = MagicMock()
+    mock_provider.name = "Argos"
+    mock_provider.supports.return_value = True
+    mock_provider.translate.return_value = (
+        "पौधे सूर्य के प्रकाश का उपयोग करके भोजन बनाते हैं।"
+    )
 
     with patch(
-        "app.features.translation.service.get_argos_engine",
-        return_value=mock_engine,
+        "app.features.translation.service.create_translation_provider",
+        return_value=mock_provider,
     ):
         service = TranslationService(MagicMock(), _settings(tmp_path))
         service._repo.get = MagicMock(return_value=object())  # type: ignore[method-assign]
@@ -91,9 +101,38 @@ def test_hi_cache_miss_then_hit(tmp_path: Path, capsys: pytest.CaptureFixture[st
         second = service.ensure_translated(project_id, "hi")
 
     assert first == second
-    assert mock_engine.translate.call_count == 1
-    hi_path = tmp_path / "projects" / project_id / "artifacts" / "translations" / "hi.txt"
+    assert mock_provider.translate.call_count == 1
+    hi_path = (
+        tmp_path / "projects" / project_id / "artifacts" / "narration_hi.txt"
+    )
     assert hi_path.is_file()
     out = capsys.readouterr().out
+    assert "English → Hindi" in out
+    assert "Cache : Miss" in out
+    assert "Cache : Hit" in out
     assert "Provider : Argos" in out
-    assert "Target : hi" in out
+
+
+def test_legacy_narration_txt_as_english(tmp_path: Path) -> None:
+    project_id = "11111111-1111-1111-1111-111111111111"
+    settings = _settings(tmp_path)
+    fs = ProjectFilesystem(settings)
+    root = fs.project_root(project_id)
+    artifacts = root / "artifacts"
+    artifacts.mkdir(parents=True, exist_ok=True)
+    (artifacts / "narration.txt").write_text(
+        "Legacy English narration.\n", encoding="utf-8"
+    )
+
+    mock_provider = MagicMock()
+    mock_provider.name = "Argos"
+    with patch(
+        "app.features.translation.service.create_translation_provider",
+        return_value=mock_provider,
+    ):
+        service = TranslationService(MagicMock(), settings)
+        service._repo.get = MagicMock(return_value=object())  # type: ignore[method-assign]
+        text = service.ensure_translated(project_id, "en")
+
+    assert "Legacy English" in text
+    assert (artifacts / "narration_en.txt").is_file()
