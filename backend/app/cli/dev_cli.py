@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 import traceback
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TextIO
 
@@ -29,6 +31,7 @@ from app.features.input.schemas import ScriptSourceRequest, TopicSourceRequest
 from app.features.input.service import InputService
 from app.features.narration.languages import (
     SUPPORTED_NARRATION_LANGUAGES,
+    language_label,
     normalize_narration_language,
 )
 from app.features.projects.filesystem import ProjectFilesystem
@@ -38,6 +41,7 @@ from app.features.script.ollama.client import MODEL_NOT_INSTALLED, OllamaClient
 from app.features.script.schemas import EducationalScript
 from app.features.script.service import ContentIntelligenceService
 from app.features.script.store import ScriptArtifactStore
+from app.features.translation.service import TranslationService
 
 logger = get_logger(__name__)
 
@@ -330,6 +334,14 @@ class ValidationAppErrorLike(ValueError):
     """CLI-side validation error (maps to exit code 1)."""
 
 
+@dataclass(frozen=True, slots=True)
+class PipelineResult:
+    """Result of topic|script|pdf script generation."""
+
+    project_id: str
+    script: EducationalScript
+
+
 def run_pipeline(
     *,
     mode: str,
@@ -339,7 +351,7 @@ def run_pipeline(
     reuse_project: bool = False,
     language: str = "en",
     settings: Settings | None = None,
-) -> EducationalScript:
+) -> PipelineResult:
     """Execute topic|script|pdf → EducationalScript via existing services."""
     cfg = bootstrap(settings=settings)
     lang = normalize_narration_language(language)
@@ -406,9 +418,145 @@ def run_pipeline(
 
         script = generate_script(session, cfg, pid)
         print_summary(cfg, pid, script)
-        return script
+        return PipelineResult(project_id=pid, script=script)
     finally:
         session.close()
+
+
+def _run_translation(
+    project_id: str,
+    lang: str,
+    *,
+    settings: Settings | None = None,
+) -> float:
+    """Call existing TranslationService; return elapsed seconds."""
+    cfg = bootstrap(settings=settings)
+    session = _session()
+    try:
+        started = time.perf_counter()
+        TranslationService(session, cfg).ensure_translated(project_id, lang)
+        return time.perf_counter() - started
+    finally:
+        session.close()
+
+
+def _collect_artifact_paths(
+    settings: Settings,
+    project_id: str,
+    *,
+    language: str,
+    audio_path: Path | None,
+) -> list[Path]:
+    """List generated artifacts that exist (CLI report only)."""
+    fs = ProjectFilesystem(settings)
+    artifacts = fs.project_root(project_id) / "artifacts"
+    candidates = [
+        artifacts / "educational_script.json",
+        artifacts / "educational_script.md",
+        artifacts / "narration.json",
+        artifacts / "narration_en.txt",
+        artifacts / "narration.txt",
+    ]
+    if language != "en":
+        candidates.append(artifacts / f"narration_{language}.txt")
+    if audio_path is not None:
+        candidates.append(audio_path)
+    else:
+        candidates.append(artifacts / f"audio_{language}.wav")
+
+    seen: set[Path] = set()
+    out: list[Path] = []
+    for path in candidates:
+        resolved = path.resolve()
+        if resolved in seen:
+            continue
+        if path.is_file():
+            seen.add(resolved)
+            out.append(path)
+    return out
+
+
+def print_workflow_summary(
+    *,
+    settings: Settings,
+    project_id: str,
+    language: str,
+    script_sec: float,
+    translation_sec: float | None,
+    audio_sec: float,
+    total_sec: float,
+    audio_path: Path,
+) -> None:
+    """Print one final convenience-workflow summary."""
+    print()
+    print("=== ExplainX Generate Summary ===")
+    print(f"Project ID:              {project_id}")
+    print(f"Requested language:      {language} ({language_label(language)})")
+    print(f"Script generation time:  {script_sec:.2f} sec")
+    if translation_sec is not None:
+        print(f"Translation time:        {translation_sec:.2f} sec")
+    else:
+        print("Translation time:        n/a (English)")
+    print(f"Audio generation time:   {audio_sec:.2f} sec")
+    print(f"Total pipeline time:     {total_sec:.2f} sec")
+    print()
+    print("Generated artifacts:")
+    for path in _collect_artifact_paths(
+        settings, project_id, language=language, audio_path=audio_path
+    ):
+        print(f"  {path}")
+    print()
+
+
+def run_topic_with_audio(
+    *,
+    topic: str,
+    project_id: str | None = None,
+    title: str | None = None,
+    reuse_project: bool = False,
+    language: str = "en",
+    settings: Settings | None = None,
+) -> Path:
+    """Orchestrate existing topic pipeline + AudioService (CLI convenience only)."""
+    lang = normalize_narration_language(language)
+    total_started = time.perf_counter()
+
+    script_started = time.perf_counter()
+    result = run_pipeline(
+        mode="topic",
+        value=topic,
+        project_id=project_id,
+        title=title,
+        reuse_project=reuse_project,
+        language=lang,
+        settings=settings,
+    )
+    script_sec = time.perf_counter() - script_started
+    pid = result.project_id
+
+    translation_sec: float | None = None
+    if lang != "en":
+        _log("[audio] Translating narration for speech …")
+        translation_sec = _run_translation(pid, lang, settings=settings)
+
+    _log("[audio] Generating speech …")
+    audio_started = time.perf_counter()
+    audio_path = run_audio(pid, lang=lang, settings=settings)
+    audio_sec = time.perf_counter() - audio_started
+    total_sec = time.perf_counter() - total_started
+
+    cfg = bootstrap(settings=settings)
+    print_workflow_summary(
+        settings=cfg,
+        project_id=pid,
+        language=lang,
+        script_sec=script_sec,
+        translation_sec=translation_sec,
+        audio_sec=audio_sec,
+        total_sec=total_sec,
+        audio_path=audio_path,
+    )
+    return audio_path
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -454,6 +602,11 @@ def build_parser() -> argparse.ArgumentParser:
     topic = sub.add_parser("topic", help="Generate script from a topic string")
     topic.add_argument("topic", help="Teaching topic (3–500 characters)")
     add_common(topic)
+    topic.add_argument(
+        "--audio",
+        action="store_true",
+        help="After script generation, also run AudioService (translate if needed).",
+    )
 
     script = sub.add_parser("script", help="Generate script from a text file")
     script.add_argument("path", help="Path to .txt / .md script file")
@@ -462,6 +615,18 @@ def build_parser() -> argparse.ArgumentParser:
     pdf = sub.add_parser("pdf", help="Generate script from a PDF file")
     pdf.add_argument("path", help="Path to .pdf file (≤25 MB, ≤30 pages)")
     add_common(pdf)
+
+    generate = sub.add_parser(
+        "generate",
+        help="Convenience: topic pipeline + audio (same as: topic … --audio)",
+    )
+    generate.add_argument("topic", help="Teaching topic (3–500 characters)")
+    add_common(generate)
+    generate.add_argument(
+        "--audio",
+        action="store_true",
+        help="Optional; generate always runs AudioService (accepted for compatibility).",
+    )
 
     audio = sub.add_parser(
         "audio",
@@ -503,9 +668,26 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.command == "topic":
-            run_pipeline(
-                mode="topic",
-                value=args.topic,
+            if getattr(args, "audio", False):
+                run_topic_with_audio(
+                    topic=args.topic,
+                    project_id=args.project_id,
+                    title=args.title,
+                    reuse_project=args.reuse_project,
+                    language=args.lang,
+                )
+            else:
+                run_pipeline(
+                    mode="topic",
+                    value=args.topic,
+                    project_id=args.project_id,
+                    title=args.title,
+                    reuse_project=args.reuse_project,
+                    language=args.lang,
+                )
+        elif args.command == "generate":
+            run_topic_with_audio(
+                topic=args.topic,
                 project_id=args.project_id,
                 title=args.title,
                 reuse_project=args.reuse_project,

@@ -149,3 +149,45 @@ def test_cli_unknown_project(_test_env: Path) -> None:
         ]
     )
     assert code == EXIT_APP_ERROR
+
+
+def test_cli_topic_audio_flag_invokes_orchestrator(monkeypatch: pytest.MonkeyPatch) -> None:
+    called: dict[str, object] = {}
+
+    def fake_run_topic_with_audio(**kwargs: object) -> Path:
+        called.update(kwargs)
+        return Path("artifacts/audio_hi.wav")
+
+    monkeypatch.setattr(dev_cli, "run_topic_with_audio", fake_run_topic_with_audio)
+    code = main(["topic", "Photosynthesis for beginners here", "--lang", "hi", "--audio"])
+    assert code == EXIT_OK
+    assert called["topic"] == "Photosynthesis for beginners here"
+    assert called["language"] == "hi"
+
+
+def test_cli_generate_command_invokes_orchestrator(monkeypatch: pytest.MonkeyPatch) -> None:
+    called: dict[str, object] = {}
+
+    def fake_run_topic_with_audio(**kwargs: object) -> Path:
+        called.update(kwargs)
+        return Path("artifacts/audio_en.wav")
+
+    monkeypatch.setattr(dev_cli, "run_topic_with_audio", fake_run_topic_with_audio)
+    code = main(["generate", "Photosynthesis for beginners here", "--lang", "en"])
+    assert code == EXIT_OK
+    assert called["language"] == "en"
+
+
+def test_cli_topic_without_audio_does_not_orchestrate(
+    monkeypatch: pytest.MonkeyPatch, _test_env: Path
+) -> None:
+    orchestrated = {"hit": False}
+
+    def boom(**_kwargs: object) -> Path:
+        orchestrated["hit"] = True
+        return Path("x")
+
+    monkeypatch.setattr(dev_cli, "run_topic_with_audio", boom)
+    code = main(["topic", "Hash tables for beginners"])
+    assert code == EXIT_OK
+    assert orchestrated["hit"] is False
