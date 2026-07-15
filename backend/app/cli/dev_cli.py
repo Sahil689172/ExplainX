@@ -15,11 +15,13 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings, get_settings
 from app.core.enums import SourceType
 from app.core.errors import ExplainXError
+from app.core.benchmark import BenchmarkTimer
 from app.core.logging import get_logger, setup_logging
 from app.core.paths import ensure_runtime_directories
 from app.db import session as db_session
 from app.db.bootstrap import init_database
 from app.features.audio.service import AudioService
+from app.features.audio.voices import preferred_voice_stem
 from app.features.input.pdf_extract import (
     PDF_MAX_BYTES,
     SCRIPT_MAX_LEN,
@@ -351,16 +353,23 @@ def run_pipeline(
     reuse_project: bool = False,
     language: str = "en",
     settings: Settings | None = None,
+    benchmark: BenchmarkTimer | None = None,
 ) -> PipelineResult:
     """Execute topic|script|pdf → EducationalScript via existing services."""
     cfg = bootstrap(settings=settings)
     lang = normalize_narration_language(language)
     verify_ollama(cfg)
+    owns_benchmark = benchmark is None
+    bench = benchmark or BenchmarkTimer()
+    if owns_benchmark:
+        bench.start("total_pipeline")
+
     session = _session()
     try:
         if mode == "topic":
             topic = validate_topic(value)
             resolved_title = _truncate_title(title or topic, fallback="CLI Topic Project")
+            bench.start("project_creation")
             pid = create_or_load_project(
                 session,
                 cfg,
@@ -371,13 +380,17 @@ def run_pipeline(
                 reuse_project=reuse_project,
                 language=lang,
             )
+            bench.stop("project_creation")
+            bench.start("ingestion")
             ingest_topic(session, cfg, pid, topic, language=lang)
+            bench.stop("ingestion")
         elif mode == "script":
             script_path = validate_script_path(value)
             resolved_title = _truncate_title(
                 title or script_path.stem,
                 fallback="CLI Script Project",
             )
+            bench.start("project_creation")
             pid = create_or_load_project(
                 session,
                 cfg,
@@ -388,6 +401,8 @@ def run_pipeline(
                 reuse_project=reuse_project,
                 language=lang,
             )
+            bench.stop("project_creation")
+            bench.start("ingestion")
             ingest_script_file(
                 session,
                 cfg,
@@ -396,12 +411,14 @@ def run_pipeline(
                 title=resolved_title,
                 language=lang,
             )
+            bench.stop("ingestion")
         elif mode == "pdf":
             pdf_path = validate_pdf_path(value)
             resolved_title = _truncate_title(
                 title or pdf_path.stem,
                 fallback="CLI PDF Project",
             )
+            bench.start("project_creation")
             pid = create_or_load_project(
                 session,
                 cfg,
@@ -412,15 +429,61 @@ def run_pipeline(
                 reuse_project=reuse_project,
                 language=lang,
             )
+            bench.stop("project_creation")
+            bench.start("ingestion")
             ingest_pdf_file(session, cfg, pid, pdf_path, language=lang)
+            bench.stop("ingestion")
         else:
             raise ValidationAppErrorLike(f"Unknown mode: {mode}")
 
+        bench.start("script_generation")
         script = generate_script(session, cfg, pid)
+        bench.stop("script_generation")
         print_summary(cfg, pid, script)
+
+        if owns_benchmark:
+            _finalize_benchmark(
+                bench,
+                settings=cfg,
+                project_id=pid,
+                language=lang,
+                with_audio=False,
+            )
         return PipelineResult(project_id=pid, script=script)
     finally:
         session.close()
+
+
+def _finalize_benchmark(
+    bench: BenchmarkTimer,
+    *,
+    settings: Settings,
+    project_id: str,
+    language: str,
+    with_audio: bool,
+) -> Path:
+    """Attach metadata, stop total if needed, write JSON, print banner."""
+    if bench.is_running("total_pipeline"):
+        bench.stop("total_pipeline")
+
+    voice = preferred_voice_stem(language) or ""
+    bench.set_meta(
+        language=language,
+        llm_model=settings.ollama_model,
+        tts_provider="Piper" if with_audio else "",
+        voice=voice if with_audio else "",
+    )
+    if not with_audio:
+        bench.record("translation", 0.0)
+        bench.record("audio_generation", 0.0)
+
+    fs = ProjectFilesystem(settings)
+    path = fs.project_root(project_id) / "artifacts" / "benchmark.json"
+    bench.save(path)
+    print()
+    bench.summary()
+    print()
+    return path
 
 
 def _run_translation(
@@ -456,6 +519,7 @@ def _collect_artifact_paths(
         artifacts / "narration.json",
         artifacts / "narration_en.txt",
         artifacts / "narration.txt",
+        artifacts / "benchmark.json",
     ]
     if language != "en":
         candidates.append(artifacts / f"narration_{language}.txt")
@@ -519,9 +583,9 @@ def run_topic_with_audio(
 ) -> Path:
     """Orchestrate existing topic pipeline + AudioService (CLI convenience only)."""
     lang = normalize_narration_language(language)
-    total_started = time.perf_counter()
+    bench = BenchmarkTimer()
+    bench.start("total_pipeline")
 
-    script_started = time.perf_counter()
     result = run_pipeline(
         mode="topic",
         value=topic,
@@ -530,22 +594,35 @@ def run_topic_with_audio(
         reuse_project=reuse_project,
         language=lang,
         settings=settings,
+        benchmark=bench,
     )
-    script_sec = time.perf_counter() - script_started
     pid = result.project_id
+    script_sec = bench.elapsed("script_generation")
 
     translation_sec: float | None = None
     if lang != "en":
         _log("[audio] Translating narration for speech …")
-        translation_sec = _run_translation(pid, lang, settings=settings)
+        bench.start("translation")
+        _run_translation(pid, lang, settings=settings)
+        translation_sec = bench.stop("translation")
+    else:
+        bench.record("translation", 0.0)
+        translation_sec = None
 
     _log("[audio] Generating speech …")
-    audio_started = time.perf_counter()
+    bench.start("audio_generation")
     audio_path = run_audio(pid, lang=lang, settings=settings)
-    audio_sec = time.perf_counter() - audio_started
-    total_sec = time.perf_counter() - total_started
+    audio_sec = bench.stop("audio_generation")
 
     cfg = bootstrap(settings=settings)
+    _finalize_benchmark(
+        bench,
+        settings=cfg,
+        project_id=pid,
+        language=lang,
+        with_audio=True,
+    )
+    total_sec = bench.elapsed("total_pipeline")
     print_workflow_summary(
         settings=cfg,
         project_id=pid,
