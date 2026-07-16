@@ -188,6 +188,31 @@ class Settings(BaseSettings):
         description="Path to FFmpeg binary; empty uses PATH / common locations.",
     )
 
+    # Camera engine (Renderer Phase 2).
+    default_camera: str = Field(
+        default="center",
+        validation_alias=AliasChoices(
+            "DEFAULT_CAMERA",
+            "EXPLAINX_DEFAULT_CAMERA",
+        ),
+        description="Default camera type when building camera config (center, zoom_in, …).",
+    )
+    default_easing: str = Field(
+        default="ease_in_out",
+        validation_alias=AliasChoices(
+            "DEFAULT_EASING",
+            "EXPLAINX_DEFAULT_EASING",
+        ),
+    )
+    default_zoom: float = Field(
+        default=1.15,
+        ge=1.0,
+        validation_alias=AliasChoices(
+            "DEFAULT_ZOOM",
+            "EXPLAINX_DEFAULT_ZOOM",
+        ),
+    )
+
     @field_validator("log_level")
     @classmethod
     def normalize_log_level(cls, value: str) -> str:

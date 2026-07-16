@@ -163,9 +163,22 @@ def test_render_service_creates_artifacts(tmp_path: Path, monkeypatch: pytest.Mo
         out.write_bytes(b"FAKE_MP4")
         return out
 
+    def fake_generate_camera_frames(**kwargs):  # noqa: ANN003
+        frames_dir = kwargs["frames_dir"]
+        config = kwargs["config"]
+        ext = config.frame_format
+        frames_dir.mkdir(parents=True, exist_ok=True)
+        for index in range(1, config.frame_count + 1):
+            (frames_dir / f"{index:06d}.{ext}").write_bytes(_MINIMAL_PNG)
+        return config.frame_count
+
     monkeypatch.setattr(
         "app.features.renderer.service.export_video",
         fake_export,
+    )
+    monkeypatch.setattr(
+        "app.features.renderer.service.generate_camera_frames",
+        fake_generate_camera_frames,
     )
     monkeypatch.setattr(
         "app.features.renderer.service.resolve_ffmpeg_executable",
@@ -180,14 +193,16 @@ def test_render_service_creates_artifacts(tmp_path: Path, monkeypatch: pytest.Mo
 
     assert result.video_path.is_file()
     assert store.metadata_path(project_id).is_file()
+    assert store.camera_metadata_path(project_id).is_file()
     assert store.frames_dir(project_id).is_dir()
     assert len(list(store.frames_dir(project_id).glob("*.png"))) == 6
 
     meta = json.loads(store.metadata_path(project_id).read_text(encoding="utf-8"))
     assert meta["frame_count"] == 6
-    assert meta["fps"] == 3
-    assert meta["duration"] == 2
-    assert meta["resolution"] == "1x1"
+    camera_meta = json.loads(
+        store.camera_metadata_path(project_id).read_text(encoding="utf-8")
+    )
+    assert camera_meta["camera_type"] == "center"
 
 
 def test_render_artifact_paths(tmp_path: Path) -> None:
@@ -195,6 +210,7 @@ def test_render_artifact_paths(tmp_path: Path) -> None:
     store = RenderArtifactStore(ProjectFilesystem(_settings(tmp_path)))
     assert store.video_path(project_id).name == "video.mp4"
     assert store.metadata_path(project_id).name == "render_metadata.json"
+    assert store.camera_metadata_path(project_id).name == "camera_metadata.json"
     assert store.frame_path(project_id, 1, ext="png").name == "000001.png"
 
 

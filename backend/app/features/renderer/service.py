@@ -1,4 +1,4 @@
-"""RenderService — static image → identical frames → video.mp4 (MVP)."""
+"""RenderService — static image + camera → frames → video.mp4."""
 
 from __future__ import annotations
 
@@ -15,10 +15,11 @@ from app.core.logging import get_logger
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
 from app.features.renderer.artifacts import RenderArtifactStore
+from app.features.renderer.camera_service import CameraService
 from app.features.renderer.exporter import export_video, resolve_ffmpeg_executable
 from app.features.renderer.frame_renderer import (
     discover_input_image,
-    generate_identical_frames,
+    generate_camera_frames,
     read_image_resolution,
 )
 from app.features.renderer.schemas import RenderConfig, RenderMetadata
@@ -37,10 +38,11 @@ class RenderResult:
     video_path: Path
     metadata_path: Path
     metadata: RenderMetadata
+    camera_metadata_path: Path
 
 
 class RenderService:
-    """MVP renderer: duplicate a static image into frames, encode with FFmpeg."""
+    """Renderer: camera viewport per frame → FFmpeg video."""
 
     def __init__(self, session: Session, settings: Settings) -> None:
         self._session = session
@@ -71,6 +73,16 @@ class RenderService:
         project_root = self._fs.project_root(project_id)
         input_image = discover_input_image(project_root)
         width, height = read_image_resolution(input_image)
+        output_size = (width, height)
+
+        camera = CameraService.from_project(
+            project_root,
+            self._settings,
+            duration_sec=config.duration_sec,
+            image_width=width,
+            image_height=height,
+        )
+        camera.log_camera()
 
         ffmpeg_exe = resolve_ffmpeg_executable(
             self._settings.ffmpeg_executable,
@@ -79,10 +91,12 @@ class RenderService:
 
         started = time.perf_counter()
         frames_dir = self._store.frames_dir(project_id)
-        frame_count = generate_identical_frames(
+        frame_count = generate_camera_frames(
             source_image=input_image,
             frames_dir=frames_dir,
             config=config,
+            camera=camera,
+            output_size=output_size,
         )
         video_path = export_video(
             frames_dir=frames_dir,
@@ -102,6 +116,8 @@ class RenderService:
             output_video=video_path.name,
         )
         metadata_path = self._write_metadata(project_id, metadata)
+        camera_metadata_path = self._write_camera_metadata(project_id, camera)
+
         self._log_render(
             input_image=input_image.name,
             config=config,
@@ -118,6 +134,7 @@ class RenderService:
                 "project_id": project_id,
                 "frame_count": frame_count,
                 "render_time_sec": metadata.render_time,
+                "camera_type": camera.config.type.value,
             },
         )
         return RenderResult(
@@ -126,6 +143,7 @@ class RenderService:
             video_path=video_path,
             metadata_path=metadata_path,
             metadata=metadata,
+            camera_metadata_path=camera_metadata_path,
         )
 
     def _write_metadata(self, project_id: str, metadata: RenderMetadata) -> Path:
@@ -133,6 +151,16 @@ class RenderService:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(
             json.dumps(metadata.model_dump(), indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def _write_camera_metadata(self, project_id: str, camera: CameraService) -> Path:
+        path = self._store.camera_metadata_path(project_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(camera.metadata().model_dump(), indent=2, ensure_ascii=False)
+            + "\n",
             encoding="utf-8",
         )
         return path

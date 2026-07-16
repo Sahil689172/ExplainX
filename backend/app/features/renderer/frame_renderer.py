@@ -1,4 +1,4 @@
-"""Generate identical frame files from a single static image."""
+"""Generate frame files from a static image with optional camera motion."""
 
 from __future__ import annotations
 
@@ -6,7 +6,9 @@ import shutil
 import struct
 from pathlib import Path
 
-from app.core.errors import NotFoundError, ValidationAppError
+from app.core.errors import ExplainXError, NotFoundError, ValidationAppError
+from app.features.renderer.camera_schemas import Viewport
+from app.features.renderer.camera_service import CameraService
 from app.features.renderer.schemas import RenderConfig
 
 _IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg"}
@@ -103,7 +105,7 @@ def generate_identical_frames(
     frames_dir: Path,
     config: RenderConfig,
 ) -> int:
-    """Write ``fps × duration`` identical frame files; return count written."""
+    """Write ``fps × duration`` identical frame files (legacy helper / tests)."""
     ext = config.frame_format.lower().lstrip(".")
     frames_dir.mkdir(parents=True, exist_ok=True)
     for old in frames_dir.glob(f"*.{ext}"):
@@ -113,6 +115,90 @@ def generate_identical_frames(
     for index in range(1, expected + 1):
         dest = frames_dir / f"{index:06d}.{ext}"
         shutil.copy2(source_image, dest)
+
+    written = sum(1 for _ in frames_dir.glob(f"*.{ext}"))
+    if written != expected:
+        raise ValidationAppError(
+            "Frame count does not match fps × duration.",
+            code="RENDER_FRAME_COUNT_MISMATCH",
+            details={
+                "expected": expected,
+                "written": written,
+                "fps": config.fps,
+                "duration": config.duration_sec,
+            },
+        )
+    return written
+
+
+def render_frame(
+    *,
+    source_image: Path,
+    viewport: Viewport,
+    output_size: tuple[int, int],
+    dest: Path,
+) -> None:
+    """Crop ``viewport`` from the source image and scale to ``output_size``."""
+    try:
+        import fitz  # PyMuPDF — already a project dependency
+    except ImportError as exc:
+        raise ExplainXError(
+            "PyMuPDF (fitz) is required for camera frame rendering.",
+            code="RENDER_DEPENDENCY_MISSING",
+            details={"missing": "pymupdf"},
+        ) from exc
+
+    out_w, out_h = output_size
+    clip = fitz.Rect(
+        viewport.x,
+        viewport.y,
+        viewport.x + viewport.width,
+        viewport.y + viewport.height,
+    )
+    if clip.width <= 0 or clip.height <= 0:
+        raise ValidationAppError(
+            "Viewport clip has non-positive dimensions.",
+            code="CAMERA_INVALID_VIEWPORT",
+            details={"width": clip.width, "height": clip.height},
+        )
+
+    matrix = fitz.Matrix(out_w / clip.width, out_h / clip.height)
+    doc = fitz.open(str(source_image))
+    try:
+        page = doc[0]
+        pix = page.get_pixmap(matrix=matrix, clip=clip, alpha=False)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        pix.save(str(dest))
+    finally:
+        doc.close()
+
+
+def generate_camera_frames(
+    *,
+    source_image: Path,
+    frames_dir: Path,
+    config: RenderConfig,
+    camera: CameraService,
+    output_size: tuple[int, int],
+) -> int:
+    """Render one frame per timestep using the camera viewport."""
+    ext = config.frame_format.lower().lstrip(".")
+    frames_dir.mkdir(parents=True, exist_ok=True)
+    for old in frames_dir.glob(f"*.{ext}"):
+        old.unlink()
+
+    expected = config.frame_count
+    fps = config.fps
+    for index in range(1, expected + 1):
+        time_seconds = (index - 1) / fps
+        viewport = camera.viewport_at_time(time_seconds)
+        dest = frames_dir / f"{index:06d}.{ext}"
+        render_frame(
+            source_image=source_image,
+            viewport=viewport,
+            output_size=output_size,
+            dest=dest,
+        )
 
     written = sum(1 for _ in frames_dir.glob(f"*.{ext}"))
     if written != expected:
