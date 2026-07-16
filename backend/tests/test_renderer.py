@@ -203,6 +203,7 @@ def test_render_service_creates_artifacts(tmp_path: Path, monkeypatch: pytest.Mo
         store.camera_metadata_path(project_id).read_text(encoding="utf-8")
     )
     assert camera_meta["camera_type"] == "center"
+    assert camera_meta["zoom"] == 1.0
 
 
 def test_render_artifact_paths(tmp_path: Path) -> None:

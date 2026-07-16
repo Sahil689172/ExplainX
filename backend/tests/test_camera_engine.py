@@ -134,6 +134,17 @@ def test_default_camera_config_is_center() -> None:
     assert cfg.end_scale == 1.0
 
 
+def test_default_camera_config_uses_settings_zoom_in(tmp_path: Path) -> None:
+    cfg = default_camera_config(
+        _settings(tmp_path, default_camera="zoom_in", default_zoom=1.15),
+        duration_sec=60,
+    )
+    assert cfg.type == CameraType.ZOOM_IN
+    assert cfg.start_scale == 1.0
+    assert cfg.end_scale == 1.15
+    assert cfg.easing == "ease_in_out"
+
+
 def test_camera_metadata_generation() -> None:
     camera = CameraService(
         config=CameraConfig(
@@ -151,6 +162,7 @@ def test_camera_metadata_generation() -> None:
     assert data["camera_type"] == "zoom_in"
     assert data["start_scale"] == 1.0
     assert data["end_scale"] == 1.15
+    assert data["zoom"] == 1.15
     assert data["easing"] == "ease_in_out"
 
 

@@ -138,7 +138,10 @@ def render_frame(
     output_size: tuple[int, int],
     dest: Path,
 ) -> None:
-    """Crop ``viewport`` from the source image and scale to ``output_size``."""
+    """Crop ``viewport`` from the source image and scale to ``output_size``.
+
+    Uses page.get_pixmap(clip=..., matrix=...) so crop happens before scale.
+    """
     try:
         import fitz  # PyMuPDF — already a project dependency
     except ImportError as exc:
@@ -148,7 +151,14 @@ def render_frame(
             details={"missing": "pymupdf"},
         ) from exc
 
-    out_w, out_h = output_size
+    out_w, out_h = int(output_size[0]), int(output_size[1])
+    if out_w <= 0 or out_h <= 0:
+        raise ValidationAppError(
+            "Output size must be positive.",
+            code="CAMERA_INVALID_VIEWPORT",
+            details={"output_size": output_size},
+        )
+
     clip = fitz.Rect(
         viewport.x,
         viewport.y,
@@ -162,6 +172,7 @@ def render_frame(
             details={"width": clip.width, "height": clip.height},
         )
 
+    # Scale the cropped region to the fixed output resolution.
     matrix = fitz.Matrix(out_w / clip.width, out_h / clip.height)
     doc = fitz.open(str(source_image))
     try:
@@ -191,7 +202,19 @@ def generate_camera_frames(
     fps = config.fps
     for index in range(1, expected + 1):
         time_seconds = (index - 1) / fps
-        viewport = camera.viewport_at_time(time_seconds)
+        viewport = camera.get_viewport(time_seconds)
+        scale = camera.scale_at_time(time_seconds)
+
+        # Temporary debug logging (every 100 frames + first/last).
+        if index == 1 or index == expected or index % 100 == 0:
+            print(f"Frame {index}", flush=True)
+            print(f"Scale {scale:.3f}", flush=True)
+            print("Viewport", flush=True)
+            print(f"x {viewport.x:.2f}", flush=True)
+            print(f"y {viewport.y:.2f}", flush=True)
+            print(f"width {viewport.width:.2f}", flush=True)
+            print(f"height {viewport.height:.2f}", flush=True)
+
         dest = frames_dir / f"{index:06d}.{ext}"
         render_frame(
             source_image=source_image,

@@ -61,16 +61,33 @@ class CameraService:
 
     def viewport_at_time(self, time_seconds: float) -> Viewport:
         """Return the viewport for ``time_seconds`` into the motion."""
+        return self.get_viewport(time_seconds)
+
+    def get_viewport(self, time_seconds: float) -> Viewport:
+        """Alias for ``viewport_at_time`` (integration contract)."""
         duration = float(self._config.duration)
         raw_t = 0.0 if duration <= 0 else max(0.0, min(time_seconds / duration, 1.0))
         eased = apply_easing(self._config.easing, raw_t)
         return self._viewport_for_progress(eased)
+
+    def scale_at_time(self, time_seconds: float) -> float:
+        """Return the interpolated scale at ``time_seconds`` (for debug / metadata)."""
+        duration = float(self._config.duration)
+        raw_t = 0.0 if duration <= 0 else max(0.0, min(time_seconds / duration, 1.0))
+        eased = apply_easing(self._config.easing, raw_t)
+        cfg = self._config
+        if cfg.type == CameraType.CENTER:
+            return 1.0
+        if cfg.type in {CameraType.ZOOM_IN, CameraType.ZOOM_OUT}:
+            return lerp(cfg.start_scale, cfg.end_scale, eased)
+        return cfg.start_scale
 
     def metadata(self) -> CameraMetadata:
         return CameraMetadata(
             camera_type=self._config.type.value,
             start_scale=self._config.start_scale,
             end_scale=self._config.end_scale,
+            zoom=max(self._config.start_scale, self._config.end_scale),
             duration=self._config.duration,
             easing=self._config.easing,
         )
@@ -153,12 +170,52 @@ def load_camera_config(
 
 
 def default_camera_config(settings: Settings, *, duration_sec: int) -> CameraConfig:
-    """Default to CENTER when no project camera file exists."""
+    """Build camera config from Settings when ``camera.json`` is absent."""
+    raw_type = (settings.default_camera or "center").strip().lower()
+    try:
+        camera_type = CameraType(raw_type)
+    except ValueError as exc:
+        raise ValidationAppError(
+            f"Unsupported DEFAULT_CAMERA: {raw_type!r}.",
+            code="CAMERA_CONFIG_INVALID",
+            details={
+                "default_camera": raw_type,
+                "supported": [t.value for t in CameraType],
+            },
+        ) from exc
+
     easing = (settings.default_easing or "ease_in_out").strip().lower()
+    zoom = float(settings.default_zoom)
+    if zoom < 1.0:
+        raise ValidationAppError(
+            "DEFAULT_ZOOM must be at least 1.0.",
+            code="CAMERA_INVALID_ZOOM",
+            details={"default_zoom": zoom},
+        )
+
+    start_scale = 1.0
+    end_scale = 1.0
+    if camera_type == CameraType.ZOOM_IN:
+        start_scale = 1.0
+        end_scale = zoom
+    elif camera_type == CameraType.ZOOM_OUT:
+        start_scale = zoom
+        end_scale = 1.0
+    elif camera_type in {
+        CameraType.PAN_LEFT,
+        CameraType.PAN_RIGHT,
+        CameraType.PAN_UP,
+        CameraType.PAN_DOWN,
+    }:
+        # Pan at a fixed zoom so the viewport has room to move.
+        start_scale = zoom
+        end_scale = zoom
+    # CENTER keeps 1.0 → 1.0
+
     return CameraConfig(
-        type=CameraType.CENTER,
-        start_scale=1.0,
-        end_scale=1.0,
+        type=camera_type,
+        start_scale=start_scale,
+        end_scale=end_scale,
         duration=duration_sec,
         easing=easing,
     )

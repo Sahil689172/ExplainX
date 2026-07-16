@@ -59,5 +59,6 @@ class CameraMetadata(BaseModel):
     camera_type: str
     start_scale: float
     end_scale: float
+    zoom: float
     duration: int
     easing: str
