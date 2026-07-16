@@ -1,0 +1,129 @@
+"""Generate identical frame files from a single static image."""
+
+from __future__ import annotations
+
+import shutil
+import struct
+from pathlib import Path
+
+from app.core.errors import NotFoundError, ValidationAppError
+from app.features.renderer.schemas import RenderConfig
+
+_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg"}
+_SEARCH_DIRS = ("assets", "source", "artifacts")
+
+
+def discover_input_image(project_root: Path) -> Path:
+    """Locate the first PNG/JPG under assets, source, then artifacts."""
+    candidates: list[Path] = []
+    for subdir in _SEARCH_DIRS:
+        base = project_root / subdir
+        if not base.is_dir():
+            continue
+        for path in sorted(base.iterdir()):
+            if path.is_file() and path.suffix.lower() in _IMAGE_SUFFIXES:
+                candidates.append(path)
+
+    if not candidates:
+        raise NotFoundError(
+            "No input image (PNG/JPG) found for this project.",
+            code="RENDER_INPUT_IMAGE_NOT_FOUND",
+            details={
+                "searched": [str(project_root / d) for d in _SEARCH_DIRS],
+                "formats": sorted(_IMAGE_SUFFIXES),
+            },
+        )
+    return candidates[0]
+
+
+def read_image_resolution(path: Path) -> tuple[int, int]:
+    """Return (width, height) using PNG/JPEG headers (stdlib only)."""
+    suffix = path.suffix.lower()
+    if suffix == ".png":
+        return _png_dimensions(path)
+    if suffix in {".jpg", ".jpeg"}:
+        return _jpeg_dimensions(path)
+    raise ValidationAppError(
+        f"Unsupported image format: {path.suffix}",
+        code="RENDER_UNSUPPORTED_IMAGE",
+        details={"path": str(path)},
+    )
+
+
+def _png_dimensions(path: Path) -> tuple[int, int]:
+    with path.open("rb") as fh:
+        header = fh.read(24)
+    if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValidationAppError(
+            "Invalid PNG file.",
+            code="RENDER_INVALID_IMAGE",
+            details={"path": str(path)},
+        )
+    width, height = struct.unpack(">II", header[16:24])
+    if width <= 0 or height <= 0:
+        raise ValidationAppError(
+            "PNG has invalid dimensions.",
+            code="RENDER_INVALID_IMAGE",
+            details={"path": str(path), "width": width, "height": height},
+        )
+    return width, height
+
+
+def _jpeg_dimensions(path: Path) -> tuple[int, int]:
+    data = path.read_bytes()
+    index = 2
+    while index < len(data) - 9:
+        if data[index] != 0xFF:
+            index += 1
+            continue
+        marker = data[index + 1]
+        index += 2
+        if marker in {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}:
+            height = (data[index + 3] << 8) + data[index + 4]
+            width = (data[index + 5] << 8) + data[index + 6]
+            if width > 0 and height > 0:
+                return width, height
+            break
+        if marker in {0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7, 0xD8, 0xD9}:
+            continue
+        if index + 1 >= len(data):
+            break
+        segment_len = (data[index] << 8) + data[index + 1]
+        index += max(segment_len, 2)
+    raise ValidationAppError(
+        "Could not read JPEG dimensions.",
+        code="RENDER_INVALID_IMAGE",
+        details={"path": str(path)},
+    )
+
+
+def generate_identical_frames(
+    *,
+    source_image: Path,
+    frames_dir: Path,
+    config: RenderConfig,
+) -> int:
+    """Write ``fps × duration`` identical frame files; return count written."""
+    ext = config.frame_format.lower().lstrip(".")
+    frames_dir.mkdir(parents=True, exist_ok=True)
+    for old in frames_dir.glob(f"*.{ext}"):
+        old.unlink()
+
+    expected = config.frame_count
+    for index in range(1, expected + 1):
+        dest = frames_dir / f"{index:06d}.{ext}"
+        shutil.copy2(source_image, dest)
+
+    written = sum(1 for _ in frames_dir.glob(f"*.{ext}"))
+    if written != expected:
+        raise ValidationAppError(
+            "Frame count does not match fps × duration.",
+            code="RENDER_FRAME_COUNT_MISMATCH",
+            details={
+                "expected": expected,
+                "written": written,
+                "fps": config.fps,
+                "duration": config.duration_sec,
+            },
+        )
+    return written

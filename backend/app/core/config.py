@@ -152,6 +152,42 @@ class Settings(BaseSettings):
         description="Directory of local *.argosmodel packages (en→hi, etc.).",
     )
 
+    # Renderer MVP (static image → frames → video.mp4).
+    render_fps: int = Field(
+        default=15,
+        ge=1,
+        le=120,
+        validation_alias=AliasChoices(
+            "RENDER_FPS",
+            "EXPLAINX_RENDER_FPS",
+        ),
+    )
+    default_duration_seconds: int = Field(
+        default=60,
+        ge=1,
+        le=3600,
+        validation_alias=AliasChoices(
+            "DEFAULT_DURATION_SECONDS",
+            "EXPLAINX_DEFAULT_DURATION_SECONDS",
+        ),
+    )
+    frame_output_format: str = Field(
+        default="png",
+        validation_alias=AliasChoices(
+            "FRAME_OUTPUT_FORMAT",
+            "EXPLAINX_FRAME_OUTPUT_FORMAT",
+        ),
+        description="Frame file extension for renderer output (e.g. png).",
+    )
+    ffmpeg_executable: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "FFMPEG_EXECUTABLE",
+            "EXPLAINX_FFMPEG_EXECUTABLE",
+        ),
+        description="Path to FFmpeg binary; empty uses PATH / common locations.",
+    )
+
     @field_validator("log_level")
     @classmethod
     def normalize_log_level(cls, value: str) -> str:

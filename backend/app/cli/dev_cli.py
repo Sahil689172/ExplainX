@@ -39,6 +39,7 @@ from app.features.narration.languages import (
 from app.features.projects.filesystem import ProjectFilesystem
 from app.features.projects.schemas import ProjectCreateRequest
 from app.features.projects.service import ProjectService
+from app.features.renderer.service import RenderService
 from app.features.script.ollama.client import MODEL_NOT_INSTALLED, OllamaClient
 from app.features.script.schemas import EducationalScript
 from app.features.script.service import ContentIntelligenceService
@@ -717,7 +718,38 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional output-language override. Default: project target_language_code.",
     )
 
+    render = sub.add_parser(
+        "render",
+        help="Render video.mp4 from a static project image (MVP)",
+    )
+    render.add_argument("project_id", help="Project UUID with a PNG/JPG in assets/")
+
     return parser
+
+
+def run_render(
+    project_id: str,
+    *,
+    settings: Settings | None = None,
+) -> Path:
+    """Generate artifacts/frames/ + video.mp4 for an existing project image."""
+    cfg = bootstrap(settings=settings)
+    session = _session()
+    try:
+        result = RenderService(session, cfg).render(project_id.strip())
+        print()
+        print("=== ExplainX Render Summary ===")
+        print(f"Project ID:     {result.project_id}")
+        print(f"Input image:    {result.input_image.name}")
+        print(f"Frames:         {result.metadata.frame_count}")
+        print(f"Resolution:     {result.metadata.resolution}")
+        print(f"Render time:    {result.metadata.render_time:.2f} sec")
+        print(f"Video:          {result.video_path}")
+        print(f"Metadata:       {result.metadata_path}")
+        print()
+        return result.video_path
+    finally:
+        session.close()
 
 
 def run_audio(
@@ -790,6 +822,8 @@ def main(argv: list[str] | None = None) -> int:
             )
         elif args.command == "audio":
             run_audio(args.project_id, lang=args.lang)
+        elif args.command == "render":
+            run_render(args.project_id)
         else:
             parser.error(f"Unknown command: {args.command}")
         return EXIT_OK

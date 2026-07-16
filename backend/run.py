@@ -7,6 +7,7 @@ Usage (from the ``backend/`` directory, with the repo-root ``.venv`` active)::
     python run.py script path/to/script.txt
     python run.py pdf path/to/document.pdf
     python run.py audio <project_id>
+    python run.py render <project_id>
 
 Optional flags (topic/script/pdf)::
 
