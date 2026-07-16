@@ -47,6 +47,16 @@ class CameraService:
         return self._config
 
     @classmethod
+    def from_config(
+        cls,
+        *,
+        config: CameraConfig,
+        image_width: int,
+        image_height: int,
+    ) -> CameraService:
+        return cls(config=config, image_width=image_width, image_height=image_height)
+
+    @classmethod
     def from_project(
         cls,
         project_root: Path,

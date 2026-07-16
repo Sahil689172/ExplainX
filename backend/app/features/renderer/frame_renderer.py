@@ -184,6 +184,34 @@ def render_frame(
         doc.close()
 
 
+def generate_camera_frames_segment(
+    *,
+    source_image: Path,
+    frames_dir: Path,
+    fps: int,
+    duration_sec: int,
+    frame_format: str,
+    camera: CameraService,
+    output_size: tuple[int, int],
+    frame_start_index: int,
+) -> int:
+    """Render one scene segment; frames are numbered from ``frame_start_index``."""
+    ext = frame_format.lower().lstrip(".")
+    expected = fps * duration_sec
+    for local_index in range(expected):
+        global_index = frame_start_index + local_index
+        time_seconds = local_index / fps
+        viewport = camera.get_viewport(time_seconds)
+        dest = frames_dir / f"{global_index:06d}.{ext}"
+        render_frame(
+            source_image=source_image,
+            viewport=viewport,
+            output_size=output_size,
+            dest=dest,
+        )
+    return expected
+
+
 def generate_camera_frames(
     *,
     source_image: Path,

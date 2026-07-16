@@ -1,4 +1,4 @@
-"""RenderService — static image + camera → frames → video.mp4."""
+"""RenderService — static image or multi-scene → frames → video.mp4."""
 
 from __future__ import annotations
 
@@ -22,6 +22,7 @@ from app.features.renderer.frame_renderer import (
     generate_camera_frames,
     read_image_resolution,
 )
+from app.features.renderer.scene_service import SceneComposer
 from app.features.renderer.schemas import RenderConfig, RenderMetadata
 
 logger = get_logger(__name__)
@@ -38,7 +39,9 @@ class RenderResult:
     video_path: Path
     metadata_path: Path
     metadata: RenderMetadata
-    camera_metadata_path: Path
+    camera_metadata_path: Path | None = None
+    scene_metadata_path: Path | None = None
+    multi_scene: bool = False
 
 
 class RenderService:
@@ -69,8 +72,19 @@ class RenderService:
                 details={"project_id": project_id},
             )
 
-        config = self.build_config()
         project_root = self._fs.project_root(project_id)
+        config = self.build_config()
+        if SceneComposer.is_enabled(project_root):
+            return self._render_scenes(project_id, project_root, config)
+        return self._render_single(project_id, project_root, config)
+
+    def _render_single(
+        self,
+        project_id: str,
+        project_root: Path,
+        config: RenderConfig,
+    ) -> RenderResult:
+        """Phase 2 — single image + project/settings camera."""
         input_image = discover_input_image(project_root)
         width, height = read_image_resolution(input_image)
         output_size = (width, height)
@@ -128,7 +142,7 @@ class RenderService:
         )
 
         logger.info(
-            "Render completed",
+            "Render completed (single scene)",
             extra={
                 "event": "render_completed",
                 "project_id": project_id,
@@ -144,6 +158,79 @@ class RenderService:
             metadata_path=metadata_path,
             metadata=metadata,
             camera_metadata_path=camera_metadata_path,
+            multi_scene=False,
+        )
+
+    def _render_scenes(
+        self,
+        project_id: str,
+        project_root: Path,
+        config: RenderConfig,
+    ) -> RenderResult:
+        """Phase 3 — multi-scene manifest → concatenated frames → video."""
+        started = time.perf_counter()
+        composer = SceneComposer(settings=self._settings, store=self._store)
+        compose = composer.compose(project_id, project_root, base_config=config)
+
+        export_config = RenderConfig(
+            fps=compose.metadata.fps,
+            duration_sec=compose.metadata.video_duration,
+            frame_format=config.frame_format,
+        )
+        ffmpeg_exe = resolve_ffmpeg_executable(
+            self._settings.ffmpeg_executable,
+            repo_root=_REPO_ROOT,
+        )
+
+        frames_dir = self._store.frames_dir(project_id)
+        video_path = export_video(
+            frames_dir=frames_dir,
+            output_video=self._store.video_path(project_id),
+            config=export_config,
+            ffmpeg_executable=ffmpeg_exe,
+        )
+        render_time = time.perf_counter() - started
+
+        out_w, out_h = compose.output_size
+        metadata = RenderMetadata(
+            fps=compose.metadata.fps,
+            duration=compose.metadata.video_duration,
+            frame_count=compose.total_frames,
+            resolution=f"{out_w}x{out_h}",
+            render_time=round(render_time, 2),
+            input_image=compose.first_image.name,
+            output_video=video_path.name,
+        )
+        metadata_path = self._write_metadata(project_id, metadata)
+        scene_metadata_path = self._write_scene_metadata(project_id, compose.metadata)
+
+        self._log_render(
+            input_image=compose.first_image.name,
+            config=export_config,
+            frame_count=compose.total_frames,
+            resolution=metadata.resolution,
+            render_time=metadata.render_time,
+            output_video=video_path.name,
+        )
+
+        logger.info(
+            "Render completed (multi-scene)",
+            extra={
+                "event": "render_completed",
+                "project_id": project_id,
+                "scene_count": compose.metadata.scene_count,
+                "frame_count": compose.total_frames,
+                "render_time_sec": metadata.render_time,
+            },
+        )
+        return RenderResult(
+            project_id=project_id,
+            input_image=compose.first_image,
+            video_path=video_path,
+            metadata_path=metadata_path,
+            metadata=metadata,
+            scene_metadata_path=scene_metadata_path,
+            multi_scene=True,
         )
 
     def _write_metadata(self, project_id: str, metadata: RenderMetadata) -> Path:
@@ -161,6 +248,19 @@ class RenderService:
         path.write_text(
             json.dumps(camera.metadata().model_dump(), indent=2, ensure_ascii=False)
             + "\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def _write_scene_metadata(self, project_id: str, metadata: object) -> Path:
+        path = self._store.scene_metadata_path(project_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if hasattr(metadata, "model_dump"):
+            payload = metadata.model_dump()
+        else:
+            payload = metadata
+        path.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
         return path

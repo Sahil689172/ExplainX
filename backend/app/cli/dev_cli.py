@@ -746,7 +746,10 @@ def run_render(
         print(f"Render time:    {result.metadata.render_time:.2f} sec")
         print(f"Video:          {result.video_path}")
         print(f"Metadata:       {result.metadata_path}")
-        print(f"Camera meta:    {result.camera_metadata_path}")
+        if result.camera_metadata_path is not None:
+            print(f"Camera meta:    {result.camera_metadata_path}")
+        if result.scene_metadata_path is not None:
+            print(f"Scene meta:     {result.scene_metadata_path}")
         print()
         return result.video_path
     finally:
