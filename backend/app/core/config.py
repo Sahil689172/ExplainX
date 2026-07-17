@@ -235,6 +235,28 @@ class Settings(BaseSettings):
         description="Fixed frame/video height (even values preferred for libx264).",
     )
 
+    # Asset processing pipeline (Phase 4.6).
+    asset_target_size: int = Field(
+        default=512,
+        ge=8,
+        le=4096,
+        validation_alias=AliasChoices(
+            "TARGET_SIZE",
+            "ASSET_TARGET_SIZE",
+            "EXPLAINX_TARGET_SIZE",
+            "EXPLAINX_ASSET_TARGET_SIZE",
+        ),
+        description="Processed assets fit inside TARGET_SIZE×TARGET_SIZE without stretching.",
+    )
+    asset_stub_background_removal: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "ASSET_STUB_BACKGROUND_REMOVAL",
+            "EXPLAINX_ASSET_STUB_BACKGROUND_REMOVAL",
+        ),
+        description="Use heuristic stub remover instead of the HF/onnx model (tests/dev).",
+    )
+
     @field_validator("log_level")
     @classmethod
     def normalize_log_level(cls, value: str) -> str:
@@ -274,6 +296,22 @@ class Settings(BaseSettings):
     @property
     def projects_dir(self) -> Path:
         return self.data_root_path / "projects"
+
+    @property
+    def raw_assets_dir(self) -> Path:
+        return self.data_root_path / "raw_assets"
+
+    @property
+    def processed_assets_dir(self) -> Path:
+        return self.data_root_path / "processed_assets"
+
+    @property
+    def asset_cache_dir(self) -> Path:
+        return self.data_root_path / "cache" / "assets"
+
+    @property
+    def background_removal_model_dir(self) -> Path:
+        return self.data_root_path / "models" / "background_removal"
 
     @property
     def models_dir(self) -> Path:
