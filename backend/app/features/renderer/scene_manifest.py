@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from app.core.errors import ValidationAppError
+from app.features.renderer.frame_renderer import read_image_resolution
 from app.features.renderer.scene_schemas import SceneDefinition, SceneManifest
 
 _MANIFEST_NAME = "scene_manifest.json"
@@ -65,7 +66,7 @@ def load_scene_manifest(project_root: Path) -> SceneManifest:
 
 
 def validate_manifest(manifest: SceneManifest, *, project_root: Path) -> None:
-    """Verify scenes, images, durations, cameras, and ordering."""
+    """Verify scenes, images, layers, durations, cameras, and ordering."""
     if not manifest.scenes:
         raise ValidationAppError(
             "Scene manifest must contain at least one scene.",
@@ -91,20 +92,7 @@ def validate_manifest(manifest: SceneManifest, *, project_root: Path) -> None:
                 details={"scene_id": scene.scene_id, "duration": scene.duration},
             )
 
-        image_path = resolve_scene_image(project_root, scene.image)
-        if not image_path.is_file():
-            raise ValidationAppError(
-                f"Scene image not found: {scene.image!r}.",
-                code="SCENE_IMAGE_NOT_FOUND",
-                details={"scene_id": scene.scene_id, "image": scene.image},
-            )
-        if image_path.suffix.lower() not in _IMAGE_SUFFIXES:
-            raise ValidationAppError(
-                f"Scene image must be PNG or JPG: {scene.image!r}.",
-                code="SCENE_IMAGE_INVALID",
-                details={"scene_id": scene.scene_id, "image": scene.image},
-            )
-
+        _validate_scene_visuals(scene, project_root=project_root)
         # Camera type validated by pydantic on SceneDefinition.
         total_duration += scene.duration
 
@@ -117,6 +105,73 @@ def validate_manifest(manifest: SceneManifest, *, project_root: Path) -> None:
                 "sum_scene_duration": total_duration,
             },
         )
+
+
+def _validate_scene_visuals(scene: SceneDefinition, *, project_root: Path) -> None:
+    """Validate background / legacy image and object assets for one scene."""
+    bg_ref = scene.background_ref()
+    bg_path = resolve_layer_image(project_root, bg_ref)
+    if not bg_path.is_file():
+        code = (
+            "SCENE_BACKGROUND_NOT_FOUND"
+            if scene.background is not None
+            else "SCENE_IMAGE_NOT_FOUND"
+        )
+        raise ValidationAppError(
+            f"Scene background/image not found: {bg_ref!r}.",
+            code=code,
+            details={"scene_id": scene.scene_id, "image": bg_ref},
+        )
+    if bg_path.suffix.lower() not in _IMAGE_SUFFIXES:
+        raise ValidationAppError(
+            f"Scene background must be PNG or JPG: {bg_ref!r}.",
+            code="SCENE_IMAGE_INVALID",
+            details={"scene_id": scene.scene_id, "image": bg_ref},
+        )
+    frame_width, frame_height = read_image_resolution(bg_path)
+
+    seen_object_ids: set[str] = set()
+    for obj in scene.objects:
+        if obj.id in seen_object_ids:
+            raise ValidationAppError(
+                f"Duplicate object id: {obj.id!r}.",
+                code="SCENE_OBJECT_DUPLICATE_ID",
+                details={"scene_id": scene.scene_id, "object_id": obj.id},
+            )
+        seen_object_ids.add(obj.id)
+
+        obj_path = resolve_layer_image(project_root, obj.image)
+        if not obj_path.is_file():
+            raise ValidationAppError(
+                f"Object image not found: {obj.image!r}.",
+                code="SCENE_OBJECT_IMAGE_NOT_FOUND",
+                details={
+                    "scene_id": scene.scene_id,
+                    "object_id": obj.id,
+                    "image": obj.image,
+                },
+            )
+        if obj_path.suffix.lower() not in _IMAGE_SUFFIXES:
+            raise ValidationAppError(
+                f"Object image must be PNG or JPG: {obj.image!r}.",
+                code="SCENE_OBJECT_IMAGE_INVALID",
+                details={
+                    "scene_id": scene.scene_id,
+                    "object_id": obj.id,
+                    "image": obj.image,
+                },
+            )
+        if not (0 <= obj.x <= frame_width and 0 <= obj.y <= frame_height):
+            raise ValidationAppError(
+                f"Object {obj.id!r} center is outside the render area.",
+                code="SCENE_OBJECT_CENTER_OUTSIDE_FRAME",
+                details={
+                    "scene_id": scene.scene_id,
+                    "object_id": obj.id,
+                    "center": [obj.x, obj.y],
+                    "render_size": [frame_width, frame_height],
+                },
+            )
 
 
 def resolve_scene_image(project_root: Path, image_ref: str) -> Path:
@@ -142,6 +197,23 @@ def resolve_scene_image(project_root: Path, image_ref: str) -> Path:
             details={"image": image_ref, "resolved": str(resolved)},
         ) from exc
     return resolved
+
+
+def resolve_layer_image(project_root: Path, image_ref: str) -> Path:
+    """Resolve background/object images; try ``assets/`` fallbacks for bare names."""
+    primary = resolve_scene_image(project_root, image_ref)
+    if primary.is_file():
+        return primary
+
+    name = Path(str(image_ref).replace("\\", "/")).name
+    if not name:
+        return primary
+
+    for rel in (f"assets/{name}", f"assets/images/{name}"):
+        candidate = resolve_scene_image(project_root, rel)
+        if candidate.is_file():
+            return candidate
+    return primary
 
 
 def ordered_scenes(manifest: SceneManifest) -> list[SceneDefinition]:

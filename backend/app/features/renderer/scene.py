@@ -39,9 +39,13 @@ def log_scene(
     frames: int,
 ) -> None:
     """Print per-scene render banner."""
-    image_name = Path(scene.image).name
+    image_name = Path(scene.primary_image_ref()).name
     print(f"[Scene] Rendering scene {index}/{total}", flush=True)
-    print(f"Image {image_name}", flush=True)
+    if scene.is_layered():
+        print(f"Background {image_name}", flush=True)
+        print(f"Objects {len(scene.objects)}", flush=True)
+    else:
+        print(f"Image {image_name}", flush=True)
     print(f"Duration {scene.duration} sec", flush=True)
     print(f"Frames {frames}", flush=True)
     print(f"Camera {camera_label(scene.camera)}", flush=True)

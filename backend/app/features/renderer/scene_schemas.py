@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.features.renderer.camera_schemas import CameraConfig, CameraType
 from app.features.renderer.easing import EASING_NAMES
@@ -24,11 +24,37 @@ class SceneCameraSettings(BaseModel):
         return key
 
 
+class SceneObjectDefinition(BaseModel):
+    """One object placed on a scene background (Phase 4)."""
+
+    id: str = Field(min_length=1, max_length=64)
+    image: str = Field(min_length=1, description="Image path relative to project root")
+    x: float = 0.0
+    y: float = 0.0
+    scale: float = Field(default=1.0, gt=0.0)
+    rotation: float = 0.0
+    z_index: int = 0
+    visible: bool = True
+    opacity: float = Field(default=1.0, ge=0.0, le=1.0)
+
+
 class SceneDefinition(BaseModel):
-    """One scene in a multi-scene render."""
+    """One scene in a multi-scene render.
+
+    Legacy (Phase 3): ``image`` only.
+    Phase 4: ``background`` + optional ``objects`` (``image`` still accepted as background).
+    """
 
     scene_id: str = Field(min_length=1, max_length=64)
-    image: str = Field(min_length=1, description="Image path relative to project root")
+    image: str | None = Field(
+        default=None,
+        description="Legacy single-image scene (treated as background when alone)",
+    )
+    background: str | None = Field(
+        default=None,
+        description="Background image for layered scenes",
+    )
+    objects: list[SceneObjectDefinition] = Field(default_factory=list)
     duration: int = Field(ge=1, le=3600, description="Scene duration in seconds")
     camera: CameraType = Field(default=CameraType.CENTER)
     camera_settings: SceneCameraSettings = Field(default_factory=SceneCameraSettings)
@@ -39,6 +65,35 @@ class SceneDefinition(BaseModel):
         if isinstance(value, str):
             return value.strip().lower()
         return value
+
+    @field_validator("image", "background", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    @model_validator(mode="after")
+    def require_visual_source(self) -> SceneDefinition:
+        if not self.image and not self.background:
+            raise ValueError("Scene must define 'image' (legacy) or 'background'.")
+        return self
+
+    def is_layered(self) -> bool:
+        """True when Phase 4 background/objects path should run."""
+        return self.background is not None or bool(self.objects)
+
+    def background_ref(self) -> str:
+        """Resolved background path string (background preferred, else legacy image)."""
+        if self.background:
+            return self.background
+        if self.image:
+            return self.image
+        raise ValueError("Scene has no background or image.")
+
+    def primary_image_ref(self) -> str:
+        """Image label used in logs / metadata."""
+        return self.background_ref()
 
     def to_camera_config(self, *, default_zoom: float = 1.15) -> CameraConfig:
         """Build a Phase 2 ``CameraConfig`` for this scene.
@@ -92,6 +147,8 @@ class SceneRenderRecord(BaseModel):
     duration_seconds: int
     frames: int
     camera: str
+    object_count: int = 0
+    layered: bool = False
 
 
 class SceneMetadata(BaseModel):

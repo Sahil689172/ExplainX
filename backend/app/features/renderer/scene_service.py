@@ -13,19 +13,20 @@ from app.features.renderer.frame_renderer import (
     generate_camera_frames_segment,
     read_image_resolution,
 )
+from app.features.renderer.layers.layer_manager import LayerManager
 from app.features.renderer.scene import (
     camera_label,
     log_scene,
     scene_frame_count,
-    total_frame_count,
 )
 from app.features.renderer.scene_manifest import (
     load_scene_manifest,
     manifest_exists,
     ordered_scenes,
+    resolve_layer_image,
     resolve_scene_image,
 )
-from app.features.renderer.scene_schemas import SceneMetadata, SceneRenderRecord
+from app.features.renderer.scene_schemas import SceneDefinition, SceneMetadata, SceneRenderRecord
 from app.features.renderer.schemas import RenderConfig
 
 
@@ -45,6 +46,7 @@ class SceneComposer:
     def __init__(self, *, settings: Settings, store: RenderArtifactStore) -> None:
         self._settings = settings
         self._store = store
+        self._layers = LayerManager()
 
     @staticmethod
     def is_enabled(project_root: Path) -> bool:
@@ -62,8 +64,8 @@ class SceneComposer:
         fmt = base_config.frame_format
         scenes = ordered_scenes(manifest)
 
-        first_image = resolve_scene_image(project_root, scenes[0].image)
-        out_w, out_h = even_dimensions(*read_image_resolution(first_image))
+        first_source = self._scene_source_image(project_root, scenes[0])
+        out_w, out_h = even_dimensions(*read_image_resolution(first_source))
         output_size = (out_w, out_h)
 
         frames_dir = self._store.frames_dir(project_id)
@@ -72,6 +74,9 @@ class SceneComposer:
         for old in frames_dir.glob(f"*.{ext}"):
             old.unlink()
 
+        compose_dir = frames_dir.parent / "composed"
+        compose_dir.mkdir(parents=True, exist_ok=True)
+
         global_index = 1
         records: list[SceneRenderRecord] = []
         durations: list[int] = []
@@ -79,13 +84,19 @@ class SceneComposer:
         cameras_used: list[str] = []
 
         for scene_index, scene in enumerate(scenes, start=1):
-            image_path = resolve_scene_image(project_root, scene.image)
+            image_path = self._prepare_scene_image(
+                project_root=project_root,
+                scene=scene,
+                compose_dir=compose_dir,
+            )
             img_w, img_h = read_image_resolution(image_path)
             if (img_w, img_h) != output_size:
                 # Output size is fixed to the first scene; render_frame scales each crop.
                 pass
 
-            camera_config = scene.to_camera_config()
+            camera_config = scene.to_camera_config(
+                default_zoom=float(self._settings.default_zoom),
+            )
             camera = CameraService.from_config(
                 config=camera_config,
                 image_width=img_w,
@@ -118,10 +129,12 @@ class SceneComposer:
             records.append(
                 SceneRenderRecord(
                     scene_id=scene.scene_id,
-                    image=scene.image,
+                    image=scene.primary_image_ref(),
                     duration_seconds=scene.duration,
                     frames=segment_frames,
                     camera=scene.camera.value,
+                    object_count=len(scene.objects),
+                    layered=scene.is_layered(),
                 )
             )
             durations.append(scene.duration)
@@ -145,5 +158,33 @@ class SceneComposer:
             output_size=output_size,
             total_frames=total_frames,
             metadata=metadata,
-            first_image=first_image,
+            first_image=first_source,
         )
+
+    def _scene_source_image(
+        self, project_root: Path, scene: SceneDefinition
+    ) -> Path:
+        """Return a path usable for resolution probing (background or legacy image)."""
+        if scene.is_layered():
+            return resolve_layer_image(project_root, scene.background_ref())
+        return resolve_scene_image(project_root, scene.background_ref())
+
+    def _prepare_scene_image(
+        self,
+        *,
+        project_root: Path,
+        scene: SceneDefinition,
+        compose_dir: Path,
+    ) -> Path:
+        """Legacy image path, or compose background+objects once for the scene."""
+        if not scene.is_layered():
+            return resolve_scene_image(project_root, scene.background_ref())
+
+        composed = self._layers.compose_scene(
+            project_root,
+            scene,
+            resolve_image=resolve_layer_image,
+        )
+        out_path = compose_dir / f"{scene.scene_id}_composed.png"
+        composed.convert("RGB").save(out_path)
+        return out_path
