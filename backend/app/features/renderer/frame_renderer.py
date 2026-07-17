@@ -172,14 +172,20 @@ def render_frame(
             details={"width": viewport.width, "height": viewport.height},
         )
 
+    # Always reopen the ORIGINAL composed/source image — never crop a prior frame.
     with Image.open(source_image) as src:
         image = src.convert("RGB")
         img_w, img_h = image.size
 
-        left = max(0, int(viewport.x))
-        top = max(0, int(viewport.y))
-        right = min(img_w, int(round(viewport.x + viewport.width)))
-        bottom = min(img_h, int(round(viewport.y + viewport.height)))
+        # Keep camera math in float; round once into a stable integer crop box.
+        crop_w = max(1, int(round(float(viewport.width))))
+        crop_h = max(1, int(round(float(viewport.height))))
+        left = int(round(float(viewport.x)))
+        top = int(round(float(viewport.y)))
+        left = max(0, min(left, max(0, img_w - crop_w)))
+        top = max(0, min(top, max(0, img_h - crop_h)))
+        right = min(img_w, left + crop_w)
+        bottom = min(img_h, top + crop_h)
         if right <= left or bottom <= top:
             raise ValidationAppError(
                 "Viewport clip has non-positive dimensions.",
@@ -188,15 +194,6 @@ def render_frame(
             )
 
         image = image.crop((left, top, right, bottom))
-
-        width, height = image.size
-        even_width = width - (width % 2)
-        even_height = height - (height % 2)
-        if even_width >= 2 and even_height >= 2 and (width, height) != (
-            even_width,
-            even_height,
-        ):
-            image = image.crop((0, 0, even_width, even_height))
 
         if image.size != (out_w, out_h):
             image = image.resize((out_w, out_h), Image.Resampling.LANCZOS)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from app.features.renderer.asset_quality import AssetInfo, inspect_asset, log_asset
 from app.features.renderer.layers.background_layer import BackgroundLayer
 from app.features.renderer.layers.object_layer import ObjectLayer
 from app.features.renderer.objects.sprite import Sprite
@@ -13,6 +14,9 @@ from app.features.renderer.scene_schemas import SceneDefinition, SceneObjectDefi
 
 class LayerManager:
     """Compose Background → Objects (z-order) into a single RGBA/RGB frame source."""
+
+    def __init__(self) -> None:
+        self.last_asset_infos: list[AssetInfo] = []
 
     def build_background(
         self,
@@ -31,10 +35,17 @@ class LayerManager:
         scene: SceneDefinition,
         *,
         resolve_image,
+        asset_infos: list[AssetInfo] | None = None,
     ) -> ObjectLayer:
         sprites: list[Sprite] = []
         for obj in scene.objects:
-            sprites.append(self._sprite_from_definition(project_root, obj, resolve_image=resolve_image))
+            sprite, info = self._sprite_from_definition(
+                project_root, obj, resolve_image=resolve_image
+            )
+            sprites.append(sprite)
+            if asset_infos is not None:
+                asset_infos.append(info)
+            log_asset(info)
         return ObjectLayer(sprites=sprites)
 
     def compose(
@@ -55,12 +66,25 @@ class LayerManager:
         resolve_image,
     ):
         """Build layers from a scene definition and compose them."""
+        asset_infos: list[AssetInfo] = []
         background = self.build_background(
             project_root, scene, resolve_image=resolve_image
         )
-        objects = self.build_object_layer(
-            project_root, scene, resolve_image=resolve_image
+        bg_info = inspect_asset(
+            background.image_path,
+            label=background.label,
+            role="background",
         )
+        asset_infos.append(bg_info)
+        log_asset(bg_info)
+
+        objects = self.build_object_layer(
+            project_root,
+            scene,
+            resolve_image=resolve_image,
+            asset_infos=asset_infos,
+        )
+        self.last_asset_infos = asset_infos
         self.log_layers(background=background, objects=objects)
         return self.compose(background, objects)
 
@@ -85,19 +109,28 @@ class LayerManager:
         obj: SceneObjectDefinition,
         *,
         resolve_image,
-    ) -> Sprite:
+    ) -> tuple[Sprite, AssetInfo]:
         path = resolve_image(project_root, obj.image)
+        info = inspect_asset(
+            path,
+            label=Path(obj.image).name,
+            role="object",
+            object_id=obj.id,
+            scale=obj.scale,
+            display_width=obj.display_width,
+        )
         transform = Transform(
             x=obj.x,
             y=obj.y,
-            scale=obj.scale,
+            scale=info.scale,
             rotation=obj.rotation,
             opacity=obj.opacity,
             visible=obj.visible,
         )
-        return Sprite(
+        sprite = Sprite(
             id=obj.id,
             image_path=path,
             transform=transform,
             z_index=obj.z_index,
         )
+        return sprite, info

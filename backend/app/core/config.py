@@ -213,6 +213,28 @@ class Settings(BaseSettings):
         ),
     )
 
+    # Fixed export resolution (Renderer Phase 4.5).
+    output_width: int = Field(
+        default=1280,
+        ge=320,
+        le=3840,
+        validation_alias=AliasChoices(
+            "OUTPUT_WIDTH",
+            "EXPLAINX_OUTPUT_WIDTH",
+        ),
+        description="Fixed frame/video width (even values preferred for libx264).",
+    )
+    output_height: int = Field(
+        default=720,
+        ge=240,
+        le=2160,
+        validation_alias=AliasChoices(
+            "OUTPUT_HEIGHT",
+            "EXPLAINX_OUTPUT_HEIGHT",
+        ),
+        description="Fixed frame/video height (even values preferred for libx264).",
+    )
+
     @field_validator("log_level")
     @classmethod
     def normalize_log_level(cls, value: str) -> str:

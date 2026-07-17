@@ -15,7 +15,9 @@ from app.core.logging import get_logger
 from app.features.projects.filesystem import ProjectFilesystem, validate_project_id
 from app.features.projects.repository import ProjectRepository
 from app.features.renderer.artifacts import RenderArtifactStore
+from app.features.renderer.asset_quality import inspect_asset, log_asset, log_renderer_output
 from app.features.renderer.camera_service import CameraService
+from app.features.renderer.diagnostics import RenderDiagnostics, SceneDiagnostic
 from app.features.renderer.exporter import export_video, resolve_ffmpeg_executable
 from app.features.renderer.frame_renderer import (
     discover_input_image,
@@ -42,6 +44,7 @@ class RenderResult:
     metadata: RenderMetadata
     camera_metadata_path: Path | None = None
     scene_metadata_path: Path | None = None
+    diagnostics_path: Path | None = None
     multi_scene: bool = False
 
 
@@ -87,15 +90,23 @@ class RenderService:
     ) -> RenderResult:
         """Phase 2 — single image + project/settings camera."""
         input_image = discover_input_image(project_root)
-        width, height = even_dimensions(*read_image_resolution(input_image))
-        output_size = (width, height)
+        scene_w, scene_h = read_image_resolution(input_image)
+        out_w, out_h = even_dimensions(
+            int(self._settings.output_width),
+            int(self._settings.output_height),
+        )
+        output_size = (out_w, out_h)
+        log_renderer_output(out_w, out_h)
+
+        asset = inspect_asset(input_image, label=input_image.name, role="background")
+        log_asset(asset)
 
         camera = CameraService.from_project(
             project_root,
             self._settings,
             duration_sec=config.duration_sec,
-            image_width=width,
-            image_height=height,
+            image_width=scene_w,
+            image_height=scene_h,
         )
         camera.log_camera()
 
@@ -125,13 +136,34 @@ class RenderService:
             fps=config.fps,
             duration=config.duration_sec,
             frame_count=frame_count,
-            resolution=f"{width}x{height}",
+            resolution=f"{out_w}x{out_h}",
             render_time=round(render_time, 2),
             input_image=input_image.name,
             output_video=video_path.name,
         )
         metadata_path = self._write_metadata(project_id, metadata)
         camera_metadata_path = self._write_camera_metadata(project_id, camera)
+        diagnostics = RenderDiagnostics(
+            output_resolution=f"{out_w}x{out_h}",
+            scene_resolution=f"{scene_w}x{scene_h}",
+            camera_smoothing=camera.config.easing,
+            scenes=[
+                SceneDiagnostic(
+                    scene_id="single",
+                    scene_resolution=f"{scene_w}x{scene_h}",
+                    camera_type=camera.config.type.value,
+                    camera_easing=camera.config.easing,
+                    camera_start_scale=camera.config.start_scale,
+                    camera_end_scale=camera.config.end_scale,
+                    layered=False,
+                    object_count=0,
+                    assets=[RenderDiagnostics.from_asset(asset)],
+                )
+            ],
+            assets=[RenderDiagnostics.from_asset(asset)],
+            warnings=list(asset.warnings),
+        )
+        diagnostics_path = self._write_diagnostics(project_id, diagnostics)
 
         self._log_render(
             input_image=input_image.name,
@@ -159,6 +191,7 @@ class RenderService:
             metadata_path=metadata_path,
             metadata=metadata,
             camera_metadata_path=camera_metadata_path,
+            diagnostics_path=diagnostics_path,
             multi_scene=False,
         )
 
@@ -204,6 +237,7 @@ class RenderService:
         )
         metadata_path = self._write_metadata(project_id, metadata)
         scene_metadata_path = self._write_scene_metadata(project_id, compose.metadata)
+        diagnostics_path = self._write_diagnostics(project_id, compose.diagnostics)
 
         self._log_render(
             input_image=compose.first_image.name,
@@ -231,6 +265,7 @@ class RenderService:
             metadata_path=metadata_path,
             metadata=metadata,
             scene_metadata_path=scene_metadata_path,
+            diagnostics_path=diagnostics_path,
             multi_scene=True,
         )
 
@@ -262,6 +297,15 @@ class RenderService:
             payload = metadata
         path.write_text(
             json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def _write_diagnostics(self, project_id: str, diagnostics: RenderDiagnostics) -> Path:
+        path = self._store.diagnostics_path(project_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(diagnostics.model_dump(), indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
         return path

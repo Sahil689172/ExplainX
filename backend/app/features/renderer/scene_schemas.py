@@ -25,13 +25,18 @@ class SceneCameraSettings(BaseModel):
 
 
 class SceneObjectDefinition(BaseModel):
-    """One object placed on a scene background (Phase 4)."""
+    """One object placed on a scene background (Phase 4 / 4.5)."""
 
     id: str = Field(min_length=1, max_length=64)
     image: str = Field(min_length=1, description="Image path relative to project root")
     x: float = 0.0
     y: float = 0.0
     scale: float = Field(default=1.0, gt=0.0)
+    display_width: int | None = Field(
+        default=None,
+        gt=0,
+        description="Logical on-screen width in pixels; overrides scale when set",
+    )
     rotation: float = 0.0
     z_index: int = 0
     visible: bool = True

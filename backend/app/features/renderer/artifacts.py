@@ -32,5 +32,8 @@ class RenderArtifactStore:
     def scene_metadata_path(self, project_id: str) -> Path:
         return self.artifacts_dir(project_id) / "scene_metadata.json"
 
+    def diagnostics_path(self, project_id: str) -> Path:
+        return self.artifacts_dir(project_id) / "render_diagnostics.json"
+
     def frame_path(self, project_id: str, index: int, *, ext: str) -> Path:
         return self.frames_dir(project_id) / f"{index:06d}.{ext.lstrip('.')}"
