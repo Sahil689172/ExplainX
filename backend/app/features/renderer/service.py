@@ -19,6 +19,7 @@ from app.features.renderer.camera_service import CameraService
 from app.features.renderer.exporter import export_video, resolve_ffmpeg_executable
 from app.features.renderer.frame_renderer import (
     discover_input_image,
+    even_dimensions,
     generate_camera_frames,
     read_image_resolution,
 )
@@ -86,7 +87,7 @@ class RenderService:
     ) -> RenderResult:
         """Phase 2 — single image + project/settings camera."""
         input_image = discover_input_image(project_root)
-        width, height = read_image_resolution(input_image)
+        width, height = even_dimensions(*read_image_resolution(input_image))
         output_size = (width, height)
 
         camera = CameraService.from_project(

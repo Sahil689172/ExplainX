@@ -12,22 +12,40 @@ _MANIFEST_NAME = "scene_manifest.json"
 _IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg"}
 
 
+def candidate_manifest_paths(project_root: Path) -> tuple[Path, ...]:
+    """Locations checked for a scene manifest (first existing wins).
+
+    Canonical: ``artifacts/scene_manifest.json``.
+    Also accepted: project-root ``scene_manifest.json`` (manual / CLI placement).
+    """
+    return (
+        project_root / "artifacts" / _MANIFEST_NAME,
+        project_root / _MANIFEST_NAME,
+    )
+
+
 def manifest_path(project_root: Path) -> Path:
-    return project_root / "artifacts" / _MANIFEST_NAME
+    """Return the resolvable manifest path, preferring ``artifacts/`` when present."""
+    for path in candidate_manifest_paths(project_root):
+        if path.is_file():
+            return path
+    return candidate_manifest_paths(project_root)[0]
 
 
 def manifest_exists(project_root: Path) -> bool:
-    return manifest_path(project_root).is_file()
+    return any(path.is_file() for path in candidate_manifest_paths(project_root))
 
 
 def load_scene_manifest(project_root: Path) -> SceneManifest:
-    """Parse and validate ``artifacts/scene_manifest.json``."""
+    """Parse and validate ``scene_manifest.json`` (artifacts/ or project root)."""
     path = manifest_path(project_root)
     if not path.is_file():
         raise ValidationAppError(
             "Scene manifest not found.",
             code="SCENE_MANIFEST_NOT_FOUND",
-            details={"path": str(path)},
+            details={
+                "searched": [str(p) for p in candidate_manifest_paths(project_root)],
+            },
         )
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -40,6 +58,9 @@ def load_scene_manifest(project_root: Path) -> SceneManifest:
         ) from exc
 
     validate_manifest(manifest, project_root=project_root)
+    print("[SceneManifest] Loaded", flush=True)
+    print(f"Path : {path}", flush=True)
+    print(f"Scenes : {len(manifest.scenes)}", flush=True)
     return manifest
 
 

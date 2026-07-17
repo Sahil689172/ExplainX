@@ -99,6 +99,35 @@ def test_manifest_exists(tmp_path: Path) -> None:
     assert manifest_exists(root / "missing") is False
 
 
+def test_manifest_exists_at_project_root(tmp_path: Path) -> None:
+    """Project-root scene_manifest.json must enable Phase 3 (not only artifacts/)."""
+    fs = ProjectFilesystem(_settings(tmp_path))
+    root = fs.project_root(PROJECT_ID)
+    for i in (1, 2, 3):
+        _write_image(root / "assets" / "images" / f"{i}.png")
+    manifest = {
+        "video_duration": 18,
+        "fps": 15,
+        "scenes": [
+            {
+                "scene_id": f"scene_{i:02d}",
+                "image": f"assets/images/{i}.png",
+                "duration": 6,
+                "camera": "center",
+            }
+            for i in (1, 2, 3)
+        ],
+    }
+    (root / "scene_manifest.json").write_text(
+        json.dumps(manifest, indent=2),
+        encoding="utf-8",
+    )
+    assert manifest_exists(root) is True
+    loaded = load_scene_manifest(root)
+    assert len(loaded.scenes) == 3
+    assert resolve_scene_image(root, "assets/images/1.png").is_file()
+
+
 def test_load_scene_manifest_ordering(tmp_path: Path) -> None:
     root = _seed_manifest_project(tmp_path)
     manifest = load_scene_manifest(root)
@@ -297,3 +326,33 @@ def test_scene_to_camera_config() -> None:
     assert cfg.duration == 8
     assert cfg.end_scale == 1.2
     assert cfg.easing == "ease_out"
+
+
+def test_scene_to_camera_config_applies_type_defaults() -> None:
+    """Manifest camera without camera_settings must still animate (Phase 2 defaults)."""
+    zoom_in = SceneDefinition(
+        scene_id="a",
+        image="assets/a.png",
+        duration=6,
+        camera="zoom_in",
+    ).to_camera_config()
+    assert zoom_in.start_scale == 1.0
+    assert zoom_in.end_scale == 1.15
+
+    zoom_out = SceneDefinition(
+        scene_id="b",
+        image="assets/b.png",
+        duration=6,
+        camera="zoom_out",
+    ).to_camera_config()
+    assert zoom_out.start_scale == 1.15
+    assert zoom_out.end_scale == 1.0
+
+    pan = SceneDefinition(
+        scene_id="c",
+        image="assets/c.png",
+        duration=6,
+        camera="pan_left",
+    ).to_camera_config()
+    assert pan.start_scale == 1.15
+    assert pan.end_scale == 1.15

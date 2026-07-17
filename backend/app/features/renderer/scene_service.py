@@ -9,6 +9,7 @@ from app.core.config import Settings
 from app.features.renderer.artifacts import RenderArtifactStore
 from app.features.renderer.camera_service import CameraService
 from app.features.renderer.frame_renderer import (
+    even_dimensions,
     generate_camera_frames_segment,
     read_image_resolution,
 )
@@ -62,7 +63,7 @@ class SceneComposer:
         scenes = ordered_scenes(manifest)
 
         first_image = resolve_scene_image(project_root, scenes[0].image)
-        out_w, out_h = read_image_resolution(first_image)
+        out_w, out_h = even_dimensions(*read_image_resolution(first_image))
         output_size = (out_w, out_h)
 
         frames_dir = self._store.frames_dir(project_id)

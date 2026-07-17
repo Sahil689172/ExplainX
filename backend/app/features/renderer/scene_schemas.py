@@ -40,20 +40,44 @@ class SceneDefinition(BaseModel):
             return value.strip().lower()
         return value
 
-    def to_camera_config(self) -> CameraConfig:
-        """Build a Phase 2 ``CameraConfig`` for this scene."""
+    def to_camera_config(self, *, default_zoom: float = 1.15) -> CameraConfig:
+        """Build a Phase 2 ``CameraConfig`` for this scene.
+
+        Manifests often set only ``camera`` (e.g. ``zoom_in``) without
+        ``camera_settings``.  Default scales are 1.0→1.0, which is a no-op for
+        zoom/pan.  When both scales are still 1.0, apply the same type-aware
+        defaults as Phase 2 ``default_camera_config``.
+        """
         settings = self.camera_settings
+        start_scale = settings.start_scale
+        end_scale = settings.end_scale
+        zoom = max(1.0, float(default_zoom))
+
+        if start_scale == 1.0 and end_scale == 1.0:
+            if self.camera == CameraType.ZOOM_IN:
+                start_scale, end_scale = 1.0, zoom
+            elif self.camera == CameraType.ZOOM_OUT:
+                start_scale, end_scale = zoom, 1.0
+            elif self.camera in {
+                CameraType.PAN_LEFT,
+                CameraType.PAN_RIGHT,
+                CameraType.PAN_UP,
+                CameraType.PAN_DOWN,
+            }:
+                # Fixed zoom so the viewport has room to pan.
+                start_scale, end_scale = zoom, zoom
+
         return CameraConfig(
             type=self.camera,
-            start_scale=settings.start_scale,
-            end_scale=settings.end_scale,
+            start_scale=start_scale,
+            end_scale=end_scale,
             duration=self.duration,
             easing=settings.easing,
         )
 
 
 class SceneManifest(BaseModel):
-    """``artifacts/scene_manifest.json`` — ordered list of scenes."""
+    """``scene_manifest.json`` (artifacts/ or project root) — ordered scenes."""
 
     video_duration: int | None = Field(default=None, ge=1, le=7200)
     fps: int | None = Field(default=None, ge=1, le=120)

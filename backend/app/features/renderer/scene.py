@@ -40,8 +40,7 @@ def log_scene(
 ) -> None:
     """Print per-scene render banner."""
     image_name = Path(scene.image).name
-    print("[Scene]", flush=True)
-    print(f"Scene {index} / {total}", flush=True)
+    print(f"[Scene] Rendering scene {index}/{total}", flush=True)
     print(f"Image {image_name}", flush=True)
     print(f"Duration {scene.duration} sec", flush=True)
     print(f"Frames {frames}", flush=True)

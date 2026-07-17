@@ -197,7 +197,7 @@ def test_load_camera_json_from_project(tmp_path: Path) -> None:
 
 
 def test_render_frame_writes_output(tmp_path: Path) -> None:
-    pytest.importorskip("fitz")
+    pytest.importorskip("PIL")
     from app.features.renderer.frame_renderer import render_frame
 
     source = tmp_path / "src.png"
@@ -207,11 +207,15 @@ def test_render_frame_writes_output(tmp_path: Path) -> None:
     render_frame(
         source_image=source,
         viewport=viewport,
-        output_size=(1, 1),
+        output_size=(2, 2),
         dest=dest,
     )
     assert dest.is_file()
     assert dest.stat().st_size > 0
+    from PIL import Image
+
+    with Image.open(dest) as frame:
+        assert frame.size == (2, 2)
 
 
 def test_lerp() -> None:

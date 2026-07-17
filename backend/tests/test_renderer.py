@@ -61,6 +61,14 @@ def test_read_png_resolution(tmp_path: Path) -> None:
     assert read_image_resolution(image) == (1, 1)
 
 
+def test_even_dimensions() -> None:
+    from app.features.renderer.frame_renderer import even_dimensions
+
+    assert even_dimensions(491, 351) == (490, 350)
+    assert even_dimensions(1920, 1080) == (1920, 1080)
+    assert even_dimensions(1, 1) == (2, 2)
+
+
 def test_discover_input_image_prefers_assets(tmp_path: Path) -> None:
     project_id = "11111111-1111-1111-1111-111111111111"
     image = _seed_project_image(tmp_path, project_id, "plant.png")

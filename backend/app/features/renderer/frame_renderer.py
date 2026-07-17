@@ -15,6 +15,13 @@ _IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg"}
 _SEARCH_DIRS = ("assets", "source", "artifacts")
 
 
+def even_dimensions(width: int, height: int) -> tuple[int, int]:
+    """Snap to nearest even size that is ≤ the given size (libx264-safe)."""
+    w = max(2, int(width) - (int(width) % 2))
+    h = max(2, int(height) - (int(height) % 2))
+    return w, h
+
+
 def discover_input_image(project_root: Path) -> Path:
     """Locate the first PNG/JPG under assets, source, then artifacts."""
     candidates: list[Path] = []
@@ -140,48 +147,62 @@ def render_frame(
 ) -> None:
     """Crop ``viewport`` from the source image and scale to ``output_size``.
 
-    Uses page.get_pixmap(clip=..., matrix=...) so crop happens before scale.
+    Viewport crop, even-pixel snap, and resize are done with Pillow (not fitz).
     """
     try:
-        import fitz  # PyMuPDF — already a project dependency
+        from PIL import Image
     except ImportError as exc:
         raise ExplainXError(
-            "PyMuPDF (fitz) is required for camera frame rendering.",
+            "Pillow is required for camera frame rendering.",
             code="RENDER_DEPENDENCY_MISSING",
-            details={"missing": "pymupdf"},
+            details={"missing": "pillow"},
         ) from exc
 
-    out_w, out_h = int(output_size[0]), int(output_size[1])
+    out_w, out_h = even_dimensions(int(output_size[0]), int(output_size[1]))
     if out_w <= 0 or out_h <= 0:
         raise ValidationAppError(
             "Output size must be positive.",
             code="CAMERA_INVALID_VIEWPORT",
             details={"output_size": output_size},
         )
-
-    clip = fitz.Rect(
-        viewport.x,
-        viewport.y,
-        viewport.x + viewport.width,
-        viewport.y + viewport.height,
-    )
-    if clip.width <= 0 or clip.height <= 0:
+    if viewport.width <= 0 or viewport.height <= 0:
         raise ValidationAppError(
             "Viewport clip has non-positive dimensions.",
             code="CAMERA_INVALID_VIEWPORT",
-            details={"width": clip.width, "height": clip.height},
+            details={"width": viewport.width, "height": viewport.height},
         )
 
-    # Scale the cropped region to the fixed output resolution.
-    matrix = fitz.Matrix(out_w / clip.width, out_h / clip.height)
-    doc = fitz.open(str(source_image))
-    try:
-        page = doc[0]
-        pix = page.get_pixmap(matrix=matrix, clip=clip, alpha=False)
+    with Image.open(source_image) as src:
+        image = src.convert("RGB")
+        img_w, img_h = image.size
+
+        left = max(0, int(viewport.x))
+        top = max(0, int(viewport.y))
+        right = min(img_w, int(round(viewport.x + viewport.width)))
+        bottom = min(img_h, int(round(viewport.y + viewport.height)))
+        if right <= left or bottom <= top:
+            raise ValidationAppError(
+                "Viewport clip has non-positive dimensions.",
+                code="CAMERA_INVALID_VIEWPORT",
+                details={"left": left, "top": top, "right": right, "bottom": bottom},
+            )
+
+        image = image.crop((left, top, right, bottom))
+
+        width, height = image.size
+        even_width = width - (width % 2)
+        even_height = height - (height % 2)
+        if even_width >= 2 and even_height >= 2 and (width, height) != (
+            even_width,
+            even_height,
+        ):
+            image = image.crop((0, 0, even_width, even_height))
+
+        if image.size != (out_w, out_h):
+            image = image.resize((out_w, out_h), Image.Resampling.LANCZOS)
+
         dest.parent.mkdir(parents=True, exist_ok=True)
-        pix.save(str(dest))
-    finally:
-        doc.close()
+        image.save(dest)
 
 
 def generate_camera_frames_segment(
@@ -202,6 +223,19 @@ def generate_camera_frames_segment(
         global_index = frame_start_index + local_index
         time_seconds = local_index / fps
         viewport = camera.get_viewport(time_seconds)
+        scale = camera.scale_at_time(time_seconds)
+        local_frame = local_index + 1
+
+        # Temporary debug: confirm camera motion within each scene.
+        if local_frame in {1, 45, 90} or local_frame == expected:
+            print(f"Frame {local_frame}", flush=True)
+            print(f"Scale: {scale:.3f}", flush=True)
+            print("Viewport:", flush=True)
+            print(f"x {viewport.x:.2f}", flush=True)
+            print(f"y {viewport.y:.2f}", flush=True)
+            print(f"width {viewport.width:.2f}", flush=True)
+            print(f"height {viewport.height:.2f}", flush=True)
+
         dest = frames_dir / f"{global_index:06d}.{ext}"
         render_frame(
             source_image=source_image,
