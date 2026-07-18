@@ -69,3 +69,19 @@ desktop.ini
 *.zip
 .turbo/
 coverage/
+# AI models
+backend/cache/
+backend/cache/**
+data/models/
+data/models/**
+
+# Generated assets
+outputs/
+cache/
+artifacts/
+
+# ONNX models
+*.onnx
+
+# Optional
+*.bin
