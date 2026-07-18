@@ -1,0 +1,20 @@
+{
+  "style_id": "flat",
+  "display_name": "Flat Educational",
+  "positive_prompt": "flat design, clean vector shapes, solid fills, educational illustration, high clarity, centered subject, simple silhouette",
+  "negative_prompt": "photorealistic, 3d render, noisy texture, watermark, text overlay, cluttered background, low contrast",
+  "color_palette": ["#2E86AB", "#F6F5F5", "#F24236", "#F6AE2D", "#1B1B1E"],
+  "line_weight": "medium",
+  "lighting": "flat",
+  "background_rules": "solid light neutral or transparent; no gradients unless needed for depth cues",
+  "renderer_preferences": {
+    "prefer_alpha": true,
+    "preferred_size": 512
+  },
+  "lora_mapping": {},
+  "controlnet_mapping": {},
+  "metadata": {
+    "schema_version": "1.0.0",
+    "phase": "4.7"
+  }
+}

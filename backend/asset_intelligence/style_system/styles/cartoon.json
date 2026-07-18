@@ -1,0 +1,19 @@
+{
+  "style_id": "cartoon",
+  "display_name": "Friendly Cartoon",
+  "positive_prompt": "friendly educational cartoon, rounded shapes, soft colors, clear silhouette, kid-friendly but accurate, simple shading",
+  "negative_prompt": "horror, gore, photorealistic, hyper-detailed pores, watermark, tiny unreadable details, cluttered scene",
+  "color_palette": ["#FF6B6B", "#4ECDC4", "#FFE66D", "#1A535C", "#F7FFF7"],
+  "line_weight": "bold",
+  "lighting": "soft cel",
+  "background_rules": "plain pastel or transparent; subject dominant",
+  "renderer_preferences": {
+    "prefer_alpha": true
+  },
+  "lora_mapping": {},
+  "controlnet_mapping": {},
+  "metadata": {
+    "schema_version": "1.0.0",
+    "phase": "4.7"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "style_id": "whiteboard",
+  "display_name": "Whiteboard Marker",
+  "positive_prompt": "whiteboard marker illustration, clean black and colored marker lines on white, teacher sketch, educational clarity, minimal fill",
+  "negative_prompt": "photorealistic, heavy shading, textured paper, watermark, dense hatching, 3d render",
+  "color_palette": ["#FFFFFF", "#1A1A1A", "#2563EB", "#DC2626", "#16A34A"],
+  "line_weight": "medium",
+  "lighting": "flat",
+  "background_rules": "pure white or transparent; marker strokes only",
+  "renderer_preferences": {
+    "prefer_alpha": true
+  },
+  "lora_mapping": {},
+  "controlnet_mapping": {},
+  "metadata": {
+    "schema_version": "1.0.0",
+    "phase": "4.7"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "style_id": "blueprint",
+  "display_name": "Technical Blueprint",
+  "positive_prompt": "technical blueprint style, white line art on deep blue, schematic clarity, labeled-ready silhouette, precise geometry, educational diagram",
+  "negative_prompt": "photorealistic, colorful painting, soft shading, cartoon faces, blur, watermark, decorative clutter",
+  "color_palette": ["#0A2540", "#E8F1FF", "#7EB6FF", "#FFFFFF"],
+  "line_weight": "thin",
+  "lighting": "none",
+  "background_rules": "solid blueprint blue or transparent with line art only",
+  "renderer_preferences": {
+    "prefer_alpha": true,
+    "line_art": true
+  },
+  "lora_mapping": {},
+  "controlnet_mapping": {
+    "future": "canny_or_lineart"
+  },
+  "metadata": {
+    "schema_version": "1.0.0",
+    "phase": "4.7"
+  }
+}

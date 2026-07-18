@@ -1,0 +1,19 @@
+{
+  "style_id": "chalkboard",
+  "display_name": "Chalkboard",
+  "positive_prompt": "chalkboard drawing, white chalk strokes on dark green board, hand-drawn educational diagram, soft dust texture, classroom teaching style",
+  "negative_prompt": "photorealistic, glossy 3d, neon colors, watermark, typed text, modern UI chrome",
+  "color_palette": ["#1F3D2B", "#F5F5F0", "#C8D6C0", "#E8D48A"],
+  "line_weight": "medium",
+  "lighting": "ambient soft",
+  "background_rules": "dark chalkboard green; subject in chalk white/cream",
+  "renderer_preferences": {
+    "prefer_alpha": false
+  },
+  "lora_mapping": {},
+  "controlnet_mapping": {},
+  "metadata": {
+    "schema_version": "1.0.0",
+    "phase": "4.7"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "style_id": "minimal_vector",
+  "display_name": "Minimal Vector",
+  "positive_prompt": "minimal vector icon, geometric simplicity, limited colors, strong silhouette, educational pictogram, high contrast",
+  "negative_prompt": "photorealistic, ornate detail, gradients heavy, texture noise, watermark, perspective complexity",
+  "color_palette": ["#111827", "#6B7280", "#F9FAFB", "#3B82F6"],
+  "line_weight": "thin",
+  "lighting": "none",
+  "background_rules": "transparent preferred; otherwise single solid",
+  "renderer_preferences": {
+    "prefer_alpha": true,
+    "icon_safe": true
+  },
+  "lora_mapping": {},
+  "controlnet_mapping": {},
+  "metadata": {
+    "schema_version": "1.0.0",
+    "phase": "4.7"
+  }
+}
