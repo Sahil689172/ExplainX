@@ -9,7 +9,7 @@ from __future__ import annotations
 import gc
 import logging
 import os
-import shutil
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal, Sequence
@@ -17,6 +17,7 @@ from typing import Any, Literal, Sequence
 from image_generation.config import ImageGenerationConfig
 from image_generation.exceptions import (
     DeviceInitError,
+    ModelDownloadError,
     ModelLoadError,
     ModelNotFoundError,
 )
@@ -25,10 +26,36 @@ logger = logging.getLogger("image_generation.model_manager")
 
 PipelineKind = Literal["genai", "optimum", "stub"]
 
-# Minimum files expected for OpenVINO/stable-diffusion-v1-5-fp16-ov
+_DOWNLOAD_ATTEMPTS = 5
+_BACKOFF_SECONDS: tuple[int, ...] = (2, 4, 8, 16, 32)
+
+# Required IR weights for OpenVINO/stable-diffusion-v1-5-fp16-ov
+_REQUIRED_WEIGHT_FILES: tuple[str, ...] = (
+    "unet/openvino_model.bin",
+    "text_encoder/openvino_model.bin",
+    "vae_encoder/openvino_model.bin",
+    "vae_decoder/openvino_model.bin",
+)
+
 _REQUIRED_MARKERS: tuple[str, ...] = (
     "model_index.json",
+    "unet/openvino_model.xml",
+    "text_encoder/openvino_model.xml",
+    "vae_encoder/openvino_model.xml",
+    "vae_decoder/openvino_model.xml",
+    *_REQUIRED_WEIGHT_FILES,
 )
+
+_COMPONENT_LABELS: dict[str, str] = {
+    "unet": "UNet",
+    "text_encoder": "Text Encoder",
+    "vae_encoder": "VAE Encoder",
+    "vae_decoder": "VAE Decoder",
+    "tokenizer": "Tokenizer",
+    "scheduler": "Scheduler",
+    "safety_checker": "Safety Checker",
+    "feature_extractor": "Feature Extractor",
+}
 
 
 @dataclass(slots=True)
@@ -76,6 +103,7 @@ class ModelManager:
         """Detect local model; download from Hugging Face if absent/incomplete."""
         path = self.model_dir()
         if self.detect():
+            print("Model verified.", flush=True)
             logger.info("MODEL_PRESENT path=%s", path)
             return path
 
@@ -86,9 +114,14 @@ class ModelManager:
                 f"{self._config.openvino_model_repo_id} there."
             )
 
-        self._purge_incomplete(path)
-        self._download_model(path)
+        # Resume: never wipe the tree — only remove corrupt/incomplete files.
+        if path.is_dir() and any(path.iterdir()):
+            print("Resuming previous download...", flush=True)
+        self._remove_corrupt_or_incomplete_files(path)
+        self._download_model_with_retries(path)
+        print("Verifying model...", flush=True)
         self.verify(path)
+        print("Model verified.", flush=True)
         self._downloaded_this_session = True
         return path
 
@@ -97,36 +130,24 @@ class ModelManager:
         return self.ensure_model()
 
     def verify(self, path: Path | None = None) -> None:
-        """Verify OpenVINO IR layout and reject incomplete HF downloads."""
+        """Verify required IR files exist and are non-empty."""
         root = path or self.model_dir()
         if not root.is_dir():
             raise ModelNotFoundError(f"Model directory missing: {root}")
 
+        missing = self._missing_required_files(root)
+        if missing:
+            raise ModelNotFoundError(
+                "Model verification failed; missing or empty: "
+                + ", ".join(missing)
+            )
+
         incompletes = list(root.rglob("*.incomplete"))
         if incompletes:
             raise ModelNotFoundError(
-                f"Incomplete download under {root} "
+                f"Incomplete download fragments still present "
                 f"({len(incompletes)} .incomplete file(s))"
             )
-
-        for marker in _REQUIRED_MARKERS:
-            if not (root / marker).is_file():
-                raise ModelNotFoundError(f"Missing required file: {root / marker}")
-
-        xml_files = list(root.rglob("*.xml"))
-        if not xml_files:
-            raise ModelNotFoundError(
-                f"No OpenVINO IR XML found under {root}"
-            )
-
-        # Prefer having unet IR for SD 1.5
-        unet_xml = list((root / "unet").glob("*.xml")) if (root / "unet").is_dir() else []
-        if not unet_xml:
-            # Some packs nest differently — require at least one sizable xml set
-            if len(xml_files) < 2:
-                raise ModelNotFoundError(
-                    f"Insufficient IR components under {root}"
-                )
 
     def verify_openvino_runtime(self) -> str:
         try:
@@ -341,43 +362,247 @@ class ModelManager:
         except ImportError:
             return None
 
+    def _download_model_with_retries(self, dest: Path) -> None:
+        """Download with sequential Hub transfers and exponential backoff."""
+        last_error: Exception | None = None
+        for attempt in range(1, _DOWNLOAD_ATTEMPTS + 1):
+            try:
+                if attempt > 1:
+                    delay = _BACKOFF_SECONDS[attempt - 2]
+                    print(f"Retry {attempt}/{_DOWNLOAD_ATTEMPTS}...", flush=True)
+                    print(f"Waiting {delay}s before retry...", flush=True)
+                    time.sleep(delay)
+                    self._remove_corrupt_or_incomplete_files(dest)
+
+                self._download_model(dest)
+                missing = self._missing_required_files(dest)
+                if missing:
+                    print(
+                        "Verification found missing/corrupt files: "
+                        + ", ".join(missing),
+                        flush=True,
+                    )
+                    self._delete_files(dest, missing)
+                    raise OSError(f"Incomplete model after download: {missing}")
+
+                return
+            except ModelDownloadError:
+                raise
+            except Exception as exc:  # noqa: BLE001 — download boundary
+                last_error = exc
+                logger.warning(
+                    "MODEL_DOWNLOAD_ATTEMPT_FAILED attempt=%s/%s error=%s",
+                    attempt,
+                    _DOWNLOAD_ATTEMPTS,
+                    exc,
+                )
+                print(f"Download error: {exc}", flush=True)
+
+        msg = (
+            "Model download failed after 5 retries.\n"
+            "Please check network connection."
+        )
+        if last_error is not None:
+            logger.error("MODEL_DOWNLOAD_GAVE_UP last_error=%s", last_error)
+        raise ModelDownloadError(msg) from None
+
     def _download_model(self, dest: Path) -> None:
         try:
-            from huggingface_hub import snapshot_download
+            from huggingface_hub import hf_hub_download, list_repo_files, snapshot_download
         except ImportError as exc:
             raise ModelNotFoundError(
                 "huggingface_hub required. pip install huggingface-hub"
             ) from exc
 
+        # Xet transfers have been unreliable (OSError decoding response body).
+        os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
+
         cache = self._config.cache_dir()
         cache.mkdir(parents=True, exist_ok=True)
-        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.mkdir(parents=True, exist_ok=True)
 
+        repo_id = self._config.openvino_model_repo_id
         logger.info(
-            "MODEL_DOWNLOAD repo=%s local_dir=%s cache_dir=%s",
-            self._config.openvino_model_repo_id,
+            "MODEL_DOWNLOAD repo=%s local_dir=%s cache_dir=%s max_workers=1",
+            repo_id,
             dest,
             cache,
         )
-        snapshot_download(
-            repo_id=self._config.openvino_model_repo_id,
-            local_dir=str(dest),
-            cache_dir=str(cache),
+
+        # Prefer sequential per-file downloads for progress + resume reliability.
+        try:
+            remote_files = list_repo_files(repo_id=repo_id)
+        except Exception:
+            remote_files = []
+
+        if remote_files:
+            self._download_files_sequential(
+                repo_id=repo_id,
+                relative_paths=remote_files,
+                dest=dest,
+                cache_dir=cache,
+                hf_hub_download=hf_hub_download,
+            )
+        else:
+            # Fallback: single-worker snapshot with resume
+            print("Downloading model snapshot (single worker)...", flush=True)
+            kwargs: dict[str, Any] = {
+                "repo_id": repo_id,
+                "local_dir": str(dest),
+                "cache_dir": str(cache),
+                "max_workers": 1,
+                "local_dir_use_symlinks": False,
+            }
+            try:
+                snapshot_download(**kwargs, resume_download=True)
+            except TypeError:
+                # Newer huggingface_hub removed resume_download (always resumes)
+                kwargs.pop("local_dir_use_symlinks", None)
+                try:
+                    snapshot_download(
+                        repo_id=repo_id,
+                        local_dir=str(dest),
+                        cache_dir=str(cache),
+                        max_workers=1,
+                    )
+                except TypeError:
+                    snapshot_download(
+                        repo_id=repo_id,
+                        local_dir=str(dest),
+                        cache_dir=str(cache),
+                        max_workers=1,
+                        local_dir_use_symlinks=False,
+                    )
+
+        logger.info("MODEL_DOWNLOAD_PASS_COMPLETE path=%s", dest)
+
+    def _download_files_sequential(
+        self,
+        *,
+        repo_id: str,
+        relative_paths: list[str],
+        dest: Path,
+        cache_dir: Path,
+        hf_hub_download: Any,
+    ) -> None:
+        # Missing large weights first when resuming (skip intact files).
+        priority = {
+            "unet/": 10,
+            "text_encoder/": 20,
+            "vae_encoder/": 30,
+            "vae_decoder/": 40,
+            "safety_checker/": 50,
+        }
+
+        def sort_key(name: str) -> tuple[int, str]:
+            for prefix, order in priority.items():
+                if name.startswith(prefix):
+                    return (order, name)
+            return (100, name)
+
+        files = sorted(
+            (f for f in relative_paths if not f.endswith("/")),
+            key=sort_key,
         )
-        logger.info("MODEL_DOWNLOAD_COMPLETE path=%s", dest)
+
+        last_label: str | None = None
+        for rel in files:
+            label = self._label_for_path(rel)
+            if label != last_label:
+                print(f"Downloading {label}...", flush=True)
+                last_label = label
+
+            target = dest / rel
+            if target.is_file() and target.stat().st_size > 0:
+                # Skip intact files (resume)
+                continue
+
+            self._hf_download_one(
+                hf_hub_download=hf_hub_download,
+                repo_id=repo_id,
+                filename=rel,
+                dest=dest,
+                cache_dir=cache_dir,
+            )
+
+    def _hf_download_one(
+        self,
+        *,
+        hf_hub_download: Any,
+        repo_id: str,
+        filename: str,
+        dest: Path,
+        cache_dir: Path,
+    ) -> None:
+        kwargs: dict[str, Any] = {
+            "repo_id": repo_id,
+            "filename": filename,
+            "local_dir": str(dest),
+            "cache_dir": str(cache_dir),
+            "local_dir_use_symlinks": False,
+        }
+        try:
+            hf_hub_download(**kwargs, force_download=False)
+        except TypeError:
+            kwargs.pop("local_dir_use_symlinks", None)
+            hf_hub_download(**kwargs)
 
     @staticmethod
-    def _purge_incomplete(path: Path) -> None:
-        """Remove a broken/partial tree so download can restart cleanly."""
-        if not path.exists():
+    def _label_for_path(rel: str) -> str:
+        top = rel.split("/", 1)[0]
+        return _COMPONENT_LABELS.get(top, top)
+
+    def _missing_required_files(self, root: Path) -> list[str]:
+        missing: list[str] = []
+        for rel in _REQUIRED_MARKERS:
+            path = root / rel
+            if not path.is_file() or path.stat().st_size <= 0:
+                missing.append(rel)
+        return missing
+
+    def _remove_corrupt_or_incomplete_files(self, root: Path) -> None:
+        """Delete only incomplete fragments and empty/corrupt required files."""
+        if not root.is_dir():
             return
-        if path.is_dir():
-            # Only purge if incomplete markers or missing integrity
-            incompletes = list(path.rglob("*.incomplete"))
-            has_index = (path / "model_index.json").is_file()
-            if incompletes or not has_index:
-                logger.warning("Purging incomplete model tree at %s", path)
-                shutil.rmtree(path, ignore_errors=True)
+
+        removed: list[str] = []
+        for incomplete in root.rglob("*.incomplete"):
+            try:
+                incomplete.unlink(missing_ok=True)
+                removed.append(str(incomplete.relative_to(root)))
+            except OSError as exc:
+                logger.warning("Could not remove %s: %s", incomplete, exc)
+
+        for lock in root.rglob("*.lock"):
+            try:
+                lock.unlink(missing_ok=True)
+            except OSError:
+                pass
+
+        for rel in self._missing_required_files(root):
+            path = root / rel
+            if path.is_file() and path.stat().st_size <= 0:
+                try:
+                    path.unlink(missing_ok=True)
+                    removed.append(rel)
+                except OSError:
+                    pass
+
+        if removed:
+            print(
+                "Removed corrupt/incomplete files: " + ", ".join(removed[:8]),
+                flush=True,
+            )
+
+    def _delete_files(self, root: Path, relative_paths: Sequence[str]) -> None:
+        for rel in relative_paths:
+            path = root / rel
+            if path.is_file():
+                try:
+                    path.unlink()
+                    print(f"Deleted corrupt file: {rel}", flush=True)
+                except OSError as exc:
+                    logger.warning("Could not delete %s: %s", path, exc)
 
     @staticmethod
     def _safe_ov_version() -> str | None:

@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 from image_generation.config import ImageGenerationConfig
+from image_generation.exceptions import ModelDownloadError
 from image_generation.image_generation_service import build_openvino_service
 from image_generation.models import GenerationRequest, GenerationStatus, OutputFormat
 from image_generation.openvino.model_manager import ModelManager
@@ -58,10 +59,18 @@ def main() -> int:
         manager = ModelManager(cfg)
         present_before = manager.detect()
         print(f"Model present before ensure: {present_before}")
-        path = manager.ensure_model()
-        manager.verify(path)
-        _ok("Model downloaded" if manager.status().downloaded or not present_before else "Model present")
-        print(f"Model path verified: {path}")
+        try:
+            path = manager.ensure_model()
+            manager.verify(path)
+            _ok(
+                "Model downloaded"
+                if manager.status().downloaded or not present_before
+                else "Model present"
+            )
+            print(f"Model path verified: {path}")
+        except ModelDownloadError as exc:
+            print(str(exc))
+            return 1
 
     service = build_openvino_service(
         cfg,

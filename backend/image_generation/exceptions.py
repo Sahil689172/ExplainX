@@ -43,6 +43,10 @@ class ModelNotFoundError(ImageGenerationError):
     """Configured OpenVINO model directory is missing or incomplete."""
 
 
+class ModelDownloadError(ImageGenerationError):
+    """Hugging Face model download failed after retries."""
+
+
 class ModelLoadError(ImageGenerationError):
     """Model / pipeline failed to load on the selected device."""
 
