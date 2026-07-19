@@ -6,6 +6,7 @@ from typing import Protocol, Sequence, runtime_checkable
 
 from image_generation.models import (
     BackendGenerateResult,
+    GenerationJob,
     GenerationRequest,
 )
 
@@ -14,8 +15,8 @@ from image_generation.models import (
 class ImageBackend(Protocol):
     """Contract every future image backend must implement.
 
-    Phase 5.1 ships only ``NullBackend``. Future: OpenVINO, Diffusers,
-    ONNX, ComfyUI, Flux, SDXL — no model imports in this package.
+    Phase 5.1: ``NullBackend``. Phase 5.2: ``OpenVINOBackend``.
+    Future: Diffusers, ONNX, ComfyUI, Flux, SDXL — no model imports here.
     """
 
     def backend_name(self) -> str:
@@ -27,7 +28,7 @@ class ImageBackend(Protocol):
         ...
 
     def initialize(self) -> None:
-        """Allocate resources / load config. Idempotent. No model downloads."""
+        """Allocate resources / load config. Idempotent."""
         ...
 
     def generate(self, request: GenerationRequest) -> BackendGenerateResult:
@@ -43,7 +44,7 @@ class ImageBackend(Protocol):
         ...
 
     def health(self) -> dict[str, object]:
-        """Backend health: ready, errors, device hints, etc."""
+        """Backend health: ready, device, model, errors, etc."""
         ...
 
     def supported_styles(self) -> Sequence[str]:
@@ -52,4 +53,18 @@ class ImageBackend(Protocol):
 
     def supported_sizes(self) -> Sequence[tuple[int, int]]:
         """(width, height) pairs this backend accepts."""
+        ...
+
+
+@runtime_checkable
+class OutputPipelineProtocol(Protocol):
+    """Optional post-generation handoff (Asset Processor / Library)."""
+
+    def process(
+        self,
+        *,
+        raw_png: str,
+        request: GenerationRequest,
+        job: GenerationJob,
+    ) -> str:
         ...

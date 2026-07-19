@@ -72,6 +72,18 @@ coverage/
 # AI models
 backend/cache/
 backend/cache/**
+backend/models/
+backend/models/**
+!backend/models/.gitkeep
+!backend/models/sd-turbo-openvino/
+!backend/models/sd-turbo-openvino/.gitkeep
+!backend/models/openvino_sd15/
+!backend/models/openvino_sd15/.gitkeep
+backend/generated/
+backend/generated/**
+!backend/generated/.gitkeep
+!backend/generated/raw/
+!backend/generated/raw/.gitkeep
 data/models/
 data/models/**
 

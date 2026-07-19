@@ -36,4 +36,16 @@ class JobCancelledError(ImageGenerationError):
 
 
 class GenerationFailedError(ImageGenerationError):
-    """Backend reported failure (still no model inference in Phase 5.1)."""
+    """Backend reported failure during generate()."""
+
+
+class ModelNotFoundError(ImageGenerationError):
+    """Configured OpenVINO model directory is missing or incomplete."""
+
+
+class ModelLoadError(ImageGenerationError):
+    """Model / pipeline failed to load on the selected device."""
+
+
+class DeviceInitError(ImageGenerationError):
+    """Neither GPU nor CPU device could initialize the pipeline."""

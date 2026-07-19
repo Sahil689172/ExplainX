@@ -1,8 +1,13 @@
-"""ImageGenerationService — permanent orchestration layer (no AI models)."""
+"""ImageGenerationService — permanent orchestration layer.
+
+Knows nothing about Stable Diffusion / Flux / OpenVINO model types —
+only ``ImageBackend`` (+ optional ``OutputPipelineProtocol`` via DI).
+"""
 
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from pathlib import Path
 from uuid import UUID
 
 from image_generation.backend_manager import BackendManager
@@ -16,6 +21,7 @@ from image_generation.exceptions import (
 )
 from image_generation.generation_queue import GenerationQueue
 from image_generation.health import EngineHealth
+from image_generation.interfaces import OutputPipelineProtocol
 from image_generation.logger import GenerationJobLogger
 from image_generation.models import (
     GenerationJob,
@@ -35,10 +41,7 @@ def _utc_now() -> datetime:
 
 
 class ImageGenerationService:
-    """Accept → Validate → Create Job → Select Backend → Execute → Respond.
-
-    Knows nothing about Stable Diffusion / Flux / OpenVINO — only ``ImageBackend``.
-    """
+    """Accept → Validate → Create Job → Select Backend → Execute → Respond."""
 
     def __init__(
         self,
@@ -51,6 +54,7 @@ class ImageGenerationService:
         validator: GenerationRequestValidator | None = None,
         logger: GenerationJobLogger | None = None,
         manager: BackendManager | None = None,
+        output_pipeline: OutputPipelineProtocol | None = None,
         auto_register_null: bool = True,
     ) -> None:
         self.config = config or ImageGenerationConfig.from_defaults()
@@ -61,6 +65,7 @@ class ImageGenerationService:
         self.validator = validator or GenerationRequestValidator(self.config)
         self.logger = logger or GenerationJobLogger()
         self.manager = manager or BackendManager(self.registry, logger=self.logger)
+        self.output_pipeline = output_pipeline
         self.health_svc = EngineHealth(
             config=self.config,
             registry=self.registry,
@@ -117,7 +122,14 @@ class ImageGenerationService:
             return self._fail_response(job, error=f"Unexpected error: {exc}")
 
     def health(self) -> HealthStatus:
-        return self.health_svc.snapshot()
+        snap = self.health_svc.snapshot()
+        for info in snap.registered_backends:
+            if info.is_default and info.metadata.entries.get("health"):
+                snap.metadata.set(
+                    "default_backend_health", info.metadata.entries["health"]
+                )
+                break
+        return snap
 
     def get_progress(self, job_id: UUID) -> GenerationProgress | None:
         return self.progress.get(job_id)
@@ -139,11 +151,9 @@ class ImageGenerationService:
         job.updated_at = job.started_at
         self.logger.job_started(job)
 
-        # Validate
         self._set_status(job, GenerationStatus.VALIDATING, "Validating request")
         self.validator.validate(job.request)
 
-        # Select backend
         self._set_status(
             job, GenerationStatus.SELECTING_BACKEND, "Selecting backend"
         )
@@ -152,7 +162,6 @@ class ImageGenerationService:
         job.backend_id = backend_id
         job.updated_at = _utc_now()
 
-        # Generate (NullBackend: sleep + stub message)
         self._set_status(
             job,
             GenerationStatus.GENERATING,
@@ -165,7 +174,6 @@ class ImageGenerationService:
         if not result.success:
             raise GenerationFailedError(result.error or result.message)
 
-        # Post-processing hook (future: Asset Processor handoff)
         self._set_status(
             job,
             GenerationStatus.POST_PROCESSING,
@@ -175,6 +183,18 @@ class ImageGenerationService:
         job.result_message = result.message
         job.output_path = result.output_path
         job.metadata.set("backend_result", result.metadata)
+
+        if (
+            self.output_pipeline is not None
+            and result.output_path
+            and Path(result.output_path).is_file()
+        ):
+            final_path = self.output_pipeline.process(
+                raw_png=result.output_path,
+                request=job.request,
+                job=job,
+            )
+            job.output_path = final_path
 
         job.finished_at = _utc_now()
         job.status = GenerationStatus.COMPLETED
@@ -192,7 +212,7 @@ class ImageGenerationService:
             status=GenerationStatus.COMPLETED,
             backend_id=backend_id,
             message=result.message,
-            output_path=result.output_path,
+            output_path=job.output_path,
             duration_ms=job.duration_ms,
             progress=progress,
             metadata=job.metadata,
@@ -243,5 +263,43 @@ def build_default_service(
     """Factory: config + NullBackend registered as default."""
     cfg = config or ImageGenerationConfig.from_defaults()
     service = ImageGenerationService(config=cfg, auto_register_null=True)
+    service.start()
+    return service
+
+
+def build_openvino_service(
+    config: ImageGenerationConfig | None = None,
+    *,
+    force_stub: bool = False,
+    with_asset_pipeline: bool = True,
+) -> ImageGenerationService:
+    """Factory: OpenVINOBackend as default; optional Asset Processor handoff."""
+    from asset_intelligence.asset_library import AssetLibrary
+    from image_generation.openvino import AssetOutputPipeline, OpenVINOBackend
+
+    cfg = config or ImageGenerationConfig.from_defaults()
+    cfg.default_backend_id = "openvino"
+
+    registry = BackendRegistry()
+    ov = OpenVINOBackend(cfg, force_stub=force_stub)
+    registry.register(ov, set_as_default=True)
+    registry.register(NullBackend(cfg), set_as_default=False)
+
+    output: OutputPipelineProtocol | None = None
+    library = AssetLibrary()
+    if with_asset_pipeline:
+        output = AssetOutputPipeline(
+            asset_library=library,
+            use_stub_remover=force_stub,
+        )
+
+    service = ImageGenerationService(
+        config=cfg,
+        registry=registry,
+        output_pipeline=output,
+        auto_register_null=False,
+    )
+    # Expose library for tests / callers without breaking engine abstraction
+    service.asset_library = library  # type: ignore[attr-defined]
     service.start()
     return service

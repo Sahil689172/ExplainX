@@ -9,7 +9,7 @@ from typing import Any
 from uuid import UUID, uuid4
 
 SCHEMA_VERSION = "1.0.0"
-ENGINE_VERSION = "5.1.0"
+ENGINE_VERSION = "5.2.0"
 
 
 def _utc_now() -> datetime:
