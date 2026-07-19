@@ -1,0 +1,17 @@
+{
+  "original_filename": "Earth_f1a7fc12_a65bba.png",
+  "processed_filename": "Earth_f1a7fc12_a65bba.png",
+  "hash": "a72963b41ff7db176ac7c74ba7b82e04da48abfe1172ca510fd109e8537c5558",
+  "width": 512,
+  "height": 512,
+  "channels": 4,
+  "transparent": true,
+  "background_removed": true,
+  "processing_time_ms": 17285.38,
+  "created_at": "2026-07-19T16:20:59+00:00",
+  "version": "4.6.0",
+  "source_path": "C:\\Users\\hp\\ExplainX\\backend\\generated\\raw\\Earth_f1a7fc12_a65bba.png",
+  "processed_path": "C:\\Users\\hp\\ExplainX\\backend\\processed_assets\\Earth_f1a7fc12_a65bba.png",
+  "target_size": 512,
+  "cached": false
+}

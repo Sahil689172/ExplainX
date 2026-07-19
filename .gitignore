@@ -84,6 +84,13 @@ backend/generated/**
 !backend/generated/.gitkeep
 !backend/generated/raw/
 !backend/generated/raw/.gitkeep
+
+# Smart asset library binaries (keep folder placeholders)
+backend/asset_library/assets/**
+!backend/asset_library/assets/.gitkeep
+backend/asset_library/metadata/**
+!backend/asset_library/metadata/.gitkeep
+!backend/asset_library/README.md
 data/models/
 data/models/**
 
