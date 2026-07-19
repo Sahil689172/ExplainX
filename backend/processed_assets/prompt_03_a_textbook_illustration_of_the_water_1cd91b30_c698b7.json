@@ -1,0 +1,17 @@
+{
+  "original_filename": "prompt_03_a_textbook_illustration_of_the_water_1cd91b30_c698b7.png",
+  "processed_filename": "prompt_03_a_textbook_illustration_of_the_water_1cd91b30_c698b7.png",
+  "hash": "b0a82d4a66ffe5358883cb2287caa7e1dad272ba250c71ddbb8b6b59bc0b3276",
+  "width": 512,
+  "height": 512,
+  "channels": 4,
+  "transparent": true,
+  "background_removed": true,
+  "processing_time_ms": 1589.93,
+  "created_at": "2026-07-19T10:25:09+00:00",
+  "version": "4.6.0",
+  "source_path": "C:\\Users\\hp\\ExplainX\\backend\\generated\\raw\\prompt_03_a_textbook_illustration_of_the_water_1cd91b30_c698b7.png",
+  "processed_path": "C:\\Users\\hp\\ExplainX\\backend\\processed_assets\\prompt_03_a_textbook_illustration_of_the_water_1cd91b30_c698b7.png",
+  "target_size": 512,
+  "cached": false
+}

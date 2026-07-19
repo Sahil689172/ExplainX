@@ -1,0 +1,17 @@
+{
+  "original_filename": "prompt_04_an_infographic_showing_photosynthesis_61a90744_ce4814.png",
+  "processed_filename": "prompt_04_an_infographic_showing_photosynthesis_61a90744_ce4814.png",
+  "hash": "d83710cb1914c7bd7ee493e9703871f7d111a2ce0b303facfb8f8c4c7009c8a1",
+  "width": 512,
+  "height": 512,
+  "channels": 4,
+  "transparent": true,
+  "background_removed": true,
+  "processing_time_ms": 1842.62,
+  "created_at": "2026-07-19T10:25:52+00:00",
+  "version": "4.6.0",
+  "source_path": "C:\\Users\\hp\\ExplainX\\backend\\generated\\raw\\prompt_04_an_infographic_showing_photosynthesis_61a90744_ce4814.png",
+  "processed_path": "C:\\Users\\hp\\ExplainX\\backend\\processed_assets\\prompt_04_an_infographic_showing_photosynthesis_61a90744_ce4814.png",
+  "target_size": 512,
+  "cached": false
+}

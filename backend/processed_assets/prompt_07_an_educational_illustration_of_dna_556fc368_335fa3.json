@@ -1,0 +1,17 @@
+{
+  "original_filename": "prompt_07_an_educational_illustration_of_dna_556fc368_335fa3.png",
+  "processed_filename": "prompt_07_an_educational_illustration_of_dna_556fc368_335fa3.png",
+  "hash": "7e20df7c3fe4e50a5ed954e57d2d7925157ad050ae15440c1ea52985e4c83ef6",
+  "width": 512,
+  "height": 512,
+  "channels": 4,
+  "transparent": true,
+  "background_removed": true,
+  "processing_time_ms": 2145.65,
+  "created_at": "2026-07-19T10:28:07+00:00",
+  "version": "4.6.0",
+  "source_path": "C:\\Users\\hp\\ExplainX\\backend\\generated\\raw\\prompt_07_an_educational_illustration_of_dna_556fc368_335fa3.png",
+  "processed_path": "C:\\Users\\hp\\ExplainX\\backend\\processed_assets\\prompt_07_an_educational_illustration_of_dna_556fc368_335fa3.png",
+  "target_size": 512,
+  "cached": false
+}
