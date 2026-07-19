@@ -1,106 +1,43 @@
-"""Lightweight prompt enhancer for educational illustrations (no LLM)."""
+"""Lightweight prompt enhancer for educational illustrations.
+
+Phase 5.6: delegates to :class:`RuleBasedPromptEngine` by default so AssetManager
+receives smarter prompts without any Asset Manager code changes.
+
+Swap engines via DI::
+
+    PromptEnhancer(engine=LLMPromptEngine())
+"""
 
 from __future__ import annotations
 
-import re
+from typing import Any
 
-from image_generation.keyword_expand import normalize_token
-
-
-_TITLE_STOP = frozenset(
-    {
-        "a",
-        "an",
-        "the",
-        "of",
-        "with",
-        "and",
-        "for",
-        "showing",
-        "show",
-        "illustration",
-        "illustrations",
-        "diagram",
-        "diagrams",
-        "educational",
-        "flat",
-        "vector",
-        "clean",
-        "minimal",
-        "textbook",
-        "infographic",
-        "icon",
-        "style",
-        "labeled",
-        "label",
-        "cross",
-        "section",
-    }
-)
-
-_CATEGORY_HINTS: tuple[tuple[str, str], ...] = (
-    ("heart", "Biology"),
-    ("dna", "Biology"),
-    ("photosynthesis", "Biology"),
-    ("cell", "Biology"),
-    ("neuron", "Biology"),
-    ("earth", "Geography"),
-    ("planet", "Geography"),
-    ("volcano", "Geography"),
-    ("solar", "Astronomy"),
-    ("moon", "Astronomy"),
-    ("water cycle", "Earth Science"),
-    ("motherboard", "Technology"),
+from image_generation.prompt_intelligence.prompt_engine import (
+    PromptEngine,
+    RuleBasedPromptEngine,
 )
 
 
 class PromptEnhancer:
-    """Derive title, category, and an enhanced prompt string for caching / generation."""
+    """Adapter: Prompt Intelligence → AssetManager-compatible dict."""
 
-    def enhance(self, prompt: str, *, style: str = "flat_vector") -> dict[str, str]:
-        cleaned = " ".join(prompt.strip().split())
-        title = self._extract_title(cleaned)
-        category = self._guess_category(cleaned, title)
-        enhanced = (
-            f"{cleaned}, {style.replace('_', ' ')} educational illustration, "
-            "clear silhouette, transparent background, high contrast, centered subject"
-        )
+    def __init__(self, engine: PromptEngine | None = None) -> None:
+        self._engine: PromptEngine = engine or RuleBasedPromptEngine()
+
+    def enhance(self, prompt: str, *, style: str = "flat_vector") -> dict[str, Any]:
+        result = self._engine.enhance(prompt, style=style)
         return {
-            "title": title,
-            "category": category,
-            "enhanced_prompt": enhanced,
-            "style": style,
-            "original_prompt": cleaned,
+            "title": result.title,
+            "category": result.subject,
+            "enhanced_prompt": result.enhanced_prompt,
+            "style": result.style_id,
+            "original_prompt": result.original_prompt,
+            # Extra fields for repository / future callers (AssetManager ignores unknown keys)
+            "negative_prompt": result.negative_prompt,
+            "keywords": list(result.keywords),
+            "subject": result.subject,
+            "template_used": result.template_used,
+            "confidence": result.confidence,
+            "scores": result.scores.to_dict(),
+            "validated": result.validated,
         }
-
-    def _extract_title(self, prompt: str) -> str:
-        lower = normalize_token(prompt)
-        # Prefer known multi-word concepts
-        for phrase in (
-            "solar system",
-            "water cycle",
-            "human heart",
-            "planet earth",
-            "blue planet",
-            "computer motherboard",
-            "volcano cross section",
-        ):
-            if phrase in lower:
-                return phrase.title() if phrase != "dna" else "DNA"
-
-        tokens = re.findall(r"[A-Za-z0-9]+", prompt)
-        meaningful = [t for t in tokens if t.lower() not in _TITLE_STOP]
-        if not meaningful:
-            return "Asset"
-        # Take up to 3 content words
-        title = " ".join(meaningful[:3])
-        if title.lower() == "dna":
-            return "DNA"
-        return title.title()
-
-    def _guess_category(self, prompt: str, title: str) -> str:
-        blob = f"{prompt} {title}".lower()
-        for needle, category in _CATEGORY_HINTS:
-            if needle in blob:
-                return category
-        return "General"
