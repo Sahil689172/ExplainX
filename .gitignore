@@ -90,6 +90,10 @@ backend/asset_library/assets/**
 !backend/asset_library/assets/.gitkeep
 backend/asset_library/metadata/**
 !backend/asset_library/metadata/.gitkeep
+backend/asset_library/concepts/**
+!backend/asset_library/concepts/.gitkeep
+backend/asset_library/pending_review/**
+!backend/asset_library/pending_review/.gitkeep
 !backend/asset_library/README.md
 data/models/
 data/models/**
