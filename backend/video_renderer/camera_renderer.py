@@ -95,16 +95,18 @@ class CameraRenderer:
         """Apply zoom/pan crop to a composited frame (PIL Image)."""
         from PIL import Image
 
-        if camera.zoom == 1.0 and camera.pan == (0.0, 0.0):
+        if camera.zoom <= 1.0001 and camera.pan == (0.0, 0.0):
             return image
 
-        zoom = max(0.5, min(camera.zoom, 3.0))
-        scaled_w = int(width * zoom)
-        scaled_h = int(height * zoom)
+        # Cinematic clamp: never zoom beyond 1.10 — no aggressive motion.
+        zoom = max(1.0, min(camera.zoom, 1.10))
+        scaled_w = round(width * zoom)
+        scaled_h = round(height * zoom)
         scaled = image.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
 
-        cx = (scaled_w - width) // 2 + int(camera.pan[0])
-        cy = (scaled_h - height) // 2 + int(camera.pan[1])
-        cx = max(0, min(cx, max(0, scaled_w - width)))
-        cy = max(0, min(cy, max(0, scaled_h - height)))
+        # Float centering + single rounding avoids the 1px frame-to-frame jitter.
+        cx = (scaled_w - width) / 2.0 + float(camera.pan[0])
+        cy = (scaled_h - height) / 2.0 + float(camera.pan[1])
+        cx = int(round(max(0.0, min(cx, float(scaled_w - width)))))
+        cy = int(round(max(0.0, min(cy, float(scaled_h - height)))))
         return scaled.crop((cx, cy, cx + width, cy + height))

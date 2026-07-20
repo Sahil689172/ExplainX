@@ -1,0 +1,200 @@
+{
+  "scene_id": "46fe3ae7-3986-4eae-b795-ff5b38b0d6c1",
+  "scene_number": 1,
+  "title": "Planet Earth",
+  "subject": "Geography",
+  "scene_type": "single_concept",
+  "layout": "hero",
+  "assets": [
+    {
+      "component_id": "diagram_main",
+      "type": "diagram",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\scenes\\scene_01\\diagrams\\fddd2e39-d1f8-4727-afdc-6289cf4daf71.png",
+      "bounds": {
+        "x": 448.48,
+        "y": 192.0,
+        "width": 383.03999999999996,
+        "height": 383.03999999999996
+      },
+      "concept_id": "concept-earth",
+      "asset_version": "v1"
+    }
+  ],
+  "diagrams": [
+    {
+      "component_id": "diagram_main",
+      "type": "diagram",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\scenes\\scene_01\\diagrams\\fddd2e39-d1f8-4727-afdc-6289cf4daf71.png",
+      "bounds": {
+        "x": 448.48,
+        "y": 192.0,
+        "width": 383.03999999999996,
+        "height": 383.03999999999996
+      },
+      "concept_id": "concept-earth",
+      "asset_version": "v1"
+    }
+  ],
+  "camera": {
+    "camera_start": [
+      640.0,
+      360.0
+    ],
+    "camera_end": [
+      640.0,
+      383.52
+    ],
+    "zoom": 1.05,
+    "pan": [
+      0.0,
+      0.0
+    ],
+    "focus_region": [
+      0.350375,
+      0.26666666666666666,
+      0.29924999999999996,
+      0.5319999999999999
+    ],
+    "camera_events": [
+      {
+        "time_seconds": 0.0,
+        "zoom": 1.0,
+        "pan": [
+          0.0,
+          0.0
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      },
+      {
+        "time_seconds": 2.5,
+        "zoom": 1.05,
+        "pan": [
+          0.0,
+          23.519999999999982
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    ]
+  },
+  "timeline": {
+    "duration": 12.6,
+    "elements": [
+      {
+        "component_id": "bg",
+        "component_type": "background",
+        "appearance_order": 1,
+        "start_time": 0.0,
+        "duration": 12.6,
+        "end_time": 12.6
+      },
+      {
+        "component_id": "title",
+        "component_type": "title",
+        "appearance_order": 2,
+        "start_time": 1.17,
+        "duration": 11.43,
+        "end_time": 12.6
+      },
+      {
+        "component_id": "subtitle",
+        "component_type": "subtitle",
+        "appearance_order": 3,
+        "start_time": 2.34,
+        "duration": 10.26,
+        "end_time": 12.6
+      },
+      {
+        "component_id": "diagram_main",
+        "component_type": "diagram",
+        "appearance_order": 4,
+        "start_time": 3.51,
+        "duration": 9.09,
+        "end_time": 12.6
+      },
+      {
+        "component_id": "bullets",
+        "component_type": "bullet_list",
+        "appearance_order": 5,
+        "start_time": 4.68,
+        "duration": 7.92,
+        "end_time": 12.6
+      },
+      {
+        "component_id": "legend",
+        "component_type": "legend",
+        "appearance_order": 6,
+        "start_time": 5.85,
+        "duration": 6.75,
+        "end_time": 12.6
+      },
+      {
+        "component_id": "footer",
+        "component_type": "footer",
+        "appearance_order": 7,
+        "start_time": 7.02,
+        "duration": 5.58,
+        "end_time": 12.6
+      }
+    ],
+    "appearance_order": [
+      "bg",
+      "title",
+      "subtitle",
+      "diagram_main",
+      "bullets",
+      "legend",
+      "footer"
+    ],
+    "transition": {
+      "transition_type": "fade",
+      "duration_seconds": 0.5,
+      "easing": "ease-in-out"
+    },
+    "camera_events": [
+      {
+        "time_seconds": 0.0,
+        "zoom": 1.0,
+        "pan": [
+          0.0,
+          0.0
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      },
+      {
+        "time_seconds": 2.5,
+        "zoom": 1.05,
+        "pan": [
+          0.0,
+          23.519999999999982
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    ]
+  },
+  "duration": 12.6,
+  "concept_id": "concept-earth",
+  "asset_version": "v1",
+  "diagram_version": "v1",
+  "created_at": "2026-07-20T11:06:13.199413+00:00",
+  "export_format": "png,svg,json"
+}

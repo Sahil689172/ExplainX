@@ -1,0 +1,26 @@
+{
+  "video_id": "d51a29dd-6058-41d1-856b-c9510dd2aef0",
+  "scene_id": "46fe3ae7-3986-4eae-b795-ff5b38b0d6c1",
+  "scene_name": "Planet Earth",
+  "fps": 30,
+  "duration": 12.6,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "codec": "libx264",
+  "bitrate_mbps": 6.0,
+  "frame_count": 378,
+  "render_profile": "standard",
+  "encoding_time_seconds": 3.322,
+  "video_size_bytes": 525286,
+  "thumbnail_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_01\\videos\\Planet_Earth\\thumbnail.png",
+  "mp4_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_01\\videos\\Planet_Earth\\video.mp4",
+  "webm_path": null,
+  "output_directory": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_01\\videos\\Planet_Earth",
+  "metadata_path": null,
+  "created_at": "2026-07-20T11:06:49.260781+00:00",
+  "formats": [
+    "mp4"
+  ]
+}

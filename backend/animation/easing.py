@@ -14,6 +14,14 @@ class EasingName(str, Enum):
     EASE_IN_OUT = "ease-in-out"
     EASE_IN_CUBIC = "ease-in-cubic"
     EASE_OUT_CUBIC = "ease-out-cubic"
+    EASE_IN_OUT_SINE = "ease-in-out-sine"
+    EASE_IN_OUT_QUART = "ease-in-out-quart"
+
+
+def _ease_in_out_quart(t: float) -> float:
+    if t < 0.5:
+        return 8 * t * t * t * t
+    return 1 - ((-2 * t + 2) ** 4) / 2
 
 
 _EASING_FUNCTIONS: dict[str, Callable[[float], float]] = {
@@ -23,6 +31,9 @@ _EASING_FUNCTIONS: dict[str, Callable[[float], float]] = {
     EasingName.EASE_IN_OUT.value: lambda t: 2 * t * t if t < 0.5 else -1 + (4 - 2 * t) * t,
     EasingName.EASE_IN_CUBIC.value: lambda t: t**3,
     EasingName.EASE_OUT_CUBIC.value: lambda t: 1 - (1 - t) ** 3,
+    # Cinematic, no sudden acceleration — used for camera moves.
+    EasingName.EASE_IN_OUT_SINE.value: lambda t: 0.5 * (1 - math.cos(math.pi * t)),
+    EasingName.EASE_IN_OUT_QUART.value: _ease_in_out_quart,
 }
 
 

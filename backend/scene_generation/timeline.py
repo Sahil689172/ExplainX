@@ -45,10 +45,15 @@ class TimelineBuilder:
             ),
         )
         elements: list[TimelineElement] = []
-        step = total / max(len(ordered), 1)
+        # Educational cadence (Task 4/7): reveal elements progressively across the
+        # first ~65% of the scene so motion feels like teaching, not a slideshow.
+        # Everything stays visible until the end.
+        count = max(len(ordered), 1)
+        reveal_window = total * 0.65
+        step = reveal_window / count if count > 1 else 0.0
         for i, comp in enumerate(ordered):
-            start = round(i * step * 0.35, 3)
-            dur = round(total - start, 3)
+            start = round(min(i * step, max(0.0, total - 1.0)), 3)
+            dur = round(max(0.5, total - start), 3)
             elements.append(
                 TimelineElement(
                     component_id=comp.component.component_id,

@@ -1,0 +1,5520 @@
+{
+  "timeline_id": "04e5dbdd-c29c-48cb-89c5-1d347bcafecc",
+  "scene_id": "46fe3ae7-3986-4eae-b795-ff5b38b0d6c1",
+  "duration": 12.6,
+  "fps": 30,
+  "animations": [
+    {
+      "animation_id": "546c7d38-56c4-4375-abd6-9d5c97470d79",
+      "target": "bg",
+      "animation_type": "fade_in",
+      "start_time": 0.0,
+      "end_time": 0.6,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.0,
+      "metadata": {
+        "component_type": "background"
+      }
+    },
+    {
+      "animation_id": "8135b5db-5030-49d4-803f-a1c0bf5375b1",
+      "target": "title",
+      "animation_type": "slide_down",
+      "start_time": 1.287,
+      "end_time": 1.887,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.117,
+      "metadata": {
+        "component_type": "title"
+      }
+    },
+    {
+      "animation_id": "7acbf7fc-1baa-49c0-a5fb-975292030ab9",
+      "target": "title",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "2657a5f3-328b-4c6a-bbf9-d6dc9784400a",
+      "target": "subtitle",
+      "animation_type": "fade_in",
+      "start_time": 2.574,
+      "end_time": 3.174,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.234,
+      "metadata": {
+        "component_type": "subtitle"
+      }
+    },
+    {
+      "animation_id": "6d33bc97-3042-4b7d-a9a0-273decbd2fb6",
+      "target": "subtitle",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "5d1d4e43-d97c-4665-95e4-df89b38f65a8",
+      "target": "diagram_main",
+      "animation_type": "zoom_in",
+      "start_time": 3.861,
+      "end_time": 4.761,
+      "duration": 0.9,
+      "easing": "ease-in-out",
+      "delay": 0.351,
+      "metadata": {
+        "component_type": "diagram"
+      }
+    },
+    {
+      "animation_id": "8ec3663a-3140-46f5-b41b-aa551d0f4cf6",
+      "target": "diagram_main",
+      "animation_type": "highlight",
+      "start_time": 6.93,
+      "end_time": 7.73,
+      "duration": 0.8,
+      "easing": "ease-in-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "highlight"
+      }
+    },
+    {
+      "animation_id": "667fcce8-e320-4bd5-bdf0-8644384489b8",
+      "target": "diagram_main",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "2df97831-086c-4449-a969-a9c8248329a4",
+      "target": "bullets",
+      "animation_type": "fade_in",
+      "start_time": 5.148,
+      "end_time": 5.748,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.468,
+      "metadata": {
+        "component_type": "bullet_list"
+      }
+    },
+    {
+      "animation_id": "69d16631-941d-46b2-a415-105f6ee75c36",
+      "target": "bullets",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "14e48b16-fad0-4c00-a746-6986f3d0bef6",
+      "target": "legend",
+      "animation_type": "fade_in",
+      "start_time": 6.435,
+      "end_time": 7.035,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.585,
+      "metadata": {
+        "component_type": "legend"
+      }
+    },
+    {
+      "animation_id": "3e081dd6-6022-4fbe-8522-bdbe765d4112",
+      "target": "legend",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "6f8bcb31-e124-41e6-803d-e8742d98110e",
+      "target": "footer",
+      "animation_type": "fade_in",
+      "start_time": 7.722,
+      "end_time": 8.322,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.702,
+      "metadata": {
+        "component_type": "footer"
+      }
+    },
+    {
+      "animation_id": "a5625539-8064-47a6-8632-255b261160b5",
+      "target": "footer",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    }
+  ],
+  "keyframes": [
+    {
+      "time": 0.0,
+      "target": "bg",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 0.0,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.0,
+        "pan": [
+          0.0,
+          0.0
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.084,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00001,
+        "pan": [
+          0.0,
+          0.0
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.15,
+      "target": "bg",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.125,
+      "camera": null
+    },
+    {
+      "time": 0.168,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00004,
+        "pan": [
+          0.0,
+          0.002
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.252,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00008,
+        "pan": [
+          0.0,
+          0.003
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.3,
+      "target": "bg",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5,
+      "camera": null
+    },
+    {
+      "time": 0.336,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00014,
+        "pan": [
+          0.0,
+          0.006
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.42,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00022,
+        "pan": [
+          0.0,
+          0.01
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.45,
+      "target": "bg",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.875,
+      "camera": null
+    },
+    {
+      "time": 0.504,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00032,
+        "pan": [
+          0.0,
+          0.014
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.588,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00043,
+        "pan": [
+          0.0,
+          0.019
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.6,
+      "target": "bg",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 0.672,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00056,
+        "pan": [
+          0.0,
+          0.025
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.756,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00071,
+        "pan": [
+          0.0,
+          0.031
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.84,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00087,
+        "pan": [
+          0.0,
+          0.039
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 0.924,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00106,
+        "pan": [
+          0.0,
+          0.047
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.008,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00126,
+        "pan": [
+          0.0,
+          0.055
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.092,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00147,
+        "pan": [
+          0.0,
+          0.065
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.176,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00171,
+        "pan": [
+          0.0,
+          0.075
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.26,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00196,
+        "pan": [
+          0.0,
+          0.086
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.287,
+      "target": "title",
+      "position": [
+        80.0,
+        140.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 1.344,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00222,
+        "pan": [
+          0.0,
+          0.098
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.428,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00251,
+        "pan": [
+          0.0,
+          0.111
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.437,
+      "target": "title",
+      "position": [
+        80.0,
+        147.5
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.15,
+      "camera": null
+    },
+    {
+      "time": 1.512,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00281,
+        "pan": [
+          0.0,
+          0.124
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.587,
+      "target": "title",
+      "position": [
+        80.0,
+        170.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.6,
+      "camera": null
+    },
+    {
+      "time": 1.596,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00313,
+        "pan": [
+          0.0,
+          0.138
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.68,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00346,
+        "pan": [
+          0.0,
+          0.153
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.737,
+      "target": "title",
+      "position": [
+        80.0,
+        192.5
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 1.764,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00381,
+        "pan": [
+          0.0,
+          0.168
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.848,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00417,
+        "pan": [
+          0.0,
+          0.184
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 1.887,
+      "target": "title",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 1.932,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00455,
+        "pan": [
+          0.0,
+          0.201
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.016,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00495,
+        "pan": [
+          0.0,
+          0.218
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.1,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00536,
+        "pan": [
+          0.0,
+          0.236
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.184,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00579,
+        "pan": [
+          0.0,
+          0.255
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.268,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00623,
+        "pan": [
+          0.0,
+          0.275
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.352,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00668,
+        "pan": [
+          0.0,
+          0.295
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.436,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00715,
+        "pan": [
+          0.0,
+          0.316
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.52,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00764,
+        "pan": [
+          0.0,
+          0.337
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.574,
+      "target": "subtitle",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 2.604,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00814,
+        "pan": [
+          0.0,
+          0.359
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.688,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00865,
+        "pan": [
+          0.0,
+          0.382
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.724,
+      "target": "subtitle",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.125,
+      "camera": null
+    },
+    {
+      "time": 2.772,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00918,
+        "pan": [
+          0.0,
+          0.405
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.856,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.00972,
+        "pan": [
+          0.0,
+          0.429
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 2.874,
+      "target": "subtitle",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5,
+      "camera": null
+    },
+    {
+      "time": 2.94,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01027,
+        "pan": [
+          0.0,
+          0.453
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.024,
+      "target": "subtitle",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.875,
+      "camera": null
+    },
+    {
+      "time": 3.024,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01084,
+        "pan": [
+          0.0,
+          0.478
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.108,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01142,
+        "pan": [
+          0.0,
+          0.504
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.174,
+      "target": "subtitle",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 3.192,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01201,
+        "pan": [
+          0.0,
+          0.53
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.276,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01262,
+        "pan": [
+          0.0,
+          0.557
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.36,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01323,
+        "pan": [
+          0.0,
+          0.584
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.444,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01386,
+        "pan": [
+          0.0,
+          0.612
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.528,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.0145,
+        "pan": [
+          0.0,
+          0.64
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.612,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01515,
+        "pan": [
+          0.0,
+          0.669
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.696,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01582,
+        "pan": [
+          0.0,
+          0.698
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.78,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01649,
+        "pan": [
+          0.0,
+          0.728
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.861,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        0.85,
+        0.85
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 3.864,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01717,
+        "pan": [
+          0.0,
+          0.758
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 3.948,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01786,
+        "pan": [
+          0.0,
+          0.788
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.032,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01857,
+        "pan": [
+          0.0,
+          0.819
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.086,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        0.86875,
+        0.86875
+      ],
+      "rotation": 0.0,
+      "opacity": 0.125,
+      "camera": null
+    },
+    {
+      "time": 4.116,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.01928,
+        "pan": [
+          0.0,
+          0.851
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.2,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02,
+        "pan": [
+          0.0,
+          0.882
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.284,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02073,
+        "pan": [
+          0.0,
+          0.915
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.311,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        0.9249999999999999,
+        0.9249999999999999
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5,
+      "camera": null
+    },
+    {
+      "time": 4.368,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02147,
+        "pan": [
+          0.0,
+          0.947
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.452,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02221,
+        "pan": [
+          0.0,
+          0.98
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.536,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        0.98125,
+        0.98125
+      ],
+      "rotation": 0.0,
+      "opacity": 0.875,
+      "camera": null
+    },
+    {
+      "time": 4.536,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02297,
+        "pan": [
+          0.0,
+          1.013
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.62,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02373,
+        "pan": [
+          0.0,
+          1.047
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.704,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.0245,
+        "pan": [
+          0.0,
+          1.081
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.761,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 4.788,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02528,
+        "pan": [
+          0.0,
+          1.115
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.872,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02606,
+        "pan": [
+          0.0,
+          1.15
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 4.956,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02685,
+        "pan": [
+          0.0,
+          1.185
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.04,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02764,
+        "pan": [
+          0.0,
+          1.22
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.124,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02844,
+        "pan": [
+          0.0,
+          1.255
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.148,
+      "target": "bullets",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 5.208,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.02924,
+        "pan": [
+          0.0,
+          1.29
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.292,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03005,
+        "pan": [
+          0.0,
+          1.326
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.298,
+      "target": "bullets",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.125,
+      "camera": null
+    },
+    {
+      "time": 5.376,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03087,
+        "pan": [
+          0.0,
+          1.362
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.448,
+      "target": "bullets",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5,
+      "camera": null
+    },
+    {
+      "time": 5.46,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03168,
+        "pan": [
+          0.0,
+          1.398
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.544,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.0325,
+        "pan": [
+          0.0,
+          1.434
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.598,
+      "target": "bullets",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.875,
+      "camera": null
+    },
+    {
+      "time": 5.628,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03333,
+        "pan": [
+          0.0,
+          1.471
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.712,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03416,
+        "pan": [
+          0.0,
+          1.507
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.748,
+      "target": "bullets",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 5.796,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03499,
+        "pan": [
+          0.0,
+          1.544
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.88,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03582,
+        "pan": [
+          0.0,
+          1.581
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 5.964,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03665,
+        "pan": [
+          0.0,
+          1.617
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.048,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03749,
+        "pan": [
+          0.0,
+          1.654
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.132,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03832,
+        "pan": [
+          0.0,
+          1.691
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.216,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.03916,
+        "pan": [
+          0.0,
+          1.728
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.3,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04,
+        "pan": [
+          0.0,
+          1.765
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.384,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04084,
+        "pan": [
+          0.0,
+          1.802
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.435,
+      "target": "legend",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 6.468,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04168,
+        "pan": [
+          0.0,
+          1.839
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.552,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04251,
+        "pan": [
+          0.0,
+          1.876
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.585,
+      "target": "legend",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.125,
+      "camera": null
+    },
+    {
+      "time": 6.636,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04335,
+        "pan": [
+          0.0,
+          1.913
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.72,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04418,
+        "pan": [
+          0.0,
+          1.949
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.735,
+      "target": "legend",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5,
+      "camera": null
+    },
+    {
+      "time": 6.804,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04501,
+        "pan": [
+          0.0,
+          1.986
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.885,
+      "target": "legend",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.875,
+      "camera": null
+    },
+    {
+      "time": 6.888,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04584,
+        "pan": [
+          0.0,
+          2.023
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 6.93,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 6.972,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04667,
+        "pan": [
+          0.0,
+          2.059
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.035,
+      "target": "legend",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 7.056,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.0475,
+        "pan": [
+          0.0,
+          2.096
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.13,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        1.0212132034355965,
+        1.0212132034355965
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 7.14,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04832,
+        "pan": [
+          0.0,
+          2.132
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.224,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04913,
+        "pan": [
+          0.0,
+          2.168
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.308,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.04995,
+        "pan": [
+          0.0,
+          2.204
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.33,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 7.392,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05076,
+        "pan": [
+          0.0,
+          2.24
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.476,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05156,
+        "pan": [
+          0.0,
+          2.275
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.53,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        0.9787867965644036,
+        0.9787867965644036
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 7.56,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05236,
+        "pan": [
+          0.0,
+          2.31
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.644,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05315,
+        "pan": [
+          0.0,
+          2.345
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.722,
+      "target": "footer",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 7.728,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05394,
+        "pan": [
+          0.0,
+          2.38
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.73,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 7.812,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05472,
+        "pan": [
+          0.0,
+          2.415
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.872,
+      "target": "footer",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.125,
+      "camera": null
+    },
+    {
+      "time": 7.896,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.0555,
+        "pan": [
+          0.0,
+          2.449
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 7.98,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05627,
+        "pan": [
+          0.0,
+          2.483
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.022,
+      "target": "footer",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5,
+      "camera": null
+    },
+    {
+      "time": 8.064,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05703,
+        "pan": [
+          0.0,
+          2.517
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.148,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05779,
+        "pan": [
+          0.0,
+          2.55
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.172,
+      "target": "footer",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.875,
+      "camera": null
+    },
+    {
+      "time": 8.232,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05853,
+        "pan": [
+          0.0,
+          2.583
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.316,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.05927,
+        "pan": [
+          0.0,
+          2.615
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.322,
+      "target": "footer",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 8.4,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06,
+        "pan": [
+          0.0,
+          2.647
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.484,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06072,
+        "pan": [
+          0.0,
+          2.679
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.568,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06143,
+        "pan": [
+          0.0,
+          2.711
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.652,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06214,
+        "pan": [
+          0.0,
+          2.742
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.736,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06283,
+        "pan": [
+          0.0,
+          2.772
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.82,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06351,
+        "pan": [
+          0.0,
+          2.802
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.904,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06418,
+        "pan": [
+          0.0,
+          2.832
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 8.988,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06485,
+        "pan": [
+          0.0,
+          2.861
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.072,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.0655,
+        "pan": [
+          0.0,
+          2.89
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.156,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06614,
+        "pan": [
+          0.0,
+          2.918
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.24,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06677,
+        "pan": [
+          0.0,
+          2.946
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.324,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06738,
+        "pan": [
+          0.0,
+          2.973
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.408,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06799,
+        "pan": [
+          0.0,
+          3.0
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.492,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06858,
+        "pan": [
+          0.0,
+          3.026
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.576,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06916,
+        "pan": [
+          0.0,
+          3.052
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.66,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.06973,
+        "pan": [
+          0.0,
+          3.077
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.744,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07028,
+        "pan": [
+          0.0,
+          3.101
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.828,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07082,
+        "pan": [
+          0.0,
+          3.125
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.912,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07135,
+        "pan": [
+          0.0,
+          3.148
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 9.996,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07186,
+        "pan": [
+          0.0,
+          3.171
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.08,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07236,
+        "pan": [
+          0.0,
+          3.193
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.164,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07285,
+        "pan": [
+          0.0,
+          3.214
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.248,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07332,
+        "pan": [
+          0.0,
+          3.235
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.332,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07377,
+        "pan": [
+          0.0,
+          3.255
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.416,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07421,
+        "pan": [
+          0.0,
+          3.275
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.5,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07464,
+        "pan": [
+          0.0,
+          3.294
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.584,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07505,
+        "pan": [
+          0.0,
+          3.312
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.668,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07545,
+        "pan": [
+          0.0,
+          3.329
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.752,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07583,
+        "pan": [
+          0.0,
+          3.346
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.836,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07619,
+        "pan": [
+          0.0,
+          3.362
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 10.92,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07654,
+        "pan": [
+          0.0,
+          3.377
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.004,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07687,
+        "pan": [
+          0.0,
+          3.392
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.088,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07719,
+        "pan": [
+          0.0,
+          3.406
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.172,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07749,
+        "pan": [
+          0.0,
+          3.419
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.256,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07778,
+        "pan": [
+          0.0,
+          3.432
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.34,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07804,
+        "pan": [
+          0.0,
+          3.444
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.424,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07829,
+        "pan": [
+          0.0,
+          3.455
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.508,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07853,
+        "pan": [
+          0.0,
+          3.465
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.592,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07874,
+        "pan": [
+          0.0,
+          3.475
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.676,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07894,
+        "pan": [
+          0.0,
+          3.483
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.76,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07913,
+        "pan": [
+          0.0,
+          3.491
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.844,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07929,
+        "pan": [
+          0.0,
+          3.499
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 11.928,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07944,
+        "pan": [
+          0.0,
+          3.505
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 12.012,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07957,
+        "pan": [
+          0.0,
+          3.511
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 12.096,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07968,
+        "pan": [
+          0.0,
+          3.516
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 12.1,
+      "target": "bullets",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 12.1,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 12.1,
+      "target": "footer",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 12.1,
+      "target": "legend",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 12.1,
+      "target": "subtitle",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 12.1,
+      "target": "title",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": null
+    },
+    {
+      "time": 12.18,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07978,
+        "pan": [
+          0.0,
+          3.52
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 12.225,
+      "target": "bullets",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5625,
+      "camera": null
+    },
+    {
+      "time": 12.225,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5625,
+      "camera": null
+    },
+    {
+      "time": 12.225,
+      "target": "footer",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5625,
+      "camera": null
+    },
+    {
+      "time": 12.225,
+      "target": "legend",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5625,
+      "camera": null
+    },
+    {
+      "time": 12.225,
+      "target": "subtitle",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5625,
+      "camera": null
+    },
+    {
+      "time": 12.225,
+      "target": "title",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.5625,
+      "camera": null
+    },
+    {
+      "time": 12.264,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07986,
+        "pan": [
+          0.0,
+          3.524
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 12.348,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07992,
+        "pan": [
+          0.0,
+          3.527
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 12.35,
+      "target": "bullets",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.25,
+      "camera": null
+    },
+    {
+      "time": 12.35,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.25,
+      "camera": null
+    },
+    {
+      "time": 12.35,
+      "target": "footer",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.25,
+      "camera": null
+    },
+    {
+      "time": 12.35,
+      "target": "legend",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.25,
+      "camera": null
+    },
+    {
+      "time": 12.35,
+      "target": "subtitle",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.25,
+      "camera": null
+    },
+    {
+      "time": 12.35,
+      "target": "title",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.25,
+      "camera": null
+    },
+    {
+      "time": 12.432,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07996,
+        "pan": [
+          0.0,
+          3.528
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 12.475,
+      "target": "bullets",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0625,
+      "camera": null
+    },
+    {
+      "time": 12.475,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0625,
+      "camera": null
+    },
+    {
+      "time": 12.475,
+      "target": "footer",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0625,
+      "camera": null
+    },
+    {
+      "time": 12.475,
+      "target": "legend",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0625,
+      "camera": null
+    },
+    {
+      "time": 12.475,
+      "target": "subtitle",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0625,
+      "camera": null
+    },
+    {
+      "time": 12.475,
+      "target": "title",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0625,
+      "camera": null
+    },
+    {
+      "time": 12.516,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.07999,
+        "pan": [
+          0.0,
+          3.53
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    },
+    {
+      "time": 12.6,
+      "target": "bullets",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 12.6,
+      "target": "diagram_main",
+      "position": [
+        448.48,
+        192.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 12.6,
+      "target": "footer",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 12.6,
+      "target": "legend",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 12.6,
+      "target": "subtitle",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 12.6,
+      "target": "title",
+      "position": [
+        80.0,
+        200.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 0.0,
+      "camera": null
+    },
+    {
+      "time": 12.6,
+      "target": "__camera__",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "camera": {
+        "camera_type": "ken_burns",
+        "zoom": 1.08,
+        "pan": [
+          0.0,
+          3.53
+        ],
+        "focus_region": [
+          0.350375,
+          0.26666666666666666,
+          0.29924999999999996,
+          0.5319999999999999
+        ]
+      }
+    }
+  ],
+  "camera_events": [
+    {
+      "event_id": "39d8860b-898e-417f-8293-4866657a4e75",
+      "camera_type": "ken_burns",
+      "start_time": 0.0,
+      "end_time": 12.6,
+      "zoom": 1.08,
+      "pan": [
+        0.0,
+        3.53
+      ],
+      "focus_region": [
+        0.350375,
+        0.26666666666666666,
+        0.29924999999999996,
+        0.5319999999999999
+      ],
+      "follow_target": "diagram_main",
+      "easing": "ease-in-out-sine"
+    }
+  ],
+  "transitions": [
+    {
+      "transition_id": "bd64a3b3-b479-4284-acf1-4d7e0ca89f89",
+      "transition_type": "crossfade",
+      "start_time": 0.0,
+      "end_time": 0.5,
+      "duration": 0.5,
+      "phase": "entry",
+      "easing": "ease-in-out"
+    },
+    {
+      "transition_id": "1dc19376-2ecb-45e1-b6a6-d1ff2933efd2",
+      "transition_type": "dissolve",
+      "start_time": 12.12,
+      "end_time": 12.6,
+      "duration": 0.48,
+      "phase": "exit",
+      "easing": "ease-in-out"
+    }
+  ],
+  "renderer_hints": {
+    "compatible": [
+      "moviepy",
+      "remotion",
+      "manim",
+      "ffmpeg",
+      "opengl"
+    ]
+  }
+}

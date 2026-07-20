@@ -1,0 +1,27 @@
+{
+  "video_id": "687b7025-ee8f-4bca-b39c-12fd7d820db1",
+  "scene_id": "09c61b62-8a7a-41da-840b-b3bda96d1865",
+  "scene_name": "Planet Earth",
+  "fps": 30,
+  "duration": 6.0,
+  "resolution": [
+    1280,
+    720
+  ],
+  "codec": "libvpx-vp9",
+  "bitrate_mbps": 2.0,
+  "frame_count": 180,
+  "render_profile": "preview",
+  "encoding_time_seconds": 4.949,
+  "video_size_bytes": 153337,
+  "thumbnail_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\audit\\Volcano\\videos\\videos\\Planet_Earth\\thumbnail.png",
+  "mp4_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\audit\\Volcano\\videos\\videos\\Planet_Earth\\video.mp4",
+  "webm_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\audit\\Volcano\\videos\\videos\\Planet_Earth\\video.webm",
+  "output_directory": "C:\\Users\\hp\\ExplainX\\backend\\output\\audit\\Volcano\\videos\\videos\\Planet_Earth",
+  "metadata_path": null,
+  "created_at": "2026-07-20T10:49:27.059033+00:00",
+  "formats": [
+    "mp4",
+    "webm"
+  ]
+}

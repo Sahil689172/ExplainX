@@ -1,0 +1,83 @@
+{
+  "diagram_id": "96dc03a9-67a1-4a0f-9302-865beebe39d3",
+  "concept": "Earth",
+  "subject": "Geography",
+  "diagram_type": "object",
+  "canvas_size": [
+    1168,
+    1184
+  ],
+  "labels": [
+    {
+      "id": "label_core",
+      "text": "Core",
+      "x": 530.0,
+      "y": 164.95,
+      "anchor_id": "core"
+    },
+    {
+      "id": "label_mantle",
+      "text": "Mantle",
+      "x": 876.6266678647216,
+      "y": 765.325,
+      "anchor_id": "mantle"
+    },
+    {
+      "id": "label_crust",
+      "text": "Crust",
+      "x": 183.37333213527847,
+      "y": 765.3250000000003,
+      "anchor_id": "crust"
+    }
+  ],
+  "arrows": [
+    {
+      "id": "arrow_core",
+      "style": "leader",
+      "start": [
+        545.5,
+        189.75
+      ],
+      "end": [
+        584.0,
+        603.95
+      ],
+      "label_id": "label_core",
+      "anchor_id": "core"
+    },
+    {
+      "id": "arrow_mantle",
+      "style": "leader",
+      "start": [
+        870.6266678647216,
+        775.725
+      ],
+      "end": [
+        485.75,
+        538.45
+      ],
+      "label_id": "label_mantle",
+      "anchor_id": "mantle"
+    },
+    {
+      "id": "arrow_crust",
+      "style": "leader",
+      "start": [
+        223.37333213527847,
+        775.7250000000003
+      ],
+      "end": [
+        662.6,
+        492.6
+      ],
+      "label_id": "label_crust",
+      "anchor_id": "crust"
+    }
+  ],
+  "theme": "textbook",
+  "created_at": "2026-07-20T11:06:49.285771+00:00",
+  "export_format": "png,svg",
+  "concept_id": "concept-earth",
+  "asset_version": null,
+  "illustration_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\images\\Planet_Earth_base.png"
+}

@@ -1,0 +1,244 @@
+{
+  "timeline_id": "530a4a23-2d61-4880-9680-44b9301a96a6",
+  "scene_id": "7b4c7625-1959-4a14-aea4-bb2110bc5474",
+  "scene_title": "Earth's Layers",
+  "duration": 14.4,
+  "fps": 30,
+  "preset_id": "educational_diagram",
+  "created_at": "2026-07-20T11:06:49.412385+00:00",
+  "transitions": [
+    {
+      "transition_id": "e3d005c3-8e4e-4a1e-91ba-917330b5a27c",
+      "transition_type": "crossfade",
+      "start_time": 0.0,
+      "end_time": 0.5,
+      "duration": 0.5,
+      "phase": "entry",
+      "easing": "ease-in-out"
+    },
+    {
+      "transition_id": "8e1fba99-c3ca-4670-b568-18896047fc57",
+      "transition_type": "dissolve",
+      "start_time": 13.92,
+      "end_time": 14.4,
+      "duration": 0.48,
+      "phase": "exit",
+      "easing": "ease-in-out"
+    }
+  ],
+  "camera_events": [
+    {
+      "event_id": "47f89e27-e674-41b3-80b3-a2a553947a68",
+      "camera_type": "ken_burns",
+      "start_time": 0.0,
+      "end_time": 14.4,
+      "zoom": 1.1,
+      "pan": [
+        -37.81,
+        13.04
+      ],
+      "focus_region": [
+        0.07018750000000003,
+        0.26666666666666666,
+        0.415625,
+        0.7388888888888889
+      ],
+      "follow_target": "diagram_main",
+      "easing": "ease-in-out-sine"
+    }
+  ],
+  "appearance_order": [
+    "bg",
+    "title",
+    "subtitle",
+    "diagram_main",
+    "diagram_main",
+    "bullets",
+    "legend",
+    "footer"
+  ],
+  "elements": [
+    {
+      "animation_id": "aa51ed3f-2017-40cc-ad77-af9a37ed2219",
+      "target": "bg",
+      "animation_type": "fade_in",
+      "start_time": 0.0,
+      "end_time": 0.6,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.0,
+      "metadata": {
+        "component_type": "background"
+      }
+    },
+    {
+      "animation_id": "6bbf7120-5ca1-4438-a414-dc327d0ad8ec",
+      "target": "title",
+      "animation_type": "slide_down",
+      "start_time": 1.471,
+      "end_time": 2.071,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.134,
+      "metadata": {
+        "component_type": "title"
+      }
+    },
+    {
+      "animation_id": "a8aef32d-edf3-4c08-9016-59e4467c498b",
+      "target": "title",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "69b1d44a-4246-4006-810f-ba2fe088731f",
+      "target": "subtitle",
+      "animation_type": "fade_in",
+      "start_time": 2.941,
+      "end_time": 3.541,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.267,
+      "metadata": {
+        "component_type": "subtitle"
+      }
+    },
+    {
+      "animation_id": "b8684986-42c5-41b7-a30b-6d41f4e48669",
+      "target": "subtitle",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "dbccae08-8b81-4965-8a84-192b64c1e846",
+      "target": "diagram_main",
+      "animation_type": "zoom_in",
+      "start_time": 4.412,
+      "end_time": 5.312,
+      "duration": 0.9,
+      "easing": "ease-in-out",
+      "delay": 0.401,
+      "metadata": {
+        "component_type": "diagram"
+      }
+    },
+    {
+      "animation_id": "99be7c59-4611-4a84-af56-ee2868314644",
+      "target": "diagram_main",
+      "animation_type": "highlight",
+      "start_time": 7.92,
+      "end_time": 8.72,
+      "duration": 0.8,
+      "easing": "ease-in-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "highlight"
+      }
+    },
+    {
+      "animation_id": "e41bd70e-bf33-46ab-9d44-e0ecb8b46343",
+      "target": "diagram_main",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "6e0e3ab8-d3fc-4956-adb5-9405d8afa7aa",
+      "target": "bullets",
+      "animation_type": "fade_in",
+      "start_time": 5.884,
+      "end_time": 6.484,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.535,
+      "metadata": {
+        "component_type": "bullet_list"
+      }
+    },
+    {
+      "animation_id": "98ab0549-d5a6-4496-a133-835dc114142c",
+      "target": "bullets",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "f553f045-65da-41e2-86a0-346f9ef32d01",
+      "target": "legend",
+      "animation_type": "fade_in",
+      "start_time": 7.355,
+      "end_time": 7.955,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.669,
+      "metadata": {
+        "component_type": "legend"
+      }
+    },
+    {
+      "animation_id": "c6cd33dc-7ac6-4929-b6aa-9ca7531b3f97",
+      "target": "legend",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "8fdd8eb4-631e-41b6-93f3-e00678df9b16",
+      "target": "footer",
+      "animation_type": "fade_in",
+      "start_time": 8.825,
+      "end_time": 9.425,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.802,
+      "metadata": {
+        "component_type": "footer"
+      }
+    },
+    {
+      "animation_id": "b9f9d910-d69c-48ce-8006-f67b70c6ac0f",
+      "target": "footer",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    }
+  ]
+}

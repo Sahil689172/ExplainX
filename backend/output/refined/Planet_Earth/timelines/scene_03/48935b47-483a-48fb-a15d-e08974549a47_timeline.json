@@ -1,0 +1,244 @@
+{
+  "timeline_id": "53952053-1aba-4fd1-8f60-bfd17224bced",
+  "scene_id": "48935b47-483a-48fb-a15d-e08974549a47",
+  "scene_title": "The Atmosphere",
+  "duration": 14.4,
+  "fps": 30,
+  "preset_id": "educational_diagram",
+  "created_at": "2026-07-20T11:07:29.774707+00:00",
+  "transitions": [
+    {
+      "transition_id": "018df97a-a66e-42d3-bf1d-ce163863c478",
+      "transition_type": "crossfade",
+      "start_time": 0.0,
+      "end_time": 0.5,
+      "duration": 0.5,
+      "phase": "entry",
+      "easing": "ease-in-out"
+    },
+    {
+      "transition_id": "588114e5-9eaa-4a7a-a397-8f5accf8d6d4",
+      "transition_type": "dissolve",
+      "start_time": 13.92,
+      "end_time": 14.4,
+      "duration": 0.48,
+      "phase": "exit",
+      "easing": "ease-in-out"
+    }
+  ],
+  "camera_events": [
+    {
+      "event_id": "e785cf99-ccf1-455d-b123-12fbde77cfe7",
+      "camera_type": "ken_burns",
+      "start_time": 0.0,
+      "end_time": 14.4,
+      "zoom": 1.06,
+      "pan": [
+        37.81,
+        13.04
+      ],
+      "focus_region": [
+        0.5141875,
+        0.26666666666666666,
+        0.415625,
+        0.7388888888888889
+      ],
+      "follow_target": "diagram_main",
+      "easing": "ease-in-out-sine"
+    }
+  ],
+  "appearance_order": [
+    "bg",
+    "title",
+    "subtitle",
+    "diagram_main",
+    "diagram_main",
+    "bullets",
+    "legend",
+    "footer"
+  ],
+  "elements": [
+    {
+      "animation_id": "1974b2aa-4abc-4d72-ba08-963feedbb04d",
+      "target": "bg",
+      "animation_type": "fade_in",
+      "start_time": 0.0,
+      "end_time": 0.6,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.0,
+      "metadata": {
+        "component_type": "background"
+      }
+    },
+    {
+      "animation_id": "74902ed6-19fe-4d0d-a40f-77e60d22d5b5",
+      "target": "title",
+      "animation_type": "slide_down",
+      "start_time": 1.471,
+      "end_time": 2.071,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.134,
+      "metadata": {
+        "component_type": "title"
+      }
+    },
+    {
+      "animation_id": "883a7e9f-c9f3-40f9-ba3b-35c547faf554",
+      "target": "title",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "18bb0ebe-4f45-47f3-b66b-f5ad7c130e7c",
+      "target": "subtitle",
+      "animation_type": "fade_in",
+      "start_time": 2.941,
+      "end_time": 3.541,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.267,
+      "metadata": {
+        "component_type": "subtitle"
+      }
+    },
+    {
+      "animation_id": "a09cb883-fb1c-4e24-95de-28fb3be995bc",
+      "target": "subtitle",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "98f04790-e00e-4e7f-bcd5-4a021e536e59",
+      "target": "diagram_main",
+      "animation_type": "zoom_in",
+      "start_time": 4.412,
+      "end_time": 5.312,
+      "duration": 0.9,
+      "easing": "ease-in-out",
+      "delay": 0.401,
+      "metadata": {
+        "component_type": "diagram"
+      }
+    },
+    {
+      "animation_id": "8662b22a-b6ac-46f2-94bf-a9eaf0249f98",
+      "target": "diagram_main",
+      "animation_type": "highlight",
+      "start_time": 7.92,
+      "end_time": 8.72,
+      "duration": 0.8,
+      "easing": "ease-in-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "highlight"
+      }
+    },
+    {
+      "animation_id": "0bcbc6e2-27a8-4508-932c-91c5d2b54ab1",
+      "target": "diagram_main",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "a31560a7-9f49-42d4-8ad4-e77d79ab41ff",
+      "target": "bullets",
+      "animation_type": "fade_in",
+      "start_time": 5.884,
+      "end_time": 6.484,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.535,
+      "metadata": {
+        "component_type": "bullet_list"
+      }
+    },
+    {
+      "animation_id": "6c4473a2-af1c-4c28-8b94-372eb75a7c80",
+      "target": "bullets",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "74503660-13b5-48d3-90f6-689a45085916",
+      "target": "legend",
+      "animation_type": "fade_in",
+      "start_time": 7.355,
+      "end_time": 7.955,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.669,
+      "metadata": {
+        "component_type": "legend"
+      }
+    },
+    {
+      "animation_id": "4405657b-71bc-4f84-8173-76abded331d3",
+      "target": "legend",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "72ffc8d6-035c-454e-98ae-9eaaee1c1a33",
+      "target": "footer",
+      "animation_type": "fade_in",
+      "start_time": 8.825,
+      "end_time": 9.425,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.802,
+      "metadata": {
+        "component_type": "footer"
+      }
+    },
+    {
+      "animation_id": "8eafc9f6-207e-4baa-bf85-6f86d875a36b",
+      "target": "footer",
+      "animation_type": "fade_out",
+      "start_time": 13.9,
+      "end_time": 14.4,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    }
+  ]
+}

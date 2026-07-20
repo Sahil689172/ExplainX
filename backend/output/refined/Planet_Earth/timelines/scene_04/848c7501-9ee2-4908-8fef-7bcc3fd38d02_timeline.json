@@ -1,0 +1,244 @@
+{
+  "timeline_id": "9cb48eb2-84bb-4563-9c05-64a7a1994fce",
+  "scene_id": "848c7501-9ee2-4908-8fef-7bcc3fd38d02",
+  "scene_title": "Magnetic Field",
+  "duration": 12.6,
+  "fps": 30,
+  "preset_id": "educational_diagram",
+  "created_at": "2026-07-20T11:08:09.688092+00:00",
+  "transitions": [
+    {
+      "transition_id": "db448a86-a78d-43ec-9940-eb7fdd5f130d",
+      "transition_type": "crossfade",
+      "start_time": 0.0,
+      "end_time": 0.5,
+      "duration": 0.5,
+      "phase": "entry",
+      "easing": "ease-in-out"
+    },
+    {
+      "transition_id": "009aaf01-e489-43b7-b9f0-35c37ee55e0b",
+      "transition_type": "dissolve",
+      "start_time": 12.12,
+      "end_time": 12.6,
+      "duration": 0.48,
+      "phase": "exit",
+      "easing": "ease-in-out"
+    }
+  ],
+  "camera_events": [
+    {
+      "event_id": "a2b624e1-f85a-464b-ba07-9878b2b471fe",
+      "camera_type": "ken_burns",
+      "start_time": 0.0,
+      "end_time": 12.6,
+      "zoom": 1.13,
+      "pan": [
+        0.0,
+        3.53
+      ],
+      "focus_region": [
+        0.350375,
+        0.26666666666666666,
+        0.29924999999999996,
+        0.5319999999999999
+      ],
+      "follow_target": "diagram_main",
+      "easing": "ease-in-out-sine"
+    }
+  ],
+  "appearance_order": [
+    "bg",
+    "title",
+    "subtitle",
+    "diagram_main",
+    "diagram_main",
+    "bullets",
+    "legend",
+    "footer"
+  ],
+  "elements": [
+    {
+      "animation_id": "ab9cf0fc-c8c4-4e17-a48f-18f98afde0fc",
+      "target": "bg",
+      "animation_type": "fade_in",
+      "start_time": 0.0,
+      "end_time": 0.6,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.0,
+      "metadata": {
+        "component_type": "background"
+      }
+    },
+    {
+      "animation_id": "30e9c86d-77e1-4666-90dd-f97fbd1eefab",
+      "target": "title",
+      "animation_type": "slide_down",
+      "start_time": 1.287,
+      "end_time": 1.887,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.117,
+      "metadata": {
+        "component_type": "title"
+      }
+    },
+    {
+      "animation_id": "8ecea8e0-ae06-4039-9ba1-006d24ece7ad",
+      "target": "title",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "b51b609b-eddf-49c5-a27c-d46c2a4d7592",
+      "target": "subtitle",
+      "animation_type": "fade_in",
+      "start_time": 2.574,
+      "end_time": 3.174,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.234,
+      "metadata": {
+        "component_type": "subtitle"
+      }
+    },
+    {
+      "animation_id": "5dde1d70-bf91-4c7a-942f-eebef06efa64",
+      "target": "subtitle",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "ab660997-3858-4eb8-90f3-c705cc70fda8",
+      "target": "diagram_main",
+      "animation_type": "zoom_in",
+      "start_time": 3.861,
+      "end_time": 4.761,
+      "duration": 0.9,
+      "easing": "ease-in-out",
+      "delay": 0.351,
+      "metadata": {
+        "component_type": "diagram"
+      }
+    },
+    {
+      "animation_id": "7b4fe96e-5141-45ea-be36-45e59fcdbfb0",
+      "target": "diagram_main",
+      "animation_type": "highlight",
+      "start_time": 6.93,
+      "end_time": 7.73,
+      "duration": 0.8,
+      "easing": "ease-in-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "highlight"
+      }
+    },
+    {
+      "animation_id": "08cafaa5-1f31-4495-9e5c-5219a09d1f65",
+      "target": "diagram_main",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "881f4e07-4919-46e9-87e7-a063571a9c81",
+      "target": "bullets",
+      "animation_type": "fade_in",
+      "start_time": 5.148,
+      "end_time": 5.748,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.468,
+      "metadata": {
+        "component_type": "bullet_list"
+      }
+    },
+    {
+      "animation_id": "45407738-9a7b-4442-8011-cb305f345445",
+      "target": "bullets",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "5663b75b-addc-4b94-861e-085f5384e89e",
+      "target": "legend",
+      "animation_type": "fade_in",
+      "start_time": 6.435,
+      "end_time": 7.035,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.585,
+      "metadata": {
+        "component_type": "legend"
+      }
+    },
+    {
+      "animation_id": "ec5e4fcc-49ad-4004-bbbf-350335b52e95",
+      "target": "legend",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "0b66b605-7abe-4ff0-8252-009eb03af967",
+      "target": "footer",
+      "animation_type": "fade_in",
+      "start_time": 7.722,
+      "end_time": 8.322,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.702,
+      "metadata": {
+        "component_type": "footer"
+      }
+    },
+    {
+      "animation_id": "a2f9936f-f697-4dc5-9a87-0095c0820d52",
+      "target": "footer",
+      "animation_type": "fade_out",
+      "start_time": 12.1,
+      "end_time": 12.6,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    }
+  ]
+}

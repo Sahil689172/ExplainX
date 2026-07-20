@@ -1,0 +1,26 @@
+{
+  "video_id": "238b2b8e-0f0f-40b1-907c-c2e4b96c4953",
+  "scene_id": "48935b47-483a-48fb-a15d-e08974549a47",
+  "scene_name": "The Atmosphere",
+  "fps": 30,
+  "duration": 14.4,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "codec": "libx264",
+  "bitrate_mbps": 6.0,
+  "frame_count": 432,
+  "render_profile": "standard",
+  "encoding_time_seconds": 3.67,
+  "video_size_bytes": 768815,
+  "thumbnail_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_03\\videos\\The_Atmosphere\\thumbnail.png",
+  "mp4_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_03\\videos\\The_Atmosphere\\video.mp4",
+  "webm_path": null,
+  "output_directory": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_03\\videos\\The_Atmosphere",
+  "metadata_path": null,
+  "created_at": "2026-07-20T11:08:09.560714+00:00",
+  "formats": [
+    "mp4"
+  ]
+}

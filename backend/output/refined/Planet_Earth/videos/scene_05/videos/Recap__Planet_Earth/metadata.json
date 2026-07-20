@@ -1,0 +1,26 @@
+{
+  "video_id": "be25c9cc-dda1-49e5-b5b8-00024befc1ae",
+  "scene_id": "33dfbcd3-7d20-47b3-ab43-ff431afe2312",
+  "scene_name": "Recap: Planet Earth",
+  "fps": 30,
+  "duration": 12.6,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "codec": "libx264",
+  "bitrate_mbps": 6.0,
+  "frame_count": 378,
+  "render_profile": "standard",
+  "encoding_time_seconds": 3.17,
+  "video_size_bytes": 489090,
+  "thumbnail_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_05\\videos\\Recap__Planet_Earth\\thumbnail.png",
+  "mp4_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_05\\videos\\Recap__Planet_Earth\\video.mp4",
+  "webm_path": null,
+  "output_directory": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_05\\videos\\Recap__Planet_Earth",
+  "metadata_path": null,
+  "created_at": "2026-07-20T11:09:22.079367+00:00",
+  "formats": [
+    "mp4"
+  ]
+}

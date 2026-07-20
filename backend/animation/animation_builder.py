@@ -61,6 +61,26 @@ class AnimationBuilder:
                 clip.end_time,
             )
 
+            # Educational highlight beat (Task 4/7): draw attention to the main
+            # diagram partway through the scene without disrupting other clips.
+            if comp_type == "diagram" and scene_duration > 4.0:
+                hl_start = round(scene_duration * 0.55, 3)
+                hl_end = round(min(scene_duration - self.EXIT_LEAD, hl_start + 0.8), 3)
+                if hl_end > hl_start:
+                    animations.append(
+                        AnimationClip(
+                            animation_id=str(uuid4()),
+                            target=target,
+                            animation_type=AnimationType.HIGHLIGHT,
+                            start_time=hl_start,
+                            end_time=hl_end,
+                            duration=round(hl_end - hl_start, 3),
+                            easing="ease-in-out",
+                            delay=0.0,
+                            metadata={"phase": "highlight"},
+                        )
+                    )
+
             # Exit fade for visible elements
             if preset.exit_fade and comp_type not in ("background",):
                 exit_start = max(clip.end_time, scene_duration - self.EXIT_LEAD)

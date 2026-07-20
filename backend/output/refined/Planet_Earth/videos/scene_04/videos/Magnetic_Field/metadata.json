@@ -1,0 +1,26 @@
+{
+  "video_id": "8a0790fd-144f-424e-b3c6-be311ffda3fe",
+  "scene_id": "848c7501-9ee2-4908-8fef-7bcc3fd38d02",
+  "scene_name": "Magnetic Field",
+  "fps": 30,
+  "duration": 12.6,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "codec": "libx264",
+  "bitrate_mbps": 6.0,
+  "frame_count": 378,
+  "render_profile": "standard",
+  "encoding_time_seconds": 3.438,
+  "video_size_bytes": 598495,
+  "thumbnail_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_04\\videos\\Magnetic_Field\\thumbnail.png",
+  "mp4_path": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_04\\videos\\Magnetic_Field\\video.mp4",
+  "webm_path": null,
+  "output_directory": "C:\\Users\\hp\\ExplainX\\backend\\output\\refined\\Planet_Earth\\videos\\scene_04\\videos\\Magnetic_Field",
+  "metadata_path": null,
+  "created_at": "2026-07-20T11:08:45.096991+00:00",
+  "formats": [
+    "mp4"
+  ]
+}

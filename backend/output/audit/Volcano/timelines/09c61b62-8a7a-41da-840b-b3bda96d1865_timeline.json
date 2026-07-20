@@ -1,0 +1,249 @@
+{
+  "timeline_id": "f7b6ecc2-5854-4892-a37f-4efd3e6cb0f4",
+  "scene_id": "09c61b62-8a7a-41da-840b-b3bda96d1865",
+  "scene_title": "Planet Earth",
+  "duration": 6.0,
+  "fps": 30,
+  "preset_id": "educational_diagram",
+  "created_at": "2026-07-20T10:49:07.728775+00:00",
+  "transitions": [
+    {
+      "transition_id": "6adde4aa-69b1-46c3-ae48-c6d030af61b0",
+      "transition_type": "crossfade",
+      "start_time": 0.0,
+      "end_time": 0.5,
+      "duration": 0.5,
+      "phase": "entry",
+      "easing": "ease-in-out"
+    },
+    {
+      "transition_id": "1e084c63-d13e-4416-819e-101d1d322ec6",
+      "transition_type": "dissolve",
+      "start_time": 5.52,
+      "end_time": 6.0,
+      "duration": 0.48,
+      "phase": "exit",
+      "easing": "ease-in-out"
+    }
+  ],
+  "camera_events": [
+    {
+      "event_id": "1ce87e09-263e-42c4-ab50-ff4ed710b762",
+      "camera_type": "pan",
+      "start_time": 0.0,
+      "end_time": 2.4000000000000004,
+      "zoom": 1.0,
+      "pan": [
+        0.0,
+        0.0
+      ],
+      "focus_region": [
+        0.350375,
+        0.26666666666666666,
+        0.29924999999999996,
+        0.5319999999999999
+      ],
+      "follow_target": null,
+      "easing": "ease-in-out"
+    },
+    {
+      "event_id": "0ecbd412-6297-4f72-a875-82ef8a320c66",
+      "camera_type": "ken_burns",
+      "start_time": 2.5,
+      "end_time": 4.9,
+      "zoom": 1.05,
+      "pan": [
+        0.0,
+        23.519999999999982
+      ],
+      "focus_region": [
+        0.350375,
+        0.26666666666666666,
+        0.29924999999999996,
+        0.5319999999999999
+      ],
+      "follow_target": null,
+      "easing": "ease-in-out"
+    }
+  ],
+  "appearance_order": [
+    "bg",
+    "title",
+    "subtitle",
+    "diagram_main",
+    "bullets",
+    "legend",
+    "footer"
+  ],
+  "elements": [
+    {
+      "animation_id": "11e3c47f-6ae3-4bf1-af48-7ed7fec12334",
+      "target": "bg",
+      "animation_type": "fade_in",
+      "start_time": 0.0,
+      "end_time": 0.6,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.0,
+      "metadata": {
+        "component_type": "background"
+      }
+    },
+    {
+      "animation_id": "aeef10e4-fbb7-437d-b4f7-416bfc3bf431",
+      "target": "title",
+      "animation_type": "slide_down",
+      "start_time": 0.33,
+      "end_time": 0.93,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.03,
+      "metadata": {
+        "component_type": "title"
+      }
+    },
+    {
+      "animation_id": "e23f1e86-1158-42e3-a486-54eb8bf0bde2",
+      "target": "title",
+      "animation_type": "fade_out",
+      "start_time": 5.5,
+      "end_time": 6.0,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "39aefc2b-fc7d-42f8-a452-748fe3621614",
+      "target": "subtitle",
+      "animation_type": "fade_in",
+      "start_time": 0.66,
+      "end_time": 1.26,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.06,
+      "metadata": {
+        "component_type": "subtitle"
+      }
+    },
+    {
+      "animation_id": "b4887e16-6a10-4a43-a7e8-19599d53ef8b",
+      "target": "subtitle",
+      "animation_type": "fade_out",
+      "start_time": 5.5,
+      "end_time": 6.0,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "0ce8a8d9-a77b-4b91-abd9-a476e51cdef0",
+      "target": "diagram_main",
+      "animation_type": "zoom_in",
+      "start_time": 0.99,
+      "end_time": 1.89,
+      "duration": 0.9,
+      "easing": "ease-in-out",
+      "delay": 0.09,
+      "metadata": {
+        "component_type": "diagram"
+      }
+    },
+    {
+      "animation_id": "2fe4b737-78c6-4cad-9985-0e843e183408",
+      "target": "diagram_main",
+      "animation_type": "fade_out",
+      "start_time": 5.5,
+      "end_time": 6.0,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "20407454-10b6-4e0a-bc88-dff714918166",
+      "target": "bullets",
+      "animation_type": "fade_in",
+      "start_time": 1.32,
+      "end_time": 1.92,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.12,
+      "metadata": {
+        "component_type": "bullet_list"
+      }
+    },
+    {
+      "animation_id": "75280110-ffa8-4443-a764-539c7e45b64c",
+      "target": "bullets",
+      "animation_type": "fade_out",
+      "start_time": 5.5,
+      "end_time": 6.0,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "0b4c46c8-32d4-4778-956f-1aa8071b471c",
+      "target": "legend",
+      "animation_type": "fade_in",
+      "start_time": 1.65,
+      "end_time": 2.25,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.15,
+      "metadata": {
+        "component_type": "legend"
+      }
+    },
+    {
+      "animation_id": "e659988c-b2c6-41f8-a620-63d3f14c6f3a",
+      "target": "legend",
+      "animation_type": "fade_out",
+      "start_time": 5.5,
+      "end_time": 6.0,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    },
+    {
+      "animation_id": "2a75da43-9f43-4a2f-9b21-7106570636a8",
+      "target": "footer",
+      "animation_type": "fade_in",
+      "start_time": 1.98,
+      "end_time": 2.58,
+      "duration": 0.6,
+      "easing": "ease-in-out",
+      "delay": 0.18,
+      "metadata": {
+        "component_type": "footer"
+      }
+    },
+    {
+      "animation_id": "6493e4b2-26be-4a35-b301-c290b2a59a93",
+      "target": "footer",
+      "animation_type": "fade_out",
+      "start_time": 5.5,
+      "end_time": 6.0,
+      "duration": 0.5,
+      "easing": "ease-out",
+      "delay": 0.0,
+      "metadata": {
+        "phase": "exit"
+      }
+    }
+  ]
+}
