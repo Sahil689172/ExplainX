@@ -57,7 +57,15 @@ from app.services.visual_intelligence.schemas import (
     VisualIntent,
     VisualType,
 )
-from app.services.visual_intelligence.service import ScenePlan, VisualIntelligenceService
+from app.services.visual_intelligence.service import (
+    ScenePlan,
+    VisualIntelligenceService,
+    prospective_cache_key,
+)
+from app.services.visual_intelligence.timeline_adapter import (
+    scene_plan_to_timeline_scene,
+    scene_plans_to_timeline_scenes,
+)
 
 __all__ = [
     "AssetCache",
@@ -84,5 +92,8 @@ __all__ = [
     "default_registry",
     "plan_script",
     "plan_script_as_dicts",
+    "prospective_cache_key",
+    "scene_plan_to_timeline_scene",
+    "scene_plans_to_timeline_scenes",
     "script_to_scene_inputs",
 ]

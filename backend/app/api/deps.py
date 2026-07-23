@@ -17,6 +17,7 @@ from app.features.input.service import InputService
 from app.features.presentation.service import PresentationPlanService
 from app.features.projects.service import ProjectService
 from app.features.script.service import ContentIntelligenceService
+from app.features.visual_intelligence.service import VisualIntelligenceAppService
 
 
 def settings_dep() -> Settings:
@@ -69,6 +70,11 @@ def get_content_intelligence_service(
 ) -> ContentIntelligenceService:
     """Inject ContentIntelligenceService (Phase 3 — EducationalScript)."""
     return ContentIntelligenceService(session, settings)
+
+
+def get_visual_intelligence_service() -> VisualIntelligenceAppService:
+    """Inject the Visual Intelligence feature service (additive; no LLM/image gen)."""
+    return VisualIntelligenceAppService()
 
 
 # Backward-compatible aliases
