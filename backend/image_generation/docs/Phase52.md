@@ -28,7 +28,9 @@ GenerationRequest
 
 ```bat
 cd backend
-python test_openvino_backend.py
+python -m image_generation.tests.test_openvino_backend
 ```
+
+(Historical thin shim archived under `backend/archive/smoke_shims/`.)
 
 Stub-only wiring (no inference): `set EXPLAINX_OPEN_VINO_STUB=1`

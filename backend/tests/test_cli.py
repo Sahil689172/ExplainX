@@ -79,10 +79,14 @@ def test_cli_topic_end_to_end(_test_env: Path) -> None:
 
 def test_cli_script_file_end_to_end(_test_env: Path, tmp_path: Path) -> None:
     script_file = tmp_path / "custom.txt"
-    script_file.write_text(
-        "Hello class. We will study recursion with clear examples today.",
-        encoding="utf-8",
+    # Author scripts must meet MVP duration (≥60s ≈ 140+ words); QA cannot rewrite them.
+    paragraph = (
+        "Hello class. Today we will study recursion with clear examples. "
+        "Recursion means a function calls itself with a smaller problem until "
+        "it reaches a simple base case. We will walk through a call stack, "
+        "show how return values build up, and compare recursion to loops. "
     )
+    script_file.write_text((paragraph * 8).strip(), encoding="utf-8")
     code = main(["script", str(script_file), "--title", "Recursion Lesson"])
     assert code == EXIT_OK
     projects = list((_test_env / "projects").iterdir())

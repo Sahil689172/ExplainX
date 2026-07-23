@@ -15,13 +15,16 @@ from app.features.renderer.camera_schemas import CameraConfig, CameraType, Viewp
 from app.features.renderer.camera_service import CameraService, default_camera_config
 from app.features.renderer.easing import apply_easing, ease_in_out, linear
 
-# Minimal valid 1×1 PNG (red pixel).
-_MINIMAL_PNG = bytes(
-    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
-    b"\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx"
-    b"\x9cc\xf8\xcf\xc0\x00\x00\x00\x03\x00\x01\x00\x05\xfe\xd4\xef"
-    b"\x00\x00\x00\x00IEND\xaeB`\x82"
-)
+def _minimal_png(*, size: tuple[int, int] = (2, 2)) -> bytes:
+    """Return a Pillow-valid solid RGB PNG (even size by default for libx264)."""
+    pytest.importorskip("PIL")
+    from io import BytesIO
+
+    from PIL import Image
+
+    buf = BytesIO()
+    Image.new("RGB", size, (200, 0, 0)).save(buf, format="PNG")
+    return buf.getvalue()
 
 
 def _settings(tmp_path: Path, **overrides: object) -> Settings:
@@ -201,9 +204,9 @@ def test_render_frame_writes_output(tmp_path: Path) -> None:
     from app.features.renderer.frame_renderer import render_frame
 
     source = tmp_path / "src.png"
-    source.write_bytes(_MINIMAL_PNG)
+    source.write_bytes(_minimal_png(size=(2, 2)))
     dest = tmp_path / "frame.png"
-    viewport = Viewport(x=0.0, y=0.0, width=1.0, height=1.0)
+    viewport = Viewport(x=0.0, y=0.0, width=2.0, height=2.0)
     render_frame(
         source_image=source,
         viewport=viewport,

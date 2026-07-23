@@ -51,7 +51,7 @@ def test_schema_comes_from_alembic_not_create_all(client: TestClient) -> None:
     assert inspector.has_table("alembic_version")
     with engine.connect() as conn:
         version = conn.exec_driver_sql("SELECT version_num FROM alembic_version").scalar()
-    assert version == "20260711_001"
+    assert version == "20260713_002"
 
 
 def test_settings_patch_is_partial(client: TestClient) -> None:

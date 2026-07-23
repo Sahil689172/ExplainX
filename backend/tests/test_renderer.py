@@ -22,13 +22,17 @@ from app.features.renderer.frame_renderer import (
 from app.features.renderer.schemas import RenderConfig, RenderMetadata
 from app.features.renderer.service import RenderService
 
-# Minimal valid 1×1 PNG (red pixel).
-_MINIMAL_PNG = bytes(
-    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
-    b"\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx"
-    b"\x9cc\xf8\xcf\xc0\x00\x00\x00\x03\x00\x01\x00\x05\xfe\xd4\xef"
-    b"\x00\x00\x00\x00IEND\xaeB`\x82"
-)
+# Pillow-generated PNG fixtures (hand-rolled bytes break on newer Pillow).
+def _minimal_png(*, size: tuple[int, int] = (2, 2)) -> bytes:
+    """Return a valid solid RGB PNG. Default 2×2 keeps libx264 even-dim rules happy."""
+    pytest.importorskip("PIL")
+    from io import BytesIO
+
+    from PIL import Image
+
+    buf = BytesIO()
+    Image.new("RGB", size, (200, 0, 0)).save(buf, format="PNG")
+    return buf.getvalue()
 
 
 def _settings(tmp_path: Path, **overrides: object) -> Settings:
@@ -40,6 +44,10 @@ def _settings(tmp_path: Path, **overrides: object) -> Settings:
         "default_duration_seconds": 2,
         "frame_output_format": "png",
         "ffmpeg_executable": "ffmpeg",
+        # Pin camera so host env DEFAULT_CAMERA cannot flake the suite.
+        "default_camera": "center",
+        "default_zoom": 1.0,
+        "default_easing": "ease_in_out",
     }
     base.update(overrides)
     return Settings(**base)
@@ -51,13 +59,13 @@ def _seed_project_image(tmp_path: Path, project_id: str, name: str = "plant.png"
     assets = root / "assets"
     assets.mkdir(parents=True, exist_ok=True)
     image = assets / name
-    image.write_bytes(_MINIMAL_PNG)
+    image.write_bytes(_minimal_png(size=(4, 4)))
     return image
 
 
 def test_read_png_resolution(tmp_path: Path) -> None:
     image = tmp_path / "test.png"
-    image.write_bytes(_MINIMAL_PNG)
+    image.write_bytes(_minimal_png(size=(1, 1)))
     assert read_image_resolution(image) == (1, 1)
 
 
@@ -89,7 +97,8 @@ def test_discover_input_image_missing_raises(tmp_path: Path) -> None:
 
 def test_generate_identical_frames(tmp_path: Path) -> None:
     source = tmp_path / "source.png"
-    source.write_bytes(_MINIMAL_PNG)
+    payload = _minimal_png(size=(4, 4))
+    source.write_bytes(payload)
     frames_dir = tmp_path / "frames"
     config = RenderConfig(fps=3, duration_sec=2, frame_format="png")
     count = generate_identical_frames(
@@ -100,7 +109,7 @@ def test_generate_identical_frames(tmp_path: Path) -> None:
     assert count == 6
     assert (frames_dir / "000001.png").is_file()
     assert (frames_dir / "000006.png").is_file()
-    assert (frames_dir / "000001.png").read_bytes() == _MINIMAL_PNG
+    assert (frames_dir / "000001.png").read_bytes() == payload
 
 
 def test_render_metadata_roundtrip() -> None:
@@ -120,7 +129,7 @@ def test_render_metadata_roundtrip() -> None:
 def test_export_video_invokes_ffmpeg(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     frames_dir = tmp_path / "frames"
     frames_dir.mkdir()
-    (frames_dir / "000001.png").write_bytes(_MINIMAL_PNG)
+    (frames_dir / "000001.png").write_bytes(_minimal_png(size=(4, 4)))
     output = tmp_path / "video.mp4"
     config = RenderConfig(fps=3, duration_sec=1, frame_format="png")
 
@@ -142,7 +151,7 @@ def test_export_video_invokes_ffmpeg(tmp_path: Path, monkeypatch: pytest.MonkeyP
 def test_export_video_failure_raises(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     frames_dir = tmp_path / "frames"
     frames_dir.mkdir()
-    (frames_dir / "000001.png").write_bytes(_MINIMAL_PNG)
+    (frames_dir / "000001.png").write_bytes(_minimal_png(size=(4, 4)))
     output = tmp_path / "video.mp4"
     config = RenderConfig(fps=3, duration_sec=1, frame_format="png")
 
@@ -176,8 +185,9 @@ def test_render_service_creates_artifacts(tmp_path: Path, monkeypatch: pytest.Mo
         config = kwargs["config"]
         ext = config.frame_format
         frames_dir.mkdir(parents=True, exist_ok=True)
+        payload = _minimal_png(size=(4, 4))
         for index in range(1, config.frame_count + 1):
-            (frames_dir / f"{index:06d}.{ext}").write_bytes(_MINIMAL_PNG)
+            (frames_dir / f"{index:06d}.{ext}").write_bytes(payload)
         return config.frame_count
 
     monkeypatch.setattr(

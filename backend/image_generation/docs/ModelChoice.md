@@ -49,7 +49,7 @@ Engine / router / protocols stay model-agnostic. Only config + ModelManager + Op
 ```bat
 cd backend
 pip install openvino openvino-genai "optimum[openvino]" huggingface-hub pillow
-python test_openvino_backend.py
+python -m image_generation.tests.test_openvino_backend
 ```
 
 ModelManager downloads the official repo into `models/openvino_sd15` if missing and reuses the Hub cache under `models/cache`.

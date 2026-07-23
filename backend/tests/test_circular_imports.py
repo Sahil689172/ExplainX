@@ -26,7 +26,13 @@ def test_scene_builder_has_no_quality_or_ollama_import() -> None:
 
     source = Path(builder_mod.__file__).read_text(encoding="utf-8")
     assert "app.features.quality" not in source
-    assert "ollama" not in source
+    # Metadata may mention the string key "ollama_model"; forbid import lines only.
+    import_lines = [
+        line
+        for line in source.splitlines()
+        if line.lstrip().startswith(("import ", "from "))
+    ]
+    assert all("ollama" not in line for line in import_lines)
 
 
 def test_section_generation_service_has_no_quality_import() -> None:
