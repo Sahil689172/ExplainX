@@ -1,0 +1,123 @@
+{
+  "scene_id": "demo-infographic",
+  "generator": "infographic",
+  "status": "generated",
+  "cache_hit": false,
+  "content_hash": "58b85492a2ed9be488a63e682e59a9790cc17f6e596601599716137e3b8ae888",
+  "generation_time_sec": 0.007,
+  "detail": "infographic 4 panels",
+  "metadata": {
+    "scene_id": "demo-infographic",
+    "generator": "infographic",
+    "asset_type": "infographic",
+    "content_hash": "58b85492a2ed9be488a63e682e59a9790cc17f6e596601599716137e3b8ae888",
+    "style": "educational",
+    "theme": "light",
+    "language": "en",
+    "width": 960,
+    "height": 540,
+    "generation_time_sec": 0.007,
+    "cache_hit": false,
+    "source_visual_type": "mixed",
+    "source_renderer": "svg",
+    "layers": [
+      "background",
+      "icons",
+      "labels"
+    ],
+    "extra": {
+      "panels": [
+        "Idea",
+        "Fact",
+        "Tip",
+        "Summary"
+      ]
+    }
+  },
+  "assets": [
+    {
+      "asset_id": "cf0e1581-dd80-4c78-be8d-e1fd11c2996f",
+      "scene_id": "demo-infographic",
+      "asset_type": "infographic",
+      "format": "svg",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\demo-infographic\\demo-infographic_infographic.svg",
+      "generator": "infographic",
+      "status": "generated",
+      "content_hash": "58b85492a2ed9be488a63e682e59a9790cc17f6e596601599716137e3b8ae888",
+      "width": null,
+      "height": null,
+      "generation_time_sec": 0.007,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "demo-infographic",
+        "generator": "infographic",
+        "asset_type": "infographic",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.007,
+        "cache_hit": false,
+        "source_visual_type": "mixed",
+        "source_renderer": "svg",
+        "layers": [
+          "background",
+          "icons",
+          "labels"
+        ],
+        "extra": {
+          "panels": [
+            "Idea",
+            "Fact",
+            "Tip",
+            "Summary"
+          ]
+        }
+      }
+    },
+    {
+      "asset_id": "1d35ba8a-d0f4-42bd-979f-e7306a99c0ba",
+      "scene_id": "demo-infographic",
+      "asset_type": "infographic",
+      "format": "png",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\demo-infographic\\demo-infographic_infographic.png",
+      "generator": "infographic",
+      "status": "generated",
+      "content_hash": "58b85492a2ed9be488a63e682e59a9790cc17f6e596601599716137e3b8ae888",
+      "width": 960,
+      "height": 540,
+      "generation_time_sec": 0.007,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "demo-infographic",
+        "generator": "infographic",
+        "asset_type": "infographic",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.007,
+        "cache_hit": false,
+        "source_visual_type": "mixed",
+        "source_renderer": "svg",
+        "layers": [
+          "background",
+          "icons",
+          "labels"
+        ],
+        "extra": {
+          "panels": [
+            "Idea",
+            "Fact",
+            "Tip",
+            "Summary"
+          ]
+        }
+      }
+    }
+  ]
+}

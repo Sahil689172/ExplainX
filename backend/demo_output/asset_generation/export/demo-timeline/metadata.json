@@ -1,0 +1,165 @@
+{
+  "scene_id": "demo-timeline",
+  "generator": "mermaid",
+  "status": "generated",
+  "cache_hit": false,
+  "content_hash": "0d5639a54bc2c89f2de74d68883d3309e99b359fe1d6c106e0da797ae12ed869",
+  "generation_time_sec": 0.009,
+  "detail": "mermaid timeline with 4 nodes",
+  "metadata": {
+    "scene_id": "demo-timeline",
+    "generator": "mermaid",
+    "asset_type": "flowchart",
+    "content_hash": "0d5639a54bc2c89f2de74d68883d3309e99b359fe1d6c106e0da797ae12ed869",
+    "style": "educational",
+    "theme": "light",
+    "language": "en",
+    "width": 960,
+    "height": 540,
+    "generation_time_sec": 0.009,
+    "cache_hit": false,
+    "source_visual_type": "timeline",
+    "source_renderer": "svg",
+    "layers": [
+      "diagram",
+      "labels"
+    ],
+    "extra": {
+      "diagram_kind": "timeline",
+      "nodes": [
+        "Demo timeline",
+        "Era",
+        "Event",
+        "Milestone"
+      ]
+    }
+  },
+  "assets": [
+    {
+      "asset_id": "f59e57a1-1eff-4dc1-b3d5-0341a42a4c5d",
+      "scene_id": "demo-timeline",
+      "asset_type": "flowchart",
+      "format": "mmd",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\demo-timeline\\demo-timeline.mmd",
+      "generator": "mermaid",
+      "status": "generated",
+      "content_hash": "0d5639a54bc2c89f2de74d68883d3309e99b359fe1d6c106e0da797ae12ed869",
+      "width": null,
+      "height": null,
+      "generation_time_sec": 0.009,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "demo-timeline",
+        "generator": "mermaid",
+        "asset_type": "flowchart",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.009,
+        "cache_hit": false,
+        "source_visual_type": "timeline",
+        "source_renderer": "svg",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "diagram_kind": "timeline",
+          "nodes": [
+            "Demo timeline",
+            "Era",
+            "Event",
+            "Milestone"
+          ]
+        }
+      }
+    },
+    {
+      "asset_id": "54180f49-4e86-4102-b6b0-2a623109108a",
+      "scene_id": "demo-timeline",
+      "asset_type": "flowchart",
+      "format": "svg",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\demo-timeline\\demo-timeline.svg",
+      "generator": "mermaid",
+      "status": "generated",
+      "content_hash": "0d5639a54bc2c89f2de74d68883d3309e99b359fe1d6c106e0da797ae12ed869",
+      "width": 960,
+      "height": 540,
+      "generation_time_sec": 0.009,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "demo-timeline",
+        "generator": "mermaid",
+        "asset_type": "flowchart",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.009,
+        "cache_hit": false,
+        "source_visual_type": "timeline",
+        "source_renderer": "svg",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "diagram_kind": "timeline",
+          "nodes": [
+            "Demo timeline",
+            "Era",
+            "Event",
+            "Milestone"
+          ]
+        }
+      }
+    },
+    {
+      "asset_id": "dd095cb0-e241-46eb-a35f-f172fdb44373",
+      "scene_id": "demo-timeline",
+      "asset_type": "flowchart",
+      "format": "png",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\demo-timeline\\demo-timeline.png",
+      "generator": "mermaid",
+      "status": "generated",
+      "content_hash": "0d5639a54bc2c89f2de74d68883d3309e99b359fe1d6c106e0da797ae12ed869",
+      "width": 960,
+      "height": 540,
+      "generation_time_sec": 0.009,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "demo-timeline",
+        "generator": "mermaid",
+        "asset_type": "flowchart",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.009,
+        "cache_hit": false,
+        "source_visual_type": "timeline",
+        "source_renderer": "svg",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "diagram_kind": "timeline",
+          "nodes": [
+            "Demo timeline",
+            "Era",
+            "Event",
+            "Milestone"
+          ]
+        }
+      }
+    }
+  ]
+}

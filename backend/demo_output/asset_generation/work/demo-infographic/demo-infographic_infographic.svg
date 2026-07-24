@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960px" height="540px" viewBox="0 0 960 540">
+  <rect x="0" y="0" width="960" height="540" fill="#fffbeb" />
+  <rect x="0" y="0" width="960" height="64" fill="#f59e0b" />
+  <text x="24" y="40" fill="#fff" font-size="18" font-family="Arial, Helvetica, sans-serif">Demo Infographic</text>
+  <rect x="30" y="110" width="205" height="160" fill="#fef3c7" rx="16" />
+  <circle cx="132.5" cy="160" r="28" fill="#d97706" />
+  <text x="42" y="230" fill="#78350f" font-size="12" font-family="Arial, Helvetica, sans-serif">Idea</text>
+  <rect x="255" y="110" width="205" height="160" fill="#fef3c7" rx="16" />
+  <circle cx="357.5" cy="160" r="28" fill="#d97706" />
+  <text x="267" y="230" fill="#78350f" font-size="12" font-family="Arial, Helvetica, sans-serif">Fact</text>
+  <rect x="480" y="110" width="205" height="160" fill="#fef3c7" rx="16" />
+  <circle cx="582.5" cy="160" r="28" fill="#d97706" />
+  <text x="492" y="230" fill="#78350f" font-size="12" font-family="Arial, Helvetica, sans-serif">Tip</text>
+  <rect x="705" y="110" width="205" height="160" fill="#fef3c7" rx="16" />
+  <circle cx="807.5" cy="160" r="28" fill="#d97706" />
+  <text x="717" y="230" fill="#78350f" font-size="12" font-family="Arial, Helvetica, sans-serif">Summary</text>
+</svg>

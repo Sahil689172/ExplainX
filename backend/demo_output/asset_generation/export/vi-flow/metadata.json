@@ -1,0 +1,161 @@
+{
+  "scene_id": "vi-flow",
+  "generator": "mermaid",
+  "status": "generated",
+  "cache_hit": false,
+  "content_hash": "4e7537ceab05392771db61e3900c6ea9eda84ea46fd34a13771183c64d1009d4",
+  "generation_time_sec": 0.0094,
+  "detail": "mermaid flowchart with 3 nodes",
+  "metadata": {
+    "scene_id": "vi-flow",
+    "generator": "mermaid",
+    "asset_type": "flowchart",
+    "content_hash": "4e7537ceab05392771db61e3900c6ea9eda84ea46fd34a13771183c64d1009d4",
+    "style": "educational",
+    "theme": "light",
+    "language": "en",
+    "width": 960,
+    "height": 540,
+    "generation_time_sec": 0.0094,
+    "cache_hit": false,
+    "source_visual_type": "flowchart",
+    "source_renderer": "mermaid",
+    "layers": [
+      "diagram",
+      "labels"
+    ],
+    "extra": {
+      "diagram_kind": "flowchart",
+      "nodes": [
+        "Matched 2 'flowchart'\u2026",
+        "Process",
+        "Step"
+      ]
+    }
+  },
+  "assets": [
+    {
+      "asset_id": "ec7c72a3-2f2e-460a-ba02-a71f813b9272",
+      "scene_id": "vi-flow",
+      "asset_type": "flowchart",
+      "format": "mmd",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\vi-flow\\vi-flow.mmd",
+      "generator": "mermaid",
+      "status": "generated",
+      "content_hash": "4e7537ceab05392771db61e3900c6ea9eda84ea46fd34a13771183c64d1009d4",
+      "width": null,
+      "height": null,
+      "generation_time_sec": 0.0094,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "vi-flow",
+        "generator": "mermaid",
+        "asset_type": "flowchart",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.0094,
+        "cache_hit": false,
+        "source_visual_type": "flowchart",
+        "source_renderer": "mermaid",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "diagram_kind": "flowchart",
+          "nodes": [
+            "Matched 2 'flowchart'\u2026",
+            "Process",
+            "Step"
+          ]
+        }
+      }
+    },
+    {
+      "asset_id": "f3817ed1-8f30-4492-9c58-4fee700438d8",
+      "scene_id": "vi-flow",
+      "asset_type": "flowchart",
+      "format": "svg",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\vi-flow\\vi-flow.svg",
+      "generator": "mermaid",
+      "status": "generated",
+      "content_hash": "4e7537ceab05392771db61e3900c6ea9eda84ea46fd34a13771183c64d1009d4",
+      "width": 960,
+      "height": 540,
+      "generation_time_sec": 0.0094,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "vi-flow",
+        "generator": "mermaid",
+        "asset_type": "flowchart",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.0094,
+        "cache_hit": false,
+        "source_visual_type": "flowchart",
+        "source_renderer": "mermaid",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "diagram_kind": "flowchart",
+          "nodes": [
+            "Matched 2 'flowchart'\u2026",
+            "Process",
+            "Step"
+          ]
+        }
+      }
+    },
+    {
+      "asset_id": "235b438b-8b1e-42a4-8ead-6b29a17d1c35",
+      "scene_id": "vi-flow",
+      "asset_type": "flowchart",
+      "format": "png",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\vi-flow\\vi-flow.png",
+      "generator": "mermaid",
+      "status": "generated",
+      "content_hash": "4e7537ceab05392771db61e3900c6ea9eda84ea46fd34a13771183c64d1009d4",
+      "width": 960,
+      "height": 540,
+      "generation_time_sec": 0.0094,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "vi-flow",
+        "generator": "mermaid",
+        "asset_type": "flowchart",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.0094,
+        "cache_hit": false,
+        "source_visual_type": "flowchart",
+        "source_renderer": "mermaid",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "diagram_kind": "flowchart",
+          "nodes": [
+            "Matched 2 'flowchart'\u2026",
+            "Process",
+            "Step"
+          ]
+        }
+      }
+    }
+  ]
+}

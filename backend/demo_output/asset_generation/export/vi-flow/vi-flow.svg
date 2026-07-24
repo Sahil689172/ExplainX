@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960px" height="540px" viewBox="0 0 960 540">
+  <rect x="0" y="0" width="960" height="540" fill="#f8fafc" />
+  <text x="40" y="36" fill="#0f172a" font-size="18" font-family="Arial, Helvetica, sans-serif">Vi Flow</text>
+  <rect x="80" y="70" width="800" height="56" fill="#2563eb" rx="10" ry="10" />
+  <text x="100" y="104" fill="#ffffff" font-size="16" font-family="Arial, Helvetica, sans-serif">Matched 2 'flowchart'…</text>
+  <line x1="480" y1="126" x2="480" y2="146" stroke="#64748b" stroke-width="3" />
+  <rect x="80" y="154" width="800" height="56" fill="#2563eb" rx="10" ry="10" />
+  <text x="100" y="188" fill="#ffffff" font-size="16" font-family="Arial, Helvetica, sans-serif">Process</text>
+  <line x1="480" y1="210" x2="480" y2="230" stroke="#64748b" stroke-width="3" />
+  <rect x="80" y="238" width="800" height="56" fill="#2563eb" rx="10" ry="10" />
+  <text x="100" y="272" fill="#ffffff" font-size="16" font-family="Arial, Helvetica, sans-serif">Step</text>
+</svg>

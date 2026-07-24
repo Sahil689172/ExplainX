@@ -1,0 +1,97 @@
+{
+  "scene_id": "demo-chart",
+  "generator": "matplotlib",
+  "status": "generated",
+  "cache_hit": false,
+  "content_hash": "0f041c74d67a29276267c40c1addf39a0296d753764ae5c5321d1f4852fce7b5",
+  "generation_time_sec": 0.0675,
+  "detail": "matplotlib line",
+  "metadata": {
+    "scene_id": "demo-chart",
+    "generator": "matplotlib",
+    "asset_type": "chart",
+    "content_hash": "0f041c74d67a29276267c40c1addf39a0296d753764ae5c5321d1f4852fce7b5",
+    "style": "educational",
+    "theme": "light",
+    "language": "en",
+    "width": 960,
+    "height": 540,
+    "generation_time_sec": 0.0675,
+    "cache_hit": false,
+    "source_visual_type": "chart",
+    "source_renderer": "matplotlib",
+    "layers": [
+      "foreground",
+      "labels"
+    ],
+    "extra": {
+      "chart_kind": "line",
+      "labels": [
+        "demo-chart",
+        "Chart",
+        "Growth",
+        "Line",
+        "Data"
+      ],
+      "values": [
+        3,
+        6,
+        9,
+        12,
+        15
+      ]
+    }
+  },
+  "assets": [
+    {
+      "asset_id": "39071bae-eaee-4a9d-97bc-e63006918d9e",
+      "scene_id": "demo-chart",
+      "asset_type": "chart",
+      "format": "png",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\demo-chart\\demo-chart.png",
+      "generator": "matplotlib",
+      "status": "generated",
+      "content_hash": "0f041c74d67a29276267c40c1addf39a0296d753764ae5c5321d1f4852fce7b5",
+      "width": 960,
+      "height": 540,
+      "generation_time_sec": 0.0675,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "demo-chart",
+        "generator": "matplotlib",
+        "asset_type": "chart",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.0675,
+        "cache_hit": false,
+        "source_visual_type": "chart",
+        "source_renderer": "matplotlib",
+        "layers": [
+          "foreground",
+          "labels"
+        ],
+        "extra": {
+          "chart_kind": "line",
+          "labels": [
+            "demo-chart",
+            "Chart",
+            "Growth",
+            "Line",
+            "Data"
+          ],
+          "values": [
+            3,
+            6,
+            9,
+            12,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

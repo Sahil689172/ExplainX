@@ -1,0 +1,105 @@
+{
+  "scene_id": "demo-svg",
+  "generator": "svg",
+  "status": "cached",
+  "cache_hit": true,
+  "content_hash": "63cc7d37c6de761bd84b63767f66c2e2ca11a8ef7e5668d938f30dcb090cb5b1",
+  "generation_time_sec": 0.0,
+  "detail": "cache hit",
+  "metadata": {
+    "scene_id": "demo-svg",
+    "generator": "svg",
+    "asset_type": "diagram",
+    "content_hash": "63cc7d37c6de761bd84b63767f66c2e2ca11a8ef7e5668d938f30dcb090cb5b1",
+    "style": "educational",
+    "theme": "light",
+    "language": "en",
+    "width": 960,
+    "height": 540,
+    "generation_time_sec": 0.0076,
+    "cache_hit": true,
+    "source_visual_type": "diagram",
+    "source_renderer": "svg",
+    "layers": [
+      "diagram",
+      "labels"
+    ],
+    "extra": {
+      "svg_kind": "cycle"
+    }
+  },
+  "assets": [
+    {
+      "asset_id": "b9e719f3-9a4e-4678-b073-e9e46709caad",
+      "scene_id": "demo-svg",
+      "asset_type": "diagram",
+      "format": "svg",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export2\\demo-svg\\demo-svg.svg",
+      "generator": "svg",
+      "status": "cached",
+      "content_hash": "63cc7d37c6de761bd84b63767f66c2e2ca11a8ef7e5668d938f30dcb090cb5b1",
+      "width": 960,
+      "height": 540,
+      "generation_time_sec": 0.0076,
+      "cache_hit": true,
+      "metadata": {
+        "scene_id": "demo-svg",
+        "generator": "svg",
+        "asset_type": "diagram",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.0076,
+        "cache_hit": false,
+        "source_visual_type": "diagram",
+        "source_renderer": "svg",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "svg_kind": "cycle"
+        }
+      }
+    },
+    {
+      "asset_id": "c092a9fb-f68c-432b-8f4e-cb21d4979768",
+      "scene_id": "demo-svg",
+      "asset_type": "diagram",
+      "format": "png",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export2\\demo-svg\\demo-svg.png",
+      "generator": "svg",
+      "status": "cached",
+      "content_hash": "63cc7d37c6de761bd84b63767f66c2e2ca11a8ef7e5668d938f30dcb090cb5b1",
+      "width": 960,
+      "height": 540,
+      "generation_time_sec": 0.0076,
+      "cache_hit": true,
+      "metadata": {
+        "scene_id": "demo-svg",
+        "generator": "svg",
+        "asset_type": "diagram",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.0076,
+        "cache_hit": false,
+        "source_visual_type": "diagram",
+        "source_renderer": "svg",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "svg_kind": "cycle"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "scene_id": "demo-flowchart",
+  "generator": "mermaid",
+  "status": "generated",
+  "cache_hit": false,
+  "content_hash": "cfdaf12da1aa58d93a812f581a757dc5a5a23bed9edbe63ffcd23198e0eecefe",
+  "generation_time_sec": 0.1109,
+  "detail": "mermaid sequence with 5 nodes",
+  "metadata": {
+    "scene_id": "demo-flowchart",
+    "generator": "mermaid",
+    "asset_type": "flowchart",
+    "content_hash": "cfdaf12da1aa58d93a812f581a757dc5a5a23bed9edbe63ffcd23198e0eecefe",
+    "style": "educational",
+    "theme": "light",
+    "language": "en",
+    "width": 960,
+    "height": 540,
+    "generation_time_sec": 0.1109,
+    "cache_hit": false,
+    "source_visual_type": "flowchart",
+    "source_renderer": "mermaid",
+    "layers": [
+      "diagram",
+      "labels"
+    ],
+    "extra": {
+      "diagram_kind": "sequence",
+      "nodes": [
+        "Demo flowchart",
+        "Request",
+        "Process",
+        "Response",
+        "Sequence"
+      ]
+    }
+  },
+  "assets": [
+    {
+      "asset_id": "afd06356-f6bf-46bf-a35e-aece4e89a02a",
+      "scene_id": "demo-flowchart",
+      "asset_type": "flowchart",
+      "format": "mmd",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\demo-flowchart\\demo-flowchart.mmd",
+      "generator": "mermaid",
+      "status": "generated",
+      "content_hash": "cfdaf12da1aa58d93a812f581a757dc5a5a23bed9edbe63ffcd23198e0eecefe",
+      "width": null,
+      "height": null,
+      "generation_time_sec": 0.1109,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "demo-flowchart",
+        "generator": "mermaid",
+        "asset_type": "flowchart",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.1109,
+        "cache_hit": false,
+        "source_visual_type": "flowchart",
+        "source_renderer": "mermaid",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "diagram_kind": "sequence",
+          "nodes": [
+            "Demo flowchart",
+            "Request",
+            "Process",
+            "Response",
+            "Sequence"
+          ]
+        }
+      }
+    },
+    {
+      "asset_id": "8281e9de-8ce1-41ed-b5ff-870a3beffdb1",
+      "scene_id": "demo-flowchart",
+      "asset_type": "flowchart",
+      "format": "svg",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\demo-flowchart\\demo-flowchart.svg",
+      "generator": "mermaid",
+      "status": "generated",
+      "content_hash": "cfdaf12da1aa58d93a812f581a757dc5a5a23bed9edbe63ffcd23198e0eecefe",
+      "width": 960,
+      "height": 540,
+      "generation_time_sec": 0.1109,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "demo-flowchart",
+        "generator": "mermaid",
+        "asset_type": "flowchart",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.1109,
+        "cache_hit": false,
+        "source_visual_type": "flowchart",
+        "source_renderer": "mermaid",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "diagram_kind": "sequence",
+          "nodes": [
+            "Demo flowchart",
+            "Request",
+            "Process",
+            "Response",
+            "Sequence"
+          ]
+        }
+      }
+    },
+    {
+      "asset_id": "fd4d51c7-e97a-4f04-a3b7-46a04f169b56",
+      "scene_id": "demo-flowchart",
+      "asset_type": "flowchart",
+      "format": "png",
+      "path": "C:\\Users\\hp\\ExplainX\\backend\\demo_output\\asset_generation\\export\\demo-flowchart\\demo-flowchart.png",
+      "generator": "mermaid",
+      "status": "generated",
+      "content_hash": "cfdaf12da1aa58d93a812f581a757dc5a5a23bed9edbe63ffcd23198e0eecefe",
+      "width": 960,
+      "height": 540,
+      "generation_time_sec": 0.1109,
+      "cache_hit": false,
+      "metadata": {
+        "scene_id": "demo-flowchart",
+        "generator": "mermaid",
+        "asset_type": "flowchart",
+        "content_hash": "",
+        "style": "educational",
+        "theme": "light",
+        "language": "en",
+        "width": 960,
+        "height": 540,
+        "generation_time_sec": 0.1109,
+        "cache_hit": false,
+        "source_visual_type": "flowchart",
+        "source_renderer": "mermaid",
+        "layers": [
+          "diagram",
+          "labels"
+        ],
+        "extra": {
+          "diagram_kind": "sequence",
+          "nodes": [
+            "Demo flowchart",
+            "Request",
+            "Process",
+            "Response",
+            "Sequence"
+          ]
+        }
+      }
+    }
+  ]
+}
