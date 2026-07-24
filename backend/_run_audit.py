@@ -1,4 +1,4 @@
-"""Offline audit runner — writes results to _audit_out.txt."""
+"""Offline audit runner — writes results under output/audit/ (not repo root)."""
 
 from __future__ import annotations
 
@@ -7,10 +7,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-OUT = ROOT / "_audit_out.txt"
+OUT_DIR = ROOT / "output" / "audit"
+OUT = OUT_DIR / "import_smoke.txt"
 
 
 def main() -> int:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
     lines: list[str] = []
     # Import smoke
     try:

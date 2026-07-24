@@ -1,4 +1,8 @@
-"""Compatibility shim — prefer translation.providers.argos."""
+"""Compatibility shim — prefer translation.providers.argos.
+
+Archived 2026-07-24 (architecture cleanup pass 2). Zero live importers;
+canonical path is ``app.features.translation.providers.argos``.
+"""
 
 from app.features.translation.providers.argos import (  # noqa: F401
     SUPPORTED_TARGETS,

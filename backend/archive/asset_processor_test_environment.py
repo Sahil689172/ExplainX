@@ -1,6 +1,9 @@
 """Temporary environment verification for the ExplainX Asset Processor.
 
-Run from the repo root with the project venv active::
+Archived 2026-07-24 (architecture cleanup pass 2). Standalone diagnostic;
+not imported by the live ``asset_processor`` package or tests.
+
+Run (after restore) from the repo root with the project venv active::
 
     python backend/asset_processor/test_environment.py
 

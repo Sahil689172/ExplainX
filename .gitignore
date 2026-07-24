@@ -103,6 +103,11 @@ outputs/
 cache/
 artifacts/
 
+# Local one-off test/audit dumps (must not litter backend/)
+backend/_audit_out.txt
+backend/_single_script_test_out.txt
+backend/_audit_launch_flag.txt
+
 # ONNX models
 *.onnx
 
